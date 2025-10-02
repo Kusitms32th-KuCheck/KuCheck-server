@@ -9,38 +9,30 @@ jobs:
     outputs:
       tag: ${{ steps.vars.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source code
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up SSH key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          dev-ssh-private-key: ${{ secrets.DEV_EC2_SSH_KEY }}
+
+      - name: Gradle 캐시 적용
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle
+
+      - name: JDK 17 세팅
         uses: actions/setup-java@v4
         with:
-          java-version: "17"
-          distribution: "temurin"
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Build
-        run: |
-          chmod +x gradlew
-          ./gradlew clean build
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Set image tag
-        id: vars
-        run: echo "tag=${GITHUB_SHA}" >> $GITHUB_OUTPUT
-
-      - name: Build & Push image
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/store-group:${{ steps.vars.outputs.tag }} \
-                       -t ${{ secrets.DOCKERHUB_USERNAME }}/store-group:latest .
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/store-group:${{ steps.vars.outputs.tag }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/store-group:latest
   deploy-dev:
     if: github.ref == 'refs/heads/dev'
     needs: build-and-push
@@ -48,30 +40,67 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create dev config from secrets
+      - name: YML 파일 세팅
+        env:
+          APPLICATION_PROPERTIES: ${{ secrets.ONKU_APP_DEV_YML }}
+          TEST_APPLICATION_PROPERTIES: ${{ secrets.ONKU_APP_TEST_YML }}
+
         run: |
-          mkdir -p config
-          printf "%s" "${{ secrets.ONKU_APP_DEV_YML }}" > config/application-dev.yml
-          chmod 600 config/application-dev.yml
+          cd ./src
+          rm -rf main/resources/application.yml
+          mkdir -p main/resources
+          mkdir -p test/resources
+          echo "$APPLICATION_PROPERTIES" > main/resources/application.yml
+          echo "$TEST_APPLICATION_PROPERTIES" > test/resources/application.yml
 
-      - name: Upload files to DEV EC2
-        uses: appleboy/scp-action@master
+      - name: gradlew 권한 부여
+        run: chmod +x gradlew
+
+      - name: 테스트 수행
+        run: ./gradlew test
+
+      - name: 테스트 리포트 아티팩트 업로드
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
-          host: ${{ secrets.DEV_EC2_HOST }}
-          username: ${{ secrets.DEV_EC2_USER }}
-          key: ${{ secrets.DEV_EC2_SSH_KEY }}
-          source: ./config/application-dev.yml,./docker-compose.yml
-          target: /home/ubuntu/deploy/
+          name: test-report
+          path: build/reports/tests/test
 
-      - name: Remote deploy (DEV)
+      - name: 스프링부트 빌드
+        run: ./gradlew build
+
+      - name: Docker Buildx 세팅
+        uses: docker/setup-buildx-action@v3
+
+      - name: docker login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: 도커 이미지 빌드 후 푸시
+        if: success()
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/onku:${{ github.sha }}
+          platforms: linux/amd64,linux/arm64
+
+      - name: Docker Compose 파일 NCP 서버로 전송
+        run: scp -o StrictHostKeyChecking=no -P ${{ secrets.DEV_EC2_PORT }} docker-compose.yml ${{ secrets.DEV_EC2_USER }}@${{ secrets.DEV_EC2_HOST }}:./
+
+      - name: EC2 접속 후 이미지 다운로드 및 배포
+        if: success()
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DEV_EC2_HOST }}
           username: ${{ secrets.DEV_EC2_USER }}
+          key: ${{ secrets.DEV_EC2_SSH_KEY }}
           port: ${{ secrets.DEV_EC2_PORT }}
           script: |
             export DOCKER_CONTAINER_REGISTRY=${{ secrets.DOCKERHUB_USERNAME }}
             export GITHUB_SHA=${{ github.sha }}
-            sudo chmod +x ./deploy/deploy.sh
-            ./deploy/deploy.sh
-            chmod 600 ./deploy/deploy.sh
+            sudo chmod +x ./deploy.sh
+            ./deploy.sh
