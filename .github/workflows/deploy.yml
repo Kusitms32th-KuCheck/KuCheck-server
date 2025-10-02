@@ -85,7 +85,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/onku:${{ github.sha }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/backend:${{ github.sha }}
           platforms: linux/amd64,linux/arm64
 
       - name: Docker Compose 파일 NCP 서버로 전송
