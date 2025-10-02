@@ -8,14 +8,21 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.vars.outputs.tag }}
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/dev'
+    needs: build-and-push
+    runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Checkout source code
         uses: actions/checkout@v4
 
       - name: Set up SSH key
         uses: webfactory/ssh-agent@v0.5.3
         with:
-          dev-ssh-private-key: ${{ secrets.DEV_EC2_SSH_KEY }}
+          ssh-private-key: ${{ secrets.DEV_EC2_SSH_KEY }}
 
       - name: Gradle 캐시 적용
         uses: actions/cache@v3
@@ -32,13 +39,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
-  deploy-dev:
-    if: github.ref == 'refs/heads/dev'
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
       - name: YML 파일 세팅
         env:
