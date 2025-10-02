@@ -31,6 +31,8 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	// swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+	// h2
+	runtimeOnly("com.h2database:h2")
 }
 
 kotlin {
