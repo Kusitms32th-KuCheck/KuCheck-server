@@ -15,12 +15,15 @@ services:
   redis:
     image: redis:6.0.9
     container_name: onku-redis
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     ports:
       - '6379:6379'
     volumes:
       - redis-data:/data
     networks:
       - onku-network
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
 
 volumes:
   redis-data:

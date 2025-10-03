@@ -103,6 +103,7 @@ jobs:
           port: ${{ secrets.DEV_EC2_PORT }}
           script: |
             export DOCKER_CONTAINER_REGISTRY=${{ secrets.DOCKERHUB_USERNAME }}
+            export REDIS_PASSWORD=${{ secrets.DEV_REDIS_PASSWORD }}
             export GITHUB_SHA=${{ github.sha }}
             sudo chmod +x ./deploy.sh
             ./deploy.sh
