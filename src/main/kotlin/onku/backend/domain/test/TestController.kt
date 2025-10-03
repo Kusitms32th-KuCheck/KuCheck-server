@@ -1,4 +1,4 @@
-package onku.backend.test
+package onku.backend.domain.test
 
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.HttpStatus
