@@ -43,12 +43,8 @@ class SecurityConfig(
                     .requestMatchers(*ALLOWED_POST).permitAll()
 
                     // 권한 별 엔드포인트
-                    // 온보딩
                     .requestMatchers(ONBOARDING_ENDPOINT).hasAuthority("ONBOARDING_ONLY")
-
-                    // 관리자
                     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-
                     .anyRequest().hasRole("USER")
             }
             .addFilterBefore(JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter::class.java)
