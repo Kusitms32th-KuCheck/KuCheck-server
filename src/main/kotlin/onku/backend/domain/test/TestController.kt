@@ -5,7 +5,9 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
+import onku.backend.domain.member.Member
 import onku.backend.domain.test.dto.TestDto
+import onku.backend.global.annotation.CurrentMember
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
 import onku.backend.global.response.SuccessResponse
@@ -55,4 +57,8 @@ class TestController {
     fun untracked(): String {
         throw IllegalStateException("테스트용 미등록 예외")
     }
+
+    @GetMapping("/annotation")
+    fun annotation(@CurrentMember member: Member): SuccessResponse<String> =
+        SuccessResponse.ok("MEMBER_ID=$member.id")
 }
