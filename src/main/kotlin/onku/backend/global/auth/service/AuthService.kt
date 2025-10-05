@@ -61,7 +61,13 @@ class AuthServiceImpl(
                 ResponseEntity.ok()
                     .header("Authorization", "Bearer $access")
                     .header("Refresh-Token", refresh)
-                    .body(mapOf("status" to "APPROVED"))
+                    .body(
+                        mapOf(
+                            "status" to "APPROVED",
+                            "memberId" to member.id,
+                            "role" to member.role.name
+                        )
+                    )
             }
 
             ApprovalStatus.PENDING -> {
