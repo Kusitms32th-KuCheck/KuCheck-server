@@ -2,9 +2,9 @@ package onku.backend.global.auth.config
 
 import onku.backend.global.auth.jwt.JwtFilter
 import onku.backend.global.auth.jwt.JwtUtil
+import onku.backend.global.config.CustomCorsConfig
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -31,10 +31,12 @@ class SecurityConfig(
     }
 
     @Bean
-    fun filterChain(http: HttpSecurity): SecurityFilterChain {
+    fun filterChain(http: HttpSecurity, corsConfiguration: CustomCorsConfig): SecurityFilterChain {
         http
             .csrf { it.disable() }
-            .cors(Customizer.withDefaults())
+            .cors{it.configurationSource(
+                corsConfiguration.corsConfigurationSource()
+            )}
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
                 it
