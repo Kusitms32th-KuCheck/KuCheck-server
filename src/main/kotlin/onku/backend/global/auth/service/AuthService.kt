@@ -1,10 +1,12 @@
 package onku.backend.global.auth.service
 
-import onku.backend.global.auth.dto.AuthHeaders
 import onku.backend.global.auth.dto.AuthLoginResult
 import onku.backend.global.auth.dto.KakaoLoginRequest
+import onku.backend.global.response.SuccessResponse
+import org.springframework.http.ResponseEntity
 
 interface AuthService {
-    fun reissueAccessToken(refreshToken: String): String
-    fun kakaoLogin(dto: KakaoLoginRequest): Pair<AuthLoginResult, AuthHeaders>
+    fun kakaoLogin(dto: KakaoLoginRequest): ResponseEntity<SuccessResponse<AuthLoginResult>>
+    fun reissueAccessToken(refreshToken: String): ResponseEntity<SuccessResponse<String>>
 }
+

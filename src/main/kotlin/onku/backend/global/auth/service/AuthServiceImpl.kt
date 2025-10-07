@@ -4,12 +4,18 @@ import onku.backend.domain.member.Member
 import onku.backend.domain.member.enums.ApprovalStatus
 import onku.backend.domain.member.enums.Role
 import onku.backend.domain.member.enums.SocialType
+import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.member.service.MemberService
 import onku.backend.global.auth.AuthErrorCode
 import onku.backend.global.auth.dto.*
 import onku.backend.global.auth.jwt.JwtUtil
 import onku.backend.global.exception.CustomException
 import onku.backend.global.redis.RefreshTokenCacheUtil
+import onku.backend.global.response.SuccessResponse
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -19,8 +25,11 @@ import java.time.Duration
 class AuthServiceImpl(
     private val memberService: MemberService,
     private val kakaoService: KakaoService,
+    private val memberProfileRepository: MemberProfileRepository,
     private val jwtUtil: JwtUtil,
-    private val refreshTokenCacheUtil: RefreshTokenCacheUtil
+    private val refreshTokenCacheUtil: RefreshTokenCacheUtil,
+    @Value("\${jwt.refresh-ttl}") private val refreshTtl: Duration,
+    @Value("\${jwt.onboarding-ttl}") private val onboardingTtl: Duration,
 ) : AuthService {
 
     private fun rolesFor(member: Member): List<String> =
@@ -30,15 +39,15 @@ class AuthServiceImpl(
         }
 
     @Transactional
-    override fun kakaoLogin(dto: KakaoLoginRequest): Pair<AuthLoginResult, AuthHeaders> {
+    override fun kakaoLogin(dto: KakaoLoginRequest): ResponseEntity<SuccessResponse<AuthLoginResult>> {
         val token = kakaoService.getAccessToken(dto.code)
         val profile = kakaoService.getProfile(token.accessToken)
 
-        val socialId: String = profile.id.toString()
-        val email: String = profile.kakaoAccount?.email
+        val socialId = profile.id.toString()
+        val email = profile.kakaoAccount?.email
             ?: throw CustomException(AuthErrorCode.OAUTH_EMAIL_SCOPE_REQUIRED)
 
-        val member: Member = memberService.upsertSocialMember(
+        val member = memberService.upsertSocialMember(
             email = email,
             socialId = socialId,
             type = SocialType.KAKAO
@@ -47,51 +56,63 @@ class AuthServiceImpl(
         return when (member.approval) {
             ApprovalStatus.APPROVED -> {
                 val roles = rolesFor(member)
-                val access = jwtUtil.createAccessToken(email, roles = roles)
-                val refresh = jwtUtil.createRefreshToken(email, roles = roles)
-                refreshTokenCacheUtil.saveRefreshToken(email, refresh, Duration.ofDays(7))
+                val access = jwtUtil.createAccessToken(email, roles)
+                val refresh = jwtUtil.createRefreshToken(email, roles)
+                refreshTokenCacheUtil.saveRefreshToken(email, refresh, refreshTtl)
 
-                AuthLoginResult(
-                    status = ApprovalStatus.APPROVED,
-                    memberId = member.id,
-                    role = member.role.name
-                ) to AuthHeaders(
-                    accessToken = access,
-                    refreshToken = refresh
-                )
+                val headers = HttpHeaders().apply {
+                    add(HttpHeaders.AUTHORIZATION, "Bearer $access")
+                    add("X-Refresh-Token", refresh)
+                }
+
+                ResponseEntity
+                    .status(HttpStatus.OK)
+                    .headers(headers)
+                    .body(
+                        SuccessResponse.ok(
+                            AuthLoginResult(
+                                status = ApprovalStatus.APPROVED,
+                                memberId = member.id,
+                                role = member.role.name
+                            )
+                        )
+                    )
             }
 
             ApprovalStatus.PENDING -> {
-                if (member.hasInfo) {
-                    AuthLoginResult(
-                        status = ApprovalStatus.PENDING,
-                    ) to AuthHeaders()
+                if (member.hasInfo) { // 이미 프로필이 있으면 온보딩 토큰 미발급
+                    ResponseEntity
+                        .status(HttpStatus.ACCEPTED)
+                        .body(SuccessResponse.ok(AuthLoginResult(status = ApprovalStatus.PENDING)))
                 } else {
-                    val onboarding = jwtUtil.createOnboardingToken(email, minutes = 30)
-                    AuthLoginResult(
-                        status = ApprovalStatus.PENDING,
-                    ) to AuthHeaders(
-                        onboardingToken = onboarding
-                    )
+                    val onboarding = jwtUtil.createOnboardingToken(email, onboardingTtl.toMinutes())
+                    val headers = HttpHeaders().apply {
+                        add(HttpHeaders.AUTHORIZATION, "Bearer $onboarding")
+                    }
+
+                    ResponseEntity
+                        .status(HttpStatus.OK)
+                        .headers(headers)
+                        .body(SuccessResponse.ok(AuthLoginResult(status = ApprovalStatus.PENDING)))
                 }
             }
 
             ApprovalStatus.REJECTED -> {
-                AuthLoginResult(
-                    status = ApprovalStatus.REJECTED
-                ) to AuthHeaders()
+                ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(SuccessResponse.ok(AuthLoginResult(status = ApprovalStatus.REJECTED)))
             }
         }
     }
 
-    override fun reissueAccessToken(refreshToken: String): String {
+    @Transactional(readOnly = true)
+    override fun reissueAccessToken(refreshToken: String): ResponseEntity<SuccessResponse<String>> {
         if (jwtUtil.isExpired(refreshToken)) {
             throw CustomException(AuthErrorCode.EXPIRED_REFRESH_TOKEN)
         }
         val email = jwtUtil.getEmail(refreshToken)
         val stored = refreshTokenCacheUtil.getRefreshToken(email)
             ?: throw CustomException(AuthErrorCode.INVALID_REFRESH_TOKEN)
-
         if (stored != refreshToken) throw CustomException(AuthErrorCode.INVALID_REFRESH_TOKEN)
 
         val member = memberService.getByEmail(email)
@@ -100,6 +121,15 @@ class AuthServiceImpl(
         }
 
         val roles = rolesFor(member)
-        return jwtUtil.createAccessToken(email, roles)
+        val newAccess = jwtUtil.createAccessToken(email, roles)
+
+        val headers = HttpHeaders().apply {
+            add(HttpHeaders.AUTHORIZATION, "Bearer $newAccess")
+        }
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .headers(headers)
+            .body(SuccessResponse.ok("Access Token이 재발급되었습니다."))
     }
 }
