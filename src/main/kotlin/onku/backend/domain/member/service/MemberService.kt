@@ -49,8 +49,12 @@ class MemberService(
 
     @Transactional
     fun markOnboarded(member: Member) {
-        if (!member.hasInfo) {
-            member.onboarded()
+        val m = memberRepository.findById(member.id!!)
+            .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+
+        if (!m.hasInfo) {
+            m.onboarded()
+            memberRepository.save(m)
         }
     }
 }
