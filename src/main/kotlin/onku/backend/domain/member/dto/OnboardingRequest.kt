@@ -5,8 +5,8 @@ import onku.backend.domain.member.enums.Part
 
 data class OnboardingRequest (
     @field:NotBlank val name: String,
-    val school: String? = null,
-    val major: String? = null,
+    @field:NotBlank val school: String,
+    @field:NotBlank val major: String,
     val part: Part,
     val phoneNumber: String? = null
 )
