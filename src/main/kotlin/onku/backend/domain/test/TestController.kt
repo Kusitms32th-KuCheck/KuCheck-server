@@ -1,17 +1,20 @@
 package onku.backend.domain.test
 
+import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
+import onku.backend.domain.member.Member
 import onku.backend.domain.test.dto.TestDto
+import onku.backend.global.annotation.CurrentMember
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
 import onku.backend.global.response.SuccessResponse
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
-// TODO: 이후 프론트 연동을 위해 명세서를 전달하기 전에 해당 컨트롤러를 @Hidden으로 숨김처리해서 정리하기 (or 삭제하기)
+@Hidden
 @RestController
 @RequestMapping("/test")
 @Tag(name = "테스트용 API")
@@ -54,4 +57,8 @@ class TestController {
     fun untracked(): String {
         throw IllegalStateException("테스트용 미등록 예외")
     }
+
+    @GetMapping("/annotation")
+    fun annotation(@CurrentMember member: Member): SuccessResponse<String> =
+        SuccessResponse.ok("MEMBER_ID=$member.id")
 }
