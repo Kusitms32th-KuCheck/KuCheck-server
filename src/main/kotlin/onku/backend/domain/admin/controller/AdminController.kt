@@ -1,16 +1,12 @@
 package onku.backend.domain.admin.controller
 
 import onku.backend.domain.admin.dto.UpdateApprovalRequest
-import onku.backend.domain.admin.service.AdminService
 import onku.backend.domain.admin.dto.MemberApprovalResponse
-import onku.backend.domain.member.enums.ApprovalStatus
-import onku.backend.global.response.ErrorResponse
+import onku.backend.domain.admin.service.AdminService
 import onku.backend.global.response.SuccessResponse
-
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -31,17 +27,8 @@ class AdminController(
     fun updateApproval(
         @PathVariable memberId: Long,
         @RequestBody @Valid body: UpdateApprovalRequest
-    ): ResponseEntity<Any> {
-
-        if (body.status == ApprovalStatus.PENDING) {
-            val error = ErrorResponse.of<Nothing>(
-                code = "INVALID_REQUEST",
-                message = "PENDING 으로 변경할 수 없습니다."
-            )
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
-        }
-
-        val result: MemberApprovalResponse = adminService.updateApproval(memberId, body.status)
+    ): ResponseEntity<SuccessResponse<MemberApprovalResponse>> {
+        val result = adminService.updateApproval(memberId, body.status)
         return ResponseEntity.ok(SuccessResponse.ok(result))
     }
 }

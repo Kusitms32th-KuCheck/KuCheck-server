@@ -16,6 +16,10 @@ class AdminServiceImpl(
 ) : AdminService {
 
     override fun updateApproval(memberId: Long, targetStatus: ApprovalStatus): MemberApprovalResponse {
+        if (targetStatus == ApprovalStatus.PENDING) {
+            throw CustomException(MemberErrorCode.INVALID_MEMBER_STATE)
+        }
+
         val member: Member = memberRepository.findById(memberId)
             .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
 
@@ -26,7 +30,7 @@ class AdminServiceImpl(
         when (targetStatus) {
             ApprovalStatus.APPROVED -> member.approve()
             ApprovalStatus.REJECTED -> member.reject()
-            ApprovalStatus.PENDING -> throw CustomException(MemberErrorCode.INVALID_MEMBER_STATE)
+            ApprovalStatus.PENDING -> { }
         }
 
         val saved = memberRepository.save(member)
