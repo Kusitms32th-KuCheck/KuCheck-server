@@ -5,6 +5,8 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.Headers
 import com.amazonaws.services.s3.model.CannedAccessControlList
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
+import onku.backend.global.exception.CustomException
+import onku.backend.global.exception.ErrorCode
 import onku.backend.global.s3.dto.GetS3UrlDto
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -27,8 +29,10 @@ class S3Service(
         // url 유효기간 설정하기(1시간)
         val expiration = getExpiration()
 
+        val contentType = guessContentType(filename)
+
         // presigned url 생성하기
-        val generatePresignedUrlRequest = getPostGeneratePresignedUrlRequest(key, expiration)
+        val generatePresignedUrlRequest = getPostGeneratePresignedUrlRequest(key, expiration, contentType)
         val url: URL = amazonS3Client.generatePresignedUrl(generatePresignedUrlRequest)
 
         // return
@@ -41,8 +45,9 @@ class S3Service(
     @Transactional(readOnly = true)
     fun getGetS3Url(memberId: Long, key: String): GetS3UrlDto {
         val expiration = getExpiration()
+        val contentType = guessContentType(key)
 
-        val generatePresignedUrlRequest = getGetGeneratePresignedUrlRequest(key, expiration)
+        val generatePresignedUrlRequest = getGetGeneratePresignedUrlRequest(key, expiration, contentType)
         val url: URL = amazonS3Client.generatePresignedUrl(generatePresignedUrlRequest)
 
         return GetS3UrlDto(
@@ -52,10 +57,11 @@ class S3Service(
     }
 
     /** post 용 URL 생성하는 메소드 */
-    private fun getPostGeneratePresignedUrlRequest(fileName: String, expiration: Date): GeneratePresignedUrlRequest {
+    private fun getPostGeneratePresignedUrlRequest(fileName: String, expiration: Date, contentType : String): GeneratePresignedUrlRequest {
         val request = GeneratePresignedUrlRequest(bucket, fileName)
             .withMethod(HttpMethod.PUT)
             .withKey(fileName)
+            .withContentType(contentType)
             .withExpiration(expiration)
 
         request.addRequestParameter(
@@ -66,10 +72,23 @@ class S3Service(
     }
 
     /** get 용 URL 생성하는 메소드 */
-    private fun getGetGeneratePresignedUrlRequest(key: String, expiration: Date): GeneratePresignedUrlRequest {
+    private fun getGetGeneratePresignedUrlRequest(key: String, expiration: Date, contentType: String): GeneratePresignedUrlRequest {
         return GeneratePresignedUrlRequest(bucket, key)
             .withMethod(HttpMethod.GET)
+            .withContentType(contentType)
             .withExpiration(expiration)
+    }
+
+    private fun guessContentType(filename: String): String {
+        val lower = filename.lowercase()
+        return when {
+            lower.endsWith(".jpg") || lower.endsWith(".jpeg") -> "image/jpeg"
+            lower.endsWith(".png") -> "image/png"
+            lower.endsWith(".gif") -> "image/gif"
+            lower.endsWith(".webp") -> "image/webp"
+            lower.endsWith(".pdf") -> "application/pdf"
+            else -> throw CustomException(ErrorCode.INVALID_FILE_EXTENSION)
+        }
     }
 
     companion object {

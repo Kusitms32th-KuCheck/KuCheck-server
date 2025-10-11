@@ -13,5 +13,6 @@ enum class ErrorCode(
     FORBIDDEN("COMMON403", "권한이 부족합니다.", HttpStatus.FORBIDDEN),
     INVALID_PARAMETER("COMMON422", "잘못된 파라미터입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
     PARAMETER_VALIDATION_ERROR("COMMON422", "파라미터 검증 에러입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
-    PARAMETER_GRAMMAR_ERROR("COMMON422", "파라미터 문법 에러입니다.", HttpStatus.UNPROCESSABLE_ENTITY);
+    PARAMETER_GRAMMAR_ERROR("COMMON422", "파라미터 문법 에러입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
+    INVALID_FILE_EXTENSION("FILE001", "올바르지 않은 파일 확장자 입니다.", HttpStatus.BAD_REQUEST)
 }
