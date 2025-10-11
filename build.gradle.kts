@@ -41,6 +41,8 @@ dependencies {
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
 	// redis
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	//s3
+	implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
 }
 
 kotlin {
