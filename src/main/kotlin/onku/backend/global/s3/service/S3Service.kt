@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.Headers
 import com.amazonaws.services.s3.model.CannedAccessControlList
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
+import com.amazonaws.services.s3.model.ResponseHeaderOverrides
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
 import onku.backend.global.s3.dto.GetS3UrlDto
@@ -73,9 +74,11 @@ class S3Service(
 
     /** get 용 URL 생성하는 메소드 */
     private fun getGetGeneratePresignedUrlRequest(key: String, expiration: Date, contentType: String): GeneratePresignedUrlRequest {
+        val overrides = ResponseHeaderOverrides()
+            .withContentType(contentType)
         return GeneratePresignedUrlRequest(bucket, key)
             .withMethod(HttpMethod.GET)
-            .withContentType(contentType)
+            .withResponseHeaders(overrides)
             .withExpiration(expiration)
     }
 
