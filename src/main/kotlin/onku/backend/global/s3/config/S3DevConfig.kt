@@ -11,7 +11,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import org.springframework.context.annotation.Profile
 
 @Configuration
-@Profile("dev", "local")
+@Profile("dev", "local", "test")
 class S3DevConfig(
     @Value("\${cloud.aws.credentials.access-key}")
     private val accessKey: String,
