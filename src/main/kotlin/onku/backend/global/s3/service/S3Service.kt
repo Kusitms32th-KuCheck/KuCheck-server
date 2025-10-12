@@ -1,85 +1,68 @@
 package onku.backend.global.s3.service
 
-import com.amazonaws.HttpMethod
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.Headers
-import com.amazonaws.services.s3.model.CannedAccessControlList
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
-import com.amazonaws.services.s3.model.ResponseHeaderOverrides
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
 import onku.backend.global.s3.dto.GetS3UrlDto
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
 import java.net.URL
-import java.util.Date
+import java.time.Duration
 import java.util.UUID
 
 @Service
 class S3Service(
     @Value("\${cloud.aws.s3.bucket}")
     private val bucket : String,
-    private val amazonS3Client : AmazonS3
+    private val s3Presigner: S3Presigner
 ) {
     @Transactional(readOnly = true)
     fun getPostS3Url(memberId: Long, filename: String, folderName : String): GetS3UrlDto {
-        // filename 설정하기(profile 경로 + 멤버ID + 랜덤 값)
         val key = "$folderName/$memberId/${UUID.randomUUID()}/$filename"
-
-        // url 유효기간 설정하기(1시간)
-        val expiration = getExpiration()
-
         val contentType = guessContentType(filename)
 
-        // presigned url 생성하기
-        val generatePresignedUrlRequest = getPostGeneratePresignedUrlRequest(key, expiration, contentType)
-        val url: URL = amazonS3Client.generatePresignedUrl(generatePresignedUrlRequest)
+        val putObjReq = PutObjectRequest.builder()
+            .bucket(bucket)
+            .key(key)
+            .contentType(contentType)
+            .build()
 
-        // return
-        return GetS3UrlDto(
-            preSignedUrl = url.toExternalForm(),
-            key = key
-        )
+        val presignReq = PutObjectPresignRequest.builder()
+            .signatureDuration(DEFAULT_EXPIRE)
+            .putObjectRequest(putObjReq)
+            .build()
+
+        val presigned = s3Presigner.presignPutObject(presignReq)
+        val url: URL = presigned.url()
+
+        return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key)
     }
 
     @Transactional(readOnly = true)
     fun getGetS3Url(memberId: Long, key: String): GetS3UrlDto {
-        val expiration = getExpiration()
         val contentType = guessContentType(key)
 
-        val generatePresignedUrlRequest = getGetGeneratePresignedUrlRequest(key, expiration, contentType)
-        val url: URL = amazonS3Client.generatePresignedUrl(generatePresignedUrlRequest)
+        // 응답 Content-Type을 강제로 지정하고 싶으면 responseContentType 사용
+        val getObjReq = GetObjectRequest.builder()
+            .bucket(bucket)
+            .key(key)
+            .responseContentType(contentType)
+            .build()
 
-        return GetS3UrlDto(
-            preSignedUrl = url.toExternalForm(),
-            key = key
-        )
-    }
+        val presignReq = GetObjectPresignRequest.builder()
+            .signatureDuration(DEFAULT_EXPIRE)
+            .getObjectRequest(getObjReq)
+            .build()
 
-    /** post 용 URL 생성하는 메소드 */
-    private fun getPostGeneratePresignedUrlRequest(fileName: String, expiration: Date, contentType : String): GeneratePresignedUrlRequest {
-        val request = GeneratePresignedUrlRequest(bucket, fileName)
-            .withMethod(HttpMethod.PUT)
-            .withKey(fileName)
-            .withContentType(contentType)
-            .withExpiration(expiration)
+        val presigned = s3Presigner.presignGetObject(presignReq)
+        val url: URL = presigned.url()
 
-        request.addRequestParameter(
-            Headers.S3_CANNED_ACL,
-            CannedAccessControlList.PublicRead.toString()
-        )
-        return request
-    }
-
-    /** get 용 URL 생성하는 메소드 */
-    private fun getGetGeneratePresignedUrlRequest(key: String, expiration: Date, contentType: String): GeneratePresignedUrlRequest {
-        val overrides = ResponseHeaderOverrides()
-            .withContentType(contentType)
-        return GeneratePresignedUrlRequest(bucket, key)
-            .withMethod(HttpMethod.GET)
-            .withResponseHeaders(overrides)
-            .withExpiration(expiration)
+        return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key)
     }
 
     private fun guessContentType(filename: String): String {
@@ -95,13 +78,7 @@ class S3Service(
     }
 
     companion object {
-        /** Presigned URL 만료시간 설정 (기본: 10분) */
-        private fun getExpiration(): Date {
-            val expiration = Date()
-            val expTimeMillis = expiration.time + 1000 * 60 * 10 // 10분
-            expiration.time = expTimeMillis
-            return expiration
-        }
+        private val DEFAULT_EXPIRE: Duration = Duration.ofMinutes(10)
     }
 
 
