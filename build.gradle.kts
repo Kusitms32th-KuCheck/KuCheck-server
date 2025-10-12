@@ -42,7 +42,9 @@ dependencies {
 	// redis
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 	//s3
-	implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+	implementation("software.amazon.awssdk:s3:2.25.34")
+	implementation("software.amazon.awssdk:auth:2.25.34")
+	implementation("software.amazon.awssdk:regions:2.25.34")
 }
 
 kotlin {
