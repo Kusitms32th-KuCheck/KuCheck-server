@@ -8,11 +8,9 @@ import onku.backend.domain.member.Member
 import onku.backend.global.annotation.CurrentMember
 import onku.backend.global.response.SuccessResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -22,31 +20,28 @@ class KupickController(
     private val kupickFacade: KupickFacade
 ) {
     @GetMapping("/application")
-    @ResponseStatus(HttpStatus.OK)
     @Operation(
         summary = "큐픽 신청 서류 제출",
         description = "큐픽 신청용 서류 제출 signedUrl 반환"
     )
-    fun summitApplication(
+    fun submitApplication(
         @CurrentMember member : Member, fileName : String
     ) : ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
-        return ResponseEntity.ok(SuccessResponse.ok(kupickFacade.summitApplication(member, fileName)))
+        return ResponseEntity.ok(SuccessResponse.ok(kupickFacade.submitApplication(member, fileName)))
     }
 
     @GetMapping("/view")
-    @ResponseStatus(HttpStatus.OK)
     @Operation(
         summary = "큐픽 시청 서류 제출",
         description = "큐픽 시청 증빙 서류 제출 signedUrl 반환"
     )
-    fun summitView(
+    fun submitView(
         @CurrentMember member: Member, fileName: String
     ) : ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
-        return ResponseEntity.ok(SuccessResponse.ok(kupickFacade.summitView(member, fileName)))
+        return ResponseEntity.ok(SuccessResponse.ok(kupickFacade.submitView(member, fileName)))
     }
 
     @GetMapping("/my")
-    @ResponseStatus(HttpStatus.OK)
     @Operation(
         summary = "큐픽 조회",
         description = "내가 신청한 큐픽 내역 조회"

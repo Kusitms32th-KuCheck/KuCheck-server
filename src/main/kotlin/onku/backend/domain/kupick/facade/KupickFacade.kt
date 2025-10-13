@@ -13,17 +13,17 @@ class KupickFacade(
     private val s3Service: S3Service,
     private val kupickService: KupickService
 ) {
-    fun summitApplication(member: Member, fileName: String): GetPreSignedUrlDto {
+    fun submitApplication(member: Member, fileName: String): GetPreSignedUrlDto {
         val signedUrlDto = s3Service.getPostS3Url(member.id!!, fileName, FolderName.KUPICK_APPLICATION.name)
-        kupickService.summitApplication(member, signedUrlDto.key)
+        kupickService.submitApplication(member, signedUrlDto.key)
         return GetPreSignedUrlDto(
             signedUrlDto.preSignedUrl
         )
     }
 
-    fun summitView(member: Member, fileName: String): GetPreSignedUrlDto {
+    fun submitView(member: Member, fileName: String): GetPreSignedUrlDto {
         val signedUrlDto = s3Service.getPostS3Url(member.id!!, fileName, FolderName.KUPICK_VIEW.name)
-        kupickService.summitView(member, signedUrlDto.key)
+        kupickService.submitView(member, signedUrlDto.key)
         return GetPreSignedUrlDto(
             signedUrlDto.preSignedUrl
         )

@@ -16,7 +16,7 @@ class KupickService(
     private val kupickRepository: KupickRepository
 ) {
     @Transactional
-    fun summitApplication(member: Member, applicationUrl : String) {
+    fun submitApplication(member: Member, applicationUrl : String) {
         val monthObject = TimeRangeUtil.getCurrentMonthRange()
         val existing = kupickRepository.findFirstByMemberAndApplicationDateBetween(
             member, monthObject.startOfMonth, monthObject.startOfNextMonth
@@ -30,14 +30,14 @@ class KupickService(
     }
 
     @Transactional
-    fun summitView(member: Member, viewUrl: String) {
+    fun submitView(member: Member, viewUrl: String) {
         val monthObject = TimeRangeUtil.getCurrentMonthRange()
         val now = LocalDateTime.now()
         val kupick = kupickRepository.findThisMonthByMember(
             member,
             monthObject.startOfMonth,
             monthObject.startOfNextMonth) ?: throw CustomException(ErrorCode.KUPICK_APPLICATION_FIRST)
-        kupick.summitView(viewUrl, now)
+        kupick.submitView(viewUrl, now)
     }
 
     @Transactional(readOnly = true)
