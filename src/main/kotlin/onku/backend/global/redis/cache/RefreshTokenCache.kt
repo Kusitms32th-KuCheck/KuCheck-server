@@ -1,11 +1,11 @@
-package onku.backend.global.redis
+package onku.backend.global.redis.cache
 
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 import java.time.Duration
 
 @Component
-class RefreshTokenCacheUtil(
+class RefreshTokenCache(
     private val redisTemplate: RedisTemplate<String, String>
 ) {
     companion object {

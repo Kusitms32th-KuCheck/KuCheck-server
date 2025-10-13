@@ -10,7 +10,7 @@ import onku.backend.global.auth.AuthErrorCode
 import onku.backend.global.auth.dto.*
 import onku.backend.global.auth.jwt.JwtUtil
 import onku.backend.global.exception.CustomException
-import onku.backend.global.redis.RefreshTokenCacheUtil
+import onku.backend.global.redis.cache.RefreshTokenCache
 import onku.backend.global.response.SuccessResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
@@ -27,7 +27,7 @@ class AuthServiceImpl(
     private val kakaoService: KakaoService,
     private val memberProfileRepository: MemberProfileRepository,
     private val jwtUtil: JwtUtil,
-    private val refreshTokenCacheUtil: RefreshTokenCacheUtil,
+    private val refreshTokenCacheUtil: RefreshTokenCache,
     @Value("\${jwt.refresh-ttl}") private val refreshTtl: Duration,
     @Value("\${jwt.onboarding-ttl}") private val onboardingTtl: Duration,
 ) : AuthService {

@@ -10,7 +10,7 @@ import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
-import onku.backend.global.redis.AttendanceTokenCacheUtil
+import onku.backend.global.redis.cache.AttendanceTokenCache
 import onku.backend.global.util.TokenGenerator
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
@@ -20,7 +20,7 @@ import java.time.LocalDateTime
 
 @Service
 class AttendanceService(
-    private val tokenCache: AttendanceTokenCacheUtil,
+    private val tokenCache: AttendanceTokenCache,
     private val sessionRepository: SessionRepository,
     private val attendanceRepository: AttendanceRepository,
     private val memberProfileRepository: MemberProfileRepository,

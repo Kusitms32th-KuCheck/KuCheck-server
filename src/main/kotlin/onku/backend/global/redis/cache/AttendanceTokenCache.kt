@@ -1,4 +1,4 @@
-package onku.backend.global.redis
+package onku.backend.global.redis.cache
 
 import onku.backend.global.redis.dto.TokenData
 import org.springframework.beans.factory.annotation.Qualifier
@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 @Component
-class AttendanceTokenCacheUtil(
+class AttendanceTokenCache(
     private val redis: StringRedisTemplate,
     @Qualifier("attendanceSwapScript")
     private val swapScript: DefaultRedisScript<String>,
