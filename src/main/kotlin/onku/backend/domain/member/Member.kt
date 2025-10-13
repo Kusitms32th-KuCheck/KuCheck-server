@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import onku.backend.domain.member.enums.ApprovalStatus
 import onku.backend.domain.member.enums.Role
 import onku.backend.domain.member.enums.SocialType
+import onku.backend.global.entity.BaseEntity
 
 @Entity
 class Member(
@@ -31,7 +32,7 @@ class Member(
     @Enumerated(EnumType.STRING)
     @Column(name = "approval", nullable = false, length = 20)
     var approval: ApprovalStatus = ApprovalStatus.PENDING
-) {
+) : BaseEntity() {
     fun approve() { this.approval = ApprovalStatus.APPROVED }
     fun reject() { this.approval = ApprovalStatus.REJECTED }
     fun onboarded() { this.hasInfo = true }
