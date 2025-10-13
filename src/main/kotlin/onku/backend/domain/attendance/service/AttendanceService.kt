@@ -1,0 +1,94 @@
+package onku.backend.domain.attendance.service
+
+import onku.backend.domain.attendance.AttendanceErrorCode
+import onku.backend.domain.attendance.dto.*
+import onku.backend.domain.attendance.enums.AttendanceStatus
+import onku.backend.domain.attendance.repository.AttendanceRepository
+import onku.backend.domain.member.Member
+import onku.backend.domain.member.enums.Role
+import onku.backend.domain.member.repository.MemberProfileRepository
+import onku.backend.domain.session.repository.SessionRepository
+import onku.backend.global.exception.CustomException
+import onku.backend.global.exception.ErrorCode
+import onku.backend.global.redis.AttendanceTokenCacheUtil
+import onku.backend.global.util.TokenGenerator
+import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.time.Clock
+import java.time.LocalDateTime
+
+@Service
+class AttendanceService(
+    private val tokenCache: AttendanceTokenCacheUtil,
+    private val sessionRepository: SessionRepository,
+    private val attendanceRepository: AttendanceRepository,
+    private val memberProfileRepository: MemberProfileRepository,
+    private val tokenGenerator: TokenGenerator,
+    private val clock: Clock
+) {
+    private val ttlSeconds: Long = 15L
+
+    @Transactional(readOnly = true)
+    fun issueAttendanceTokenFor(member: Member): AttendanceTokenResponse {
+        if (member.role != Role.USER && member.role != Role.ADMIN) {
+            throw CustomException(ErrorCode.FORBIDDEN)
+        }
+
+        val now = LocalDateTime.now(clock)
+        val expAt = now.plusSeconds(ttlSeconds)
+        val token = tokenGenerator.generateOpaqueToken()
+
+        tokenCache.putAsActiveSingle(member.id!!, token, now, expAt, ttlSeconds)
+        return AttendanceTokenResponse(token = token, expAt = expAt)
+    }
+
+    @Transactional
+    fun scanAndRecordBy(admin: Member, token: String): AttendanceResponse {
+        if (admin.role != Role.ADMIN) {
+            throw CustomException(ErrorCode.FORBIDDEN)
+        }
+
+        val now = LocalDateTime.now(clock)
+
+        val session = sessionRepository.findOpenSession(now)
+            ?: throw CustomException(AttendanceErrorCode.SESSION_NOT_OPEN)
+
+        val peek = tokenCache.peek(token)
+            ?: throw CustomException(AttendanceErrorCode.TOKEN_INVALID)
+
+        val memberId = peek.memberId
+        val memberName = memberProfileRepository.findById(memberId).orElse(null)?.name ?: "Unknown"
+
+        val already = attendanceRepository.existsBySessionIdAndMemberId(session.id!!, memberId)
+        if (already) {
+            throw CustomException(AttendanceErrorCode.ATTENDANCE_ALREADY_RECORDED)
+        }
+
+        val consumed = tokenCache.consumeToken(token)
+            ?: throw CustomException(ErrorCode.UNAUTHORIZED)
+
+        val state =
+            if (now.isAfter(session.lateThresholdTime)) AttendanceStatus.LATE
+            else AttendanceStatus.PRESENT
+
+        try {
+            attendanceRepository.insertOnly(
+                sessionId = session.id!!,
+                memberId = memberId,
+                status = state.name,
+                attendanceTime = now
+            )
+        } catch (e: DataIntegrityViolationException) {
+            throw CustomException(AttendanceErrorCode.ATTENDANCE_ALREADY_RECORDED)
+        }
+
+        return AttendanceResponse(
+            memberId = memberId,
+            memberName = memberName,
+            sessionId = session.id!!,
+            state = state,
+            scannedAt = now
+        )
+    }
+}
