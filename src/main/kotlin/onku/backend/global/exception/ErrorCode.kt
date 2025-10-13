@@ -15,5 +15,6 @@ enum class ErrorCode(
     PARAMETER_VALIDATION_ERROR("COMMON422", "파라미터 검증 에러입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
     PARAMETER_GRAMMAR_ERROR("COMMON422", "파라미터 문법 에러입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
     INVALID_FILE_EXTENSION("S3001", "올바르지 않은 파일 확장자 입니다.", HttpStatus.BAD_REQUEST),
-    KUPICK_APPLICATION_FIRST("kupick001", "큐픽 신청부터 진행해주세요", HttpStatus.BAD_REQUEST);
+    KUPICK_APPLICATION_FIRST("kupick001", "큐픽 신청부터 진행해주세요", HttpStatus.BAD_REQUEST),
+    FCM_ACCESS_TOKEN_FAIL("alarm001", "FCM 액세스 토큰 발급 중에 오류가 발생했습니다.", HttpStatus.BAD_REQUEST);
 }

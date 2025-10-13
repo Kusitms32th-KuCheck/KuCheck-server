@@ -22,6 +22,7 @@ class SecurityConfig(
             "/v3/api-docs/**",
             "/health",
             "/actuator/health",
+            "/test/push/**"
         )
         private val ALLOWED_POST = arrayOf(
             "/api/v1/auth/kakao",
