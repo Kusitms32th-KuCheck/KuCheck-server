@@ -1,0 +1,52 @@
+package onku.backend.domain.kupick.service
+
+import onku.backend.domain.kupick.Kupick
+import onku.backend.domain.kupick.repository.KupickRepository
+import onku.backend.domain.kupick.repository.projection.KupickUrls
+import onku.backend.domain.member.Member
+import onku.backend.global.exception.CustomException
+import onku.backend.global.exception.ErrorCode
+import onku.backend.global.time.TimeRangeUtil
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
+
+@Service
+class KupickService(
+    private val kupickRepository: KupickRepository
+) {
+    @Transactional
+    fun summitApplication(member: Member, applicationUrl : String) {
+        val monthObject = TimeRangeUtil.getCurrentMonthRange()
+        val existing = kupickRepository.findFirstByMemberAndApplicationDateBetween(
+            member, monthObject.startOfMonth, monthObject.startOfNextMonth
+        )
+        val now = LocalDateTime.now()
+        existing
+            ?.updateApplication(applicationUrl, now)
+            ?: kupickRepository.save(
+                Kupick.createApplication(member, applicationUrl, LocalDateTime.now())
+            )
+    }
+
+    @Transactional
+    fun summitView(member: Member, viewUrl: String) {
+        val monthObject = TimeRangeUtil.getCurrentMonthRange()
+        val now = LocalDateTime.now()
+        val kupick = kupickRepository.findThisMonthByMember(
+            member,
+            monthObject.startOfMonth,
+            monthObject.startOfNextMonth) ?: throw CustomException(ErrorCode.KUPICK_APPLICATION_FIRST)
+        kupick.summitView(viewUrl, now)
+    }
+
+    @Transactional(readOnly = true)
+    fun viewMyKupick(member: Member) : KupickUrls? {
+        val monthObject = TimeRangeUtil.getCurrentMonthRange()
+        return kupickRepository.findUrlsForMemberInMonth(
+            member,
+            monthObject.startOfMonth,
+            monthObject.startOfNextMonth
+        )
+    }
+}
