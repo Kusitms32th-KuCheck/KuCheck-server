@@ -13,12 +13,12 @@ class Kupick(
     @Column(name = "kupick_id")
     val id: Long? = null,
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     val member : Member,
 
-    @Column(name = "summit_date")
-    var summitDate: LocalDateTime? = null,
+    @Column(name = "submit_date")
+    var submitDate: LocalDateTime? = null,
 
     @Column(name = "application_image_url")
     var applicationImageUrl: String,
@@ -46,20 +46,20 @@ class Kupick(
                 member = member,
                 applicationImageUrl = applicationImageUrl,
                 applicationDate = applicationDate,
-                summitDate = applicationDate
+                submitDate = applicationDate
             )
         }
     }
 
-    fun summitView(viewImageUrl: String, nowDate: LocalDateTime) {
+    fun submitView(viewImageUrl: String, nowDate: LocalDateTime) {
         this.viewImageUrl = viewImageUrl
         this.viewDate = nowDate
-        this.summitDate = nowDate
+        this.submitDate = nowDate
     }
 
     fun updateApplication(newUrl: String, newDate: LocalDateTime) {
         this.applicationImageUrl = newUrl
         this.applicationDate = newDate
-        this.summitDate = newDate
+        this.submitDate = newDate
     }
 }
