@@ -2,6 +2,7 @@ package onku.backend.domain.session
 
 import jakarta.persistence.*
 import onku.backend.domain.session.enums.SessionCategory
+import onku.backend.global.entity.BaseEntity
 import java.time.LocalDateTime
 
 @Entity
@@ -41,4 +42,4 @@ class Session(
 
     @Column(name = "late_threshold_time", nullable = false) // 지각 기준 시각
     val lateThresholdTime: LocalDateTime
-)
+) : BaseEntity()
