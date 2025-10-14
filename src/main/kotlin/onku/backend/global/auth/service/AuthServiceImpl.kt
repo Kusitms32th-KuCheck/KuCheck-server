@@ -25,18 +25,11 @@ import java.time.Duration
 class AuthServiceImpl(
     private val memberService: MemberService,
     private val kakaoService: KakaoService,
-    private val memberProfileRepository: MemberProfileRepository,
     private val jwtUtil: JwtUtil,
     private val refreshTokenCacheUtil: RefreshTokenCache,
     @Value("\${jwt.refresh-ttl}") private val refreshTtl: Duration,
     @Value("\${jwt.onboarding-ttl}") private val onboardingTtl: Duration,
 ) : AuthService {
-
-    private fun rolesFor(member: Member): List<String> =
-        when (member.role) {
-            Role.ADMIN -> listOf("ADMIN", "USER")
-            Role.USER  -> listOf("USER")
-        }
 
     @Transactional
     override fun kakaoLogin(dto: KakaoLoginRequest): ResponseEntity<SuccessResponse<AuthLoginResult>> {
@@ -55,7 +48,7 @@ class AuthServiceImpl(
 
         return when (member.approval) {
             ApprovalStatus.APPROVED -> {
-                val roles = rolesFor(member)
+                val roles = member.role.authorities()
                 val access = jwtUtil.createAccessToken(email, roles)
                 val refresh = jwtUtil.createRefreshToken(email, roles)
                 refreshTokenCacheUtil.saveRefreshToken(email, refresh, refreshTtl)
@@ -120,7 +113,7 @@ class AuthServiceImpl(
             throw CustomException(AuthErrorCode.INVALID_REFRESH_TOKEN)
         }
 
-        val roles = rolesFor(member)
+        val roles = member.role.authorities()
         val newAccess = jwtUtil.createAccessToken(email, roles)
 
         val headers = HttpHeaders().apply {
