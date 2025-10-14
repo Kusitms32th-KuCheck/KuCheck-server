@@ -14,8 +14,10 @@ interface AttendanceRepository : CrudRepository<Attendance, Long> {
     @Modifying
     @Query(
         value = """
-        INSERT INTO attendance (session_id, member_id, status, attendance_time)
-        VALUES (:sessionId, :memberId, :status, :attendanceTime)
+        INSERT INTO attendance
+            (session_id, member_id, status, attendance_time, created_at, updated_at) 
+        VALUES
+            (:sessionId, :memberId, :status, :attendanceTime, :createdAt, :updatedAt)
         """,
         nativeQuery = true
     )
@@ -23,6 +25,8 @@ interface AttendanceRepository : CrudRepository<Attendance, Long> {
         @Param("sessionId") sessionId: Long,
         @Param("memberId") memberId: Long,
         @Param("status") status: String,
-        @Param("attendanceTime") attendanceTime: LocalDateTime
+        @Param("attendanceTime") attendanceTime: LocalDateTime,
+        @Param("createdAt") createdAt: LocalDateTime,
+        @Param("updatedAt") updatedAt: LocalDateTime
     ): Int
 }

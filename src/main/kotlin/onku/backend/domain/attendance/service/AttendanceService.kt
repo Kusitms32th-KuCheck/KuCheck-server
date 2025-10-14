@@ -69,7 +69,9 @@ class AttendanceService(
                 sessionId = session.id!!,
                 memberId = memberId,
                 status = state.name,
-                attendanceTime = now
+                attendanceTime = now,
+                createdAt = now,
+                updatedAt = now
             )
         } catch (e: DataIntegrityViolationException) {
             throw CustomException(AttendanceErrorCode.ATTENDANCE_ALREADY_RECORDED)
