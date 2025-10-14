@@ -125,4 +125,15 @@ class AuthServiceImpl(
             .headers(headers)
             .body(SuccessResponse.ok("Access Token이 재발급되었습니다."))
     }
+
+    @Transactional
+    override fun logout(refreshToken: String): ResponseEntity<SuccessResponse<String>> {
+        val email = runCatching { jwtUtil.getEmail(refreshToken) }.getOrNull()
+        if (email != null) {
+            refreshTokenCacheUtil.deleteRefreshToken(email)
+        }
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(SuccessResponse.ok("로그아웃 되었습니다."))
+    }
 }
