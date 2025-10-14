@@ -11,14 +11,14 @@ class RedisLuaConfig {
     @Bean
     fun attendanceSwapScript(): DefaultRedisScript<String> =
         DefaultRedisScript<String>().apply {
-            setLocation(ClassPathResource("onku/backend/global/redis/lua/issue_token.lua"))
+            setLocation(ClassPathResource("lua/issue_token.lua"))
             setResultType(String::class.java)
         }
 
     @Bean
     fun attendanceConsumeScript(): DefaultRedisScript<String> =
         DefaultRedisScript<String>().apply {
-            setLocation(ClassPathResource("onku/backend/global/redis/lua/consume_token.lua"))
+            setLocation(ClassPathResource("lua/consume_token.lua"))
             setResultType(String::class.java)
         }
 }
