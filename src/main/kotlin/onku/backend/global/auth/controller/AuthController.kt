@@ -24,4 +24,12 @@ class AuthController(
     @Operation(summary = "AT 재발급", description = "RT를 헤더로 받아 AT를 재발급합니다.")
     fun reissue(@RequestHeader("X-Refresh-Token") refreshToken: String): ResponseEntity<SuccessResponse<String>> =
         authService.reissueAccessToken(refreshToken)
+
+    @PostMapping("/logout")
+    @Operation(
+        summary = "로그아웃",
+        description = "로그아웃 처리를 위해 X-Refresh-Token 헤더로 받아온 RT를 서버 저장소(REDIS)에서 삭제합니다."
+    )
+    fun logout(@RequestHeader("X-Refresh-Token") refreshToken: String): ResponseEntity<SuccessResponse<String>> =
+        authService.logout(refreshToken)
 }
