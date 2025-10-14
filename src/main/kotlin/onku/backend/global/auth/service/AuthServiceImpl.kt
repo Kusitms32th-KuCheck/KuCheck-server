@@ -36,7 +36,7 @@ class AuthServiceImpl(
         val token = kakaoService.getAccessToken(dto.code)
         val profile = kakaoService.getProfile(token.accessToken)
 
-        val socialId = profile.id.toString()
+        val socialId = profile.id
         val email = profile.kakaoAccount?.email
             ?: throw CustomException(AuthErrorCode.OAUTH_EMAIL_SCOPE_REQUIRED)
 
