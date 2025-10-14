@@ -2,9 +2,13 @@ package onku.backend.global.auth.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import onku.backend.domain.member.Member
+import onku.backend.domain.member.service.MemberService
+import onku.backend.global.annotation.CurrentMember
 import onku.backend.global.auth.dto.AuthLoginResult
 import onku.backend.global.auth.dto.KakaoLoginRequest
 import onku.backend.global.auth.service.AuthService
+import onku.backend.global.auth.service.KakaoService
 import onku.backend.global.response.SuccessResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -13,7 +17,9 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/auth")
 @Tag(name = "인증 API", description = "소셜 로그인 및 토큰 재발급")
 class AuthController(
-    private val authService: AuthService
+    private val authService: AuthService,
+    private val kakaoService: KakaoService,
+    private val memberService: MemberService,
 ) {
     @PostMapping("/kakao")
     @Operation(summary = "카카오 로그인", description = "인가코드를 body로 받아 사용자를 식별합니다.")
@@ -32,4 +38,22 @@ class AuthController(
     )
     fun logout(@RequestHeader("X-Refresh-Token") refreshToken: String): ResponseEntity<SuccessResponse<String>> =
         authService.logout(refreshToken)
+
+    @PostMapping("/withdraw")
+    @Operation(
+        summary = "회원 탈퇴",
+        description = "카카오 unlink 요청 + DB 회원 삭제 + RT 삭제"
+    )
+    fun withdraw(
+        @CurrentMember member: Member,
+        @RequestHeader("X-Refresh-Token") refreshToken: String
+    ): ResponseEntity<SuccessResponse<String>> {
+        val kakaoUserId = member.socialId
+        kakaoService.adminUnlink(kakaoUserId)
+        authService.logout(refreshToken)
+        val memberId = member.id ?: throw IllegalStateException("회원 ID가 없습니다.")
+        memberService.deleteMemberById(memberId)
+
+        return ResponseEntity.ok(SuccessResponse.ok("회원 탈퇴가 완료되었습니다."))
+    }
 }
