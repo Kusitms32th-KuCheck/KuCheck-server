@@ -42,3 +42,4 @@ out/
 ### YAML ###
 application.yml
 #src/main/resources/*
+src/main/resources/firebase/*
