@@ -29,11 +29,9 @@ class JwtFilter(
 
         val email = jwtUtil.getEmail(token)
         val roles = jwtUtil.getRoles(token)
-        val scopes = jwtUtil.getScopes(token)
 
         val authorities = buildList {
             roles.forEach { add(SimpleGrantedAuthority("ROLE_${it.uppercase()}")) }
-            scopes.forEach { add(SimpleGrantedAuthority(it.uppercase())) }
         }
 
         val authentication = UsernamePasswordAuthenticationToken(email, null, authorities)
