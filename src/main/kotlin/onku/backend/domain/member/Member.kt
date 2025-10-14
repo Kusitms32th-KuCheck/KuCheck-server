@@ -17,7 +17,7 @@ class Member(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    val role: Role = Role.USER,
+    var role: Role = Role.USER,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "social_type", nullable = false, length = 20)
@@ -33,7 +33,10 @@ class Member(
     @Column(name = "approval", nullable = false, length = 20)
     var approval: ApprovalStatus = ApprovalStatus.PENDING
 ) : BaseEntity() {
-    fun approve() { this.approval = ApprovalStatus.APPROVED }
+    fun approve() {
+        this.approval = ApprovalStatus.APPROVED
+        this.role = Role.USER
+    }
     fun reject() { this.approval = ApprovalStatus.REJECTED }
     fun onboarded() { this.hasInfo = true }
     fun updateEmail(newEmail: String?) {
