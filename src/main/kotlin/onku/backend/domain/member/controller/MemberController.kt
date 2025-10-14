@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import onku.backend.domain.member.Member
+import onku.backend.domain.member.dto.MemberProfileResponse
 import onku.backend.domain.member.dto.OnboardingRequest
 import onku.backend.domain.member.dto.OnboardingResponse
 import onku.backend.domain.member.service.MemberProfileService
@@ -33,4 +34,15 @@ class MemberController(
         return SuccessResponse.ok(body)
     }
 
+    @GetMapping("/profile/summary")
+    @Operation(
+        summary = "내 프로필 요약 조회",
+        description = "[TEMP] 현재 로그인한 회원의 이름(name)과 파트(part)만 반환합니다."
+    )
+    fun getMyProfileSummary( // TODO: DisciplinaryRecord 테이블 생성 후 상벌점도 반환
+        @CurrentMember member: Member
+    ): SuccessResponse<MemberProfileResponse> {
+        val body = memberProfileService.getProfileSummary(member)
+        return SuccessResponse.ok(body)
+    }
 }

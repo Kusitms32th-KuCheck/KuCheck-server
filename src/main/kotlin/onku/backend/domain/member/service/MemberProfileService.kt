@@ -3,6 +3,7 @@ package onku.backend.domain.member.service
 import onku.backend.domain.member.Member
 import onku.backend.domain.member.MemberProfile
 import onku.backend.domain.member.MemberErrorCode
+import onku.backend.domain.member.dto.MemberProfileResponse
 import onku.backend.domain.member.dto.OnboardingRequest
 import onku.backend.domain.member.dto.OnboardingResponse
 import onku.backend.domain.member.enums.ApprovalStatus
@@ -60,5 +61,14 @@ class MemberProfileService(
                 phoneNumber = req.phoneNumber
             )
         }
+    }
+    @Transactional(readOnly = true)
+    fun getProfileSummary(member: Member): MemberProfileResponse {
+        val profile = memberProfileRepository.findById(member.id!!)
+            .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+        return MemberProfileResponse(
+            name = profile.name,
+            part = profile.part
+        )
     }
 }
