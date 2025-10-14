@@ -5,6 +5,7 @@ import onku.backend.domain.member.MemberErrorCode
 import onku.backend.domain.member.enums.ApprovalStatus
 import onku.backend.domain.member.enums.Role
 import onku.backend.domain.member.enums.SocialType
+import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.member.repository.MemberRepository
 import onku.backend.global.exception.CustomException
 import org.springframework.stereotype.Service
@@ -14,20 +15,21 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class MemberService(
     private val memberRepository: MemberRepository,
+    private val memberProfileRepository: MemberProfileRepository,
 ) {
     fun getByEmail(email: String): Member =
         memberRepository.findByEmail(email)
             ?: throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
 
-    fun getBySocialIdOrNull(socialId: String, socialType: SocialType): Member? =
+    fun getBySocialIdOrNull(socialId: Long, socialType: SocialType): Member? =
         memberRepository.findBySocialIdAndSocialType(socialId, socialType)
 
-    fun getBySocialId(socialId: String, socialType: SocialType): Member =
+    fun getBySocialId(socialId: Long, socialType: SocialType): Member =
         getBySocialIdOrNull(socialId, socialType)
             ?: throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
 
     @Transactional
-    fun upsertSocialMember(email: String?, socialId: String, type: SocialType): Member {
+    fun upsertSocialMember(email: String?, socialId: Long, type: SocialType): Member {
         val existing = memberRepository.findBySocialIdAndSocialType(socialId, type)
         if (existing != null) {
             if (!email.isNullOrBlank() && existing.email != email) {
@@ -56,5 +58,16 @@ class MemberService(
             m.onboarded()
             memberRepository.save(m)
         }
+    }
+
+    @Transactional
+    fun deleteMemberById(memberId: Long) {
+        if (!memberRepository.existsById(memberId)) {
+            throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
+        }
+        if (memberProfileRepository.existsByMember_Id(memberId)) {
+            memberProfileRepository.deleteByMemberId(memberId)
+        }
+        memberRepository.deleteById(memberId)
     }
 }
