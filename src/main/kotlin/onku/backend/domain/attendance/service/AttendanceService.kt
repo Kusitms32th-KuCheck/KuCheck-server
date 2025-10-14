@@ -31,10 +31,6 @@ class AttendanceService(
 
     @Transactional(readOnly = true)
     fun issueAttendanceTokenFor(member: Member): AttendanceTokenResponse {
-        if (member.role != Role.USER && member.role != Role.ADMIN) {
-            throw CustomException(ErrorCode.FORBIDDEN)
-        }
-
         val now = LocalDateTime.now(clock)
         val expAt = now.plusSeconds(ttlSeconds)
         val token = tokenGenerator.generateOpaqueToken()
@@ -45,10 +41,6 @@ class AttendanceService(
 
     @Transactional
     fun scanAndRecordBy(admin: Member, token: String): AttendanceResponse {
-        if (admin.role != Role.ADMIN) {
-            throw CustomException(ErrorCode.FORBIDDEN)
-        }
-
         val now = LocalDateTime.now(clock)
 
         val session = sessionRepository.findOpenSession(now)
