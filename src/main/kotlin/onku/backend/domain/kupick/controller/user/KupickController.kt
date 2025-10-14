@@ -1,4 +1,4 @@
-package onku.backend.domain.kupick.controller
+package onku.backend.domain.kupick.controller.user
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag

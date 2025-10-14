@@ -2,6 +2,7 @@ package onku.backend.domain.kupick.repository
 
 import onku.backend.domain.kupick.Kupick
 import onku.backend.domain.kupick.repository.projection.KupickUrls
+import onku.backend.domain.kupick.repository.projection.KupickWithProfile
 import onku.backend.domain.member.Member
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -42,4 +43,16 @@ interface KupickRepository : JpaRepository<Kupick, Long> {
         @Param("start") startOfMonth: LocalDateTime,
         @Param("end") startOfNextMonth: LocalDateTime
     ): KupickUrls?
+
+    @Query("""
+        select k as kupick, mp as memberProfile
+        from Kupick k
+        join k.member m
+        left join MemberProfile mp on mp.member = m
+        where k.submitDate >= :start and k.submitDate < :end
+    """)
+    fun findAllWithProfile(
+        @Param("start") start: LocalDateTime,
+        @Param("end") end: LocalDateTime
+    ): List<KupickWithProfile>
 }

@@ -3,6 +3,7 @@ package onku.backend.domain.kupick.service
 import onku.backend.domain.kupick.Kupick
 import onku.backend.domain.kupick.repository.KupickRepository
 import onku.backend.domain.kupick.repository.projection.KupickUrls
+import onku.backend.domain.kupick.repository.projection.KupickWithProfile
 import onku.backend.domain.member.Member
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
@@ -13,7 +14,7 @@ import java.time.LocalDateTime
 
 @Service
 class KupickService(
-    private val kupickRepository: KupickRepository
+    private val kupickRepository: KupickRepository,
 ) {
     @Transactional
     fun submitApplication(member: Member, applicationUrl : String) {
@@ -45,6 +46,15 @@ class KupickService(
         val monthObject = TimeRangeUtil.getCurrentMonthRange()
         return kupickRepository.findUrlsForMemberInMonth(
             member,
+            monthObject.startOfMonth,
+            monthObject.startOfNextMonth
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun findAllAsShowUpdateResponse(year : Int, month : Int): List<KupickWithProfile> {
+        val monthObject = TimeRangeUtil.monthRange(year, month)
+        return kupickRepository.findAllWithProfile(
             monthObject.startOfMonth,
             monthObject.startOfNextMonth
         )

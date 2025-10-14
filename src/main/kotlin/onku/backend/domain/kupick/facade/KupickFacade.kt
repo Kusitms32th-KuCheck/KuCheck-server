@@ -1,5 +1,6 @@
 package onku.backend.domain.kupick.facade
 
+import onku.backend.domain.kupick.dto.ShowUpdateResponseDto
 import onku.backend.domain.kupick.dto.ViewMyKupickResponseDto
 import onku.backend.domain.kupick.service.KupickService
 import onku.backend.domain.member.Member
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Component
 @Component
 class KupickFacade(
     private val s3Service: S3Service,
-    private val kupickService: KupickService
+    private val kupickService: KupickService,
 ) {
     fun submitApplication(member: Member, fileName: String): GetPreSignedUrlDto {
         val signedUrlDto = s3Service.getPostS3Url(member.id!!, fileName, FolderName.KUPICK_APPLICATION.name)
@@ -41,5 +42,32 @@ class KupickFacade(
             s3GetViewImageUrl,
             urls?.getViewDate()
         )
+    }
+
+    fun showUpdate(year : Int, month : Int): List<ShowUpdateResponseDto> {
+        val profiles = kupickService.findAllAsShowUpdateResponse(year, month)
+        return profiles.map { p ->
+            val memberId = p.memberProfile.memberId!!              // presign에 사용
+            val profile = p.memberProfile         // MemberProfile
+
+            val applicationUrl: String? =
+                p.kupick.applicationImageUrl
+                    .takeIf { it.isNotBlank() }
+                    ?.let { key -> s3Service.getGetS3Url(memberId, key).preSignedUrl }
+            val viewUrl: String? =
+                p.kupick.viewImageUrl
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { key -> s3Service.getGetS3Url(memberId, key).preSignedUrl }
+
+            ShowUpdateResponseDto(
+                name = profile.name,
+                part = profile.part,
+                kupickId = p.kupick.id,
+                submitDate = p.kupick.submitDate,
+                applicationUrl = applicationUrl,
+                viewUrl = viewUrl,
+                approval = p.kupick.approval
+            )
+        }
     }
 }
