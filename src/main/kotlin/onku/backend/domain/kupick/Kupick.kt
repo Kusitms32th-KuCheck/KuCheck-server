@@ -62,4 +62,8 @@ class Kupick(
         this.applicationDate = newDate
         this.submitDate = newDate
     }
+
+    fun updateApproval(approval: Boolean) {
+        this.approval = approval
+    }
 }

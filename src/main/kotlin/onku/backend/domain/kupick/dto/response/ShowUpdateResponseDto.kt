@@ -1,4 +1,4 @@
-package onku.backend.domain.kupick.dto
+package onku.backend.domain.kupick.dto.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 import onku.backend.domain.kupick.Kupick

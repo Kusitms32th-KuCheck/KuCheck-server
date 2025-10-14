@@ -2,7 +2,7 @@ package onku.backend.domain.kupick.controller.user
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import onku.backend.domain.kupick.dto.ViewMyKupickResponseDto
+import onku.backend.domain.kupick.dto.response.ViewMyKupickResponseDto
 import onku.backend.domain.kupick.facade.KupickFacade
 import onku.backend.domain.member.Member
 import onku.backend.global.annotation.CurrentMember

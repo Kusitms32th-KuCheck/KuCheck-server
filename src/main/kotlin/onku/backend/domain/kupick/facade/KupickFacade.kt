@@ -1,7 +1,8 @@
 package onku.backend.domain.kupick.facade
 
-import onku.backend.domain.kupick.dto.ShowUpdateResponseDto
-import onku.backend.domain.kupick.dto.ViewMyKupickResponseDto
+import onku.backend.domain.kupick.dto.request.KupickApprovalRequest
+import onku.backend.domain.kupick.dto.response.ShowUpdateResponseDto
+import onku.backend.domain.kupick.dto.response.ViewMyKupickResponseDto
 import onku.backend.domain.kupick.service.KupickService
 import onku.backend.domain.member.Member
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
@@ -69,5 +70,10 @@ class KupickFacade(
                 approval = p.kupick.approval
             )
         }
+    }
+
+    fun decideApproval(kupickApprovalRequest: KupickApprovalRequest): Boolean {
+        kupickService.decideApproval(kupickApprovalRequest.kupickId, kupickApprovalRequest.approval)
+        return true
     }
 }

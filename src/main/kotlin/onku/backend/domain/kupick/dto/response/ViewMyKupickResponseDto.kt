@@ -1,4 +1,4 @@
-package onku.backend.domain.kupick.dto
+package onku.backend.domain.kupick.dto.response
 
 import java.time.LocalDateTime
 

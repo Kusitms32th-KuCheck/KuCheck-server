@@ -8,6 +8,7 @@ import onku.backend.domain.member.Member
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
 import onku.backend.global.time.TimeRangeUtil
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -58,5 +59,12 @@ class KupickService(
             monthObject.startOfMonth,
             monthObject.startOfNextMonth
         )
+    }
+
+    @Transactional
+    fun decideApproval(kupickId: Long, approval: Boolean) {
+        val kupick = kupickRepository.findByIdOrNull(kupickId)
+            ?: throw CustomException(ErrorCode.KUPICK_NOT_FOUND)
+        kupick.updateApproval(approval)
     }
 }
