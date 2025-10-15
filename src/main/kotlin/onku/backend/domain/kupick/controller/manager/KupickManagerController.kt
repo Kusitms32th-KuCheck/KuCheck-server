@@ -5,12 +5,10 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import onku.backend.domain.kupick.dto.request.KupickApprovalRequest
 import onku.backend.domain.kupick.dto.response.ShowUpdateResponseDto
 import onku.backend.domain.kupick.facade.KupickFacade
+import onku.backend.global.page.PageResponse
 import onku.backend.global.response.SuccessResponse
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/kupick/manage")
@@ -25,9 +23,12 @@ class KupickManagerController(
     )
     fun submitApplication(
         year : Int,
-        month : Int
-    ) : ResponseEntity<SuccessResponse<List<ShowUpdateResponseDto>>> {
-        return ResponseEntity.ok(SuccessResponse.ok(kupickFacade.showUpdate(year, month)))
+        month : Int,
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int
+    ) : ResponseEntity<SuccessResponse<PageResponse<ShowUpdateResponseDto>>> {
+        val safePage = if (page < 1) 0 else page - 1
+        return ResponseEntity.ok(SuccessResponse.ok(kupickFacade.showUpdate(year, month, safePage, size)))
     }
 
     @PostMapping("/approval")

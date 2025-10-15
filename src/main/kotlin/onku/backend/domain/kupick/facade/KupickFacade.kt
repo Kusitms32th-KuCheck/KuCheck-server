@@ -5,9 +5,11 @@ import onku.backend.domain.kupick.dto.response.ShowUpdateResponseDto
 import onku.backend.domain.kupick.dto.response.ViewMyKupickResponseDto
 import onku.backend.domain.kupick.service.KupickService
 import onku.backend.domain.member.Member
+import onku.backend.global.page.PageResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import onku.backend.global.s3.enums.FolderName
 import onku.backend.global.s3.service.S3Service
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 
 @Component
@@ -45,11 +47,12 @@ class KupickFacade(
         )
     }
 
-    fun showUpdate(year : Int, month : Int): List<ShowUpdateResponseDto> {
-        val profiles = kupickService.findAllAsShowUpdateResponse(year, month)
-        return profiles.map { p ->
-            val memberId = p.memberProfile.memberId!!              // presign에 사용
-            val profile = p.memberProfile         // MemberProfile
+    fun showUpdate(year : Int, month : Int, page: Int, size: Int): PageResponse<ShowUpdateResponseDto> {
+        val pageRequest = PageRequest.of(page, size)
+        val profiles = kupickService.findAllAsShowUpdateResponse(year, month, pageRequest)
+        val dtoPage = profiles.map { p ->
+            val memberId = p.memberProfile.memberId!!
+            val profile = p.memberProfile
 
             val applicationUrl: String? =
                 p.kupick.applicationImageUrl
@@ -70,6 +73,7 @@ class KupickFacade(
                 approval = p.kupick.approval
             )
         }
+        return PageResponse.from(dtoPage)
     }
 
     fun decideApproval(kupickApprovalRequest: KupickApprovalRequest): Boolean {

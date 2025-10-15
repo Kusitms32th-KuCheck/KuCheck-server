@@ -4,6 +4,8 @@ import onku.backend.domain.kupick.Kupick
 import onku.backend.domain.kupick.repository.projection.KupickUrls
 import onku.backend.domain.kupick.repository.projection.KupickWithProfile
 import onku.backend.domain.member.Member
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -53,6 +55,7 @@ interface KupickRepository : JpaRepository<Kupick, Long> {
     """)
     fun findAllWithProfile(
         @Param("start") start: LocalDateTime,
-        @Param("end") end: LocalDateTime
-    ): List<KupickWithProfile>
+        @Param("end") end: LocalDateTime,
+        pageable: Pageable
+    ): Page<KupickWithProfile>
 }
