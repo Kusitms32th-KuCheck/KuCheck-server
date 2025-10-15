@@ -8,5 +8,6 @@ import org.springframework.http.ResponseEntity
 interface AuthService {
     fun kakaoLogin(dto: KakaoLoginRequest): ResponseEntity<SuccessResponse<AuthLoginResult>>
     fun reissueAccessToken(refreshToken: String): ResponseEntity<SuccessResponse<String>>
+    fun logout(refreshToken: String): ResponseEntity<SuccessResponse<String>>
 }
 

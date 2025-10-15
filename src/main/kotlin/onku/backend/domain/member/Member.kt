@@ -24,7 +24,7 @@ class Member(
     val socialType: SocialType,
 
     @Column(name = "social_id", nullable = false, length = 100)
-    val socialId: String,
+    val socialId: Long,
 
     @Column(name = "has_info", nullable = false)
     var hasInfo: Boolean = false,

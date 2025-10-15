@@ -36,7 +36,7 @@ class AuthServiceImpl(
         val token = kakaoService.getAccessToken(dto.code)
         val profile = kakaoService.getProfile(token.accessToken)
 
-        val socialId = profile.id.toString()
+        val socialId = profile.id
         val email = profile.kakaoAccount?.email
             ?: throw CustomException(AuthErrorCode.OAUTH_EMAIL_SCOPE_REQUIRED)
 
@@ -124,5 +124,16 @@ class AuthServiceImpl(
             .status(HttpStatus.OK)
             .headers(headers)
             .body(SuccessResponse.ok("Access Token이 재발급되었습니다."))
+    }
+
+    @Transactional
+    override fun logout(refreshToken: String): ResponseEntity<SuccessResponse<String>> {
+        val email = runCatching { jwtUtil.getEmail(refreshToken) }.getOrNull()
+        if (email != null) {
+            refreshTokenCacheUtil.deleteRefreshToken(email)
+        }
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(SuccessResponse.ok("로그아웃 되었습니다."))
     }
 }

@@ -14,7 +14,8 @@ import org.springframework.web.client.RestClient
 @Service
 class KakaoService(
     @Value("\${oauth.kakao.client-id}") private val clientId: String,
-    @Value("\${oauth.kakao.redirect-uri}") private val redirectUri: String
+    @Value("\${oauth.kakao.redirect-uri}") private val redirectUri: String,
+    @Value("\${oauth.kakao.admin-key}") private val adminKey: String
 ) {
     private val client = RestClient.create()
 
@@ -49,6 +50,25 @@ class KakaoService(
                 .toEntity(KakaoProfile::class.java)
 
             res.body ?: throw CustomException(AuthErrorCode.KAKAO_PROFILE_EMPTY_RESPONSE)
+        } catch (e: Exception) {
+            throw CustomException(AuthErrorCode.KAKAO_API_COMMUNICATION_ERROR)
+        }
+    }
+
+    fun adminUnlink(userId: Long) {
+        val form: MultiValueMap<String, String> = LinkedMultiValueMap<String, String>().apply {
+            add("target_id_type", "user_id")
+            add("target_id", userId.toString())
+        }
+
+        try {
+            client.post()
+                .uri("https://kapi.kakao.com/v1/user/unlink")
+                .header("Authorization", "KakaoAK $adminKey")
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .body(form)
+                .retrieve()
+                .toBodilessEntity()
         } catch (e: Exception) {
             throw CustomException(AuthErrorCode.KAKAO_API_COMMUNICATION_ERROR)
         }
