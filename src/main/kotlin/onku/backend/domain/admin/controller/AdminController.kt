@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 
 @Tag(name = "관리자 API", description = "관리자 권한용 API")
@@ -23,7 +22,6 @@ class AdminController(
         description = "PENDING 상태의 회원만 승인/거절할 수 있습니다. (PENDING → APPROVED/REJECTED)"
     )
     @PatchMapping("/{memberId}/approval")
-    @PreAuthorize("hasRole('ADMIN')")
     fun updateApproval(
         @PathVariable memberId: Long,
         @RequestBody @Valid body: UpdateApprovalRequest

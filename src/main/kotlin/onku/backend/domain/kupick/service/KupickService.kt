@@ -3,17 +3,21 @@ package onku.backend.domain.kupick.service
 import onku.backend.domain.kupick.Kupick
 import onku.backend.domain.kupick.repository.KupickRepository
 import onku.backend.domain.kupick.repository.projection.KupickUrls
+import onku.backend.domain.kupick.repository.projection.KupickWithProfile
 import onku.backend.domain.member.Member
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
 import onku.backend.global.time.TimeRangeUtil
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
 class KupickService(
-    private val kupickRepository: KupickRepository
+    private val kupickRepository: KupickRepository,
 ) {
     @Transactional
     fun submitApplication(member: Member, applicationUrl : String) {
@@ -48,5 +52,22 @@ class KupickService(
             monthObject.startOfMonth,
             monthObject.startOfNextMonth
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun findAllAsShowUpdateResponse(year : Int, month : Int, pageRequest: PageRequest): Page<KupickWithProfile> {
+        val monthObject = TimeRangeUtil.monthRange(year, month)
+        return kupickRepository.findAllWithProfile(
+            monthObject.startOfMonth,
+            monthObject.startOfNextMonth,
+            pageRequest
+        )
+    }
+
+    @Transactional
+    fun decideApproval(kupickId: Long, approval: Boolean) {
+        val kupick = kupickRepository.findByIdOrNull(kupickId)
+            ?: throw CustomException(ErrorCode.KUPICK_NOT_FOUND)
+        kupick.updateApproval(approval)
     }
 }
