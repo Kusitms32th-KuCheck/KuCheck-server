@@ -17,5 +17,6 @@ enum class ErrorCode(
     INVALID_FILE_EXTENSION("S3001", "올바르지 않은 파일 확장자 입니다.", HttpStatus.BAD_REQUEST),
     KUPICK_APPLICATION_FIRST("kupick001", "큐픽 신청부터 진행해주세요", HttpStatus.BAD_REQUEST),
     KUPICK_NOT_FOUND("kupick002", "해당 큐픽 객체를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    FCM_ACCESS_TOKEN_FAIL("alarm001", "FCM 액세스 토큰 발급 중에 오류가 발생했습니다.", HttpStatus.BAD_REQUEST);
+    FCM_ACCESS_TOKEN_FAIL("alarm001", "FCM 액세스 토큰 발급 중에 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    SESSION_NOT_FOUND("session001", "해당 세션이 존재하지 않습니다.", HttpStatus.NOT_FOUND);
 }
