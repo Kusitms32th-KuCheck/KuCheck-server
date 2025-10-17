@@ -5,7 +5,6 @@ import onku.backend.domain.attendance.dto.*
 import onku.backend.domain.attendance.enums.AttendanceStatus
 import onku.backend.domain.attendance.repository.AttendanceRepository
 import onku.backend.domain.member.Member
-import onku.backend.domain.member.enums.Role
 import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
