@@ -3,16 +3,15 @@ package onku.backend.domain.absence.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import onku.backend.domain.absence.dto.request.SubmitAbsenceReportRequest
+import onku.backend.domain.absence.dto.response.GetMyAbsenceReportResponse
 import onku.backend.domain.absence.facade.AbsenceFacade
 import onku.backend.domain.member.Member
 import onku.backend.global.annotation.CurrentMember
+import onku.backend.global.page.PageResponse
 import onku.backend.global.response.SuccessResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/absence")
@@ -22,8 +21,17 @@ class AbsenceController(
 ) {
     @PostMapping("")
     @Operation(summary = "불참 사유서 제출", description = "불참 사유서 제출하는 API 입니다")
-    fun submitAttendanceReport(@CurrentMember member: Member,
-                               @RequestBody submitAbsenceReportRequest: SubmitAbsenceReportRequest): ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
+    fun submitAbsenceReport(@CurrentMember member: Member,
+                            @RequestBody submitAbsenceReportRequest: SubmitAbsenceReportRequest): ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
         return ResponseEntity.ok(SuccessResponse.ok(absenceFacade.submitAbsenceReport(member, submitAbsenceReportRequest)))
+    }
+
+    @GetMapping("")
+    @Operation(summary = "불참 사유서 제출내역 조회", description = "내가 낸 불참 사유서 제출내역을 조회합니다.")
+    fun getMyAbsenceReport(@CurrentMember member: Member,
+                           @RequestParam(defaultValue = "1") page: Int,
+                           @RequestParam(defaultValue = "10") size: Int) : ResponseEntity<SuccessResponse<PageResponse<GetMyAbsenceReportResponse>>> {
+        val safePage = if (page < 1) 0 else page - 1
+        return ResponseEntity.ok(SuccessResponse.ok(absenceFacade.getMyAbsenceReport(member, safePage, size)))
     }
 }
