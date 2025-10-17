@@ -24,10 +24,7 @@ interface SessionRepository : CrudRepository<Session, Long> {
     fun findOpenSession(@Param("now") now: LocalDateTime): Session?
 
     @Query("""
-        SELECT s.id AS id,
-               s.title AS title,
-               s.week AS week,
-               s.startTime AS startTime
+        SELECT s
         FROM Session s
         WHERE s.startTime >= :now
     """)
