@@ -1,7 +1,6 @@
 package onku.backend.domain.session.repository
 
 import onku.backend.domain.session.Session
-import onku.backend.domain.session.repository.projection.SessionAboutAbsenceProjection
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Query
@@ -32,5 +31,5 @@ interface SessionRepository : CrudRepository<Session, Long> {
         FROM Session s
         WHERE s.startTime >= :now
     """)
-    fun findUpcomingSessions(@Param("now") now: LocalDateTime, pageable: Pageable): Page<SessionAboutAbsenceProjection>
+    fun findUpcomingSessions(@Param("now") now: LocalDateTime, pageable: Pageable): Page<Session>
 }

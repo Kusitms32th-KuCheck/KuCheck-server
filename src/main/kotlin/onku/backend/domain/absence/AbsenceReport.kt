@@ -7,8 +7,18 @@ import onku.backend.domain.absence.enums.AbsenceType
 import onku.backend.domain.member.Member
 import onku.backend.domain.session.Session
 import onku.backend.global.entity.BaseEntity
+import java.time.LocalDateTime
 
 @Entity
+@Table(
+    name = "absence_report",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "uk_absence_member_session",
+            columnNames = ["member_id", "session_id"]
+        )
+    ]
+)
 class AbsenceReport(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,21 +27,21 @@ class AbsenceReport(
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id")
-    val session : Session,
+    var session : Session,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     val member : Member,
 
     @Column(name = "url")
-    val url : String,
+    var url : String,
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    val status : AbsenceType,
+    var status : AbsenceType,
 
     @Column(name = "reason")
-    val reason : String,
+    var reason : String,
 
     @Column(name = "approval")
     @Enumerated(EnumType.STRING)
@@ -53,5 +63,17 @@ class AbsenceReport(
                 approval = AbsenceReportApproval.SUBMIT
             )
         }
+    }
+
+    fun updateAbsenceReport(
+        submitAbsenceReportRequest: SubmitAbsenceReportRequest,
+        fileKey: String,
+        session: Session
+    ) {
+        this.session = session
+        this.reason = submitAbsenceReportRequest.reason
+        this.url = fileKey
+        this.status = submitAbsenceReportRequest.absenceType
+        this.updatedAt = LocalDateTime.now()
     }
 }
