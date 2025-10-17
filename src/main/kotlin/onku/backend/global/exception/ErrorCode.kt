@@ -18,5 +18,8 @@ enum class ErrorCode(
     KUPICK_APPLICATION_FIRST("kupick001", "큐픽 신청부터 진행해주세요", HttpStatus.BAD_REQUEST),
     KUPICK_NOT_FOUND("kupick002", "해당 큐픽 객체를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     FCM_ACCESS_TOKEN_FAIL("alarm001", "FCM 액세스 토큰 발급 중에 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
-    SESSION_NOT_FOUND("session001", "해당 세션이 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+    SESSION_NOT_FOUND("session001", "해당 세션이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    SESSION_PAST("session002", "이미 지난 세션입니다.", HttpStatus.BAD_REQUEST),
+    SESSION_IMMINENT("session003", "불참제출서 제출은 목요일까지입니다.", HttpStatus.BAD_REQUEST),
+    SQL_INTEGRITY_VIOLATION("sql001", "무결성 제약조건을 위반하였습니다.", HttpStatus.BAD_REQUEST);
 }
