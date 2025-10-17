@@ -5,22 +5,31 @@ import onku.backend.domain.absence.dto.request.SubmitAbsenceReportRequest
 import onku.backend.domain.absence.repository.AbsenceReportRepository
 import onku.backend.domain.member.Member
 import onku.backend.domain.session.Session
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class AbsenceService(
-    private val absenceReportRepository: AbsenceReportRepository
+    private val absenceReportRepository: AbsenceReportRepository,
+
 ) {
     @Transactional
     fun submitAbsenceReport(member: Member, submitAbsenceReportRequest: SubmitAbsenceReportRequest, fileKey : String, session : Session) {
-        absenceReportRepository.save(
+        val existingReport = submitAbsenceReportRequest.absenceReportId?.let {
+            absenceReportRepository.findByIdOrNull(it)
+        }
+        val report = if (existingReport != null) {
+            existingReport.updateAbsenceReport(submitAbsenceReportRequest, fileKey, session)
+            existingReport
+        } else {
             AbsenceReport.createAbsenceReport(
                 member = member,
                 session = session,
                 submitAbsenceReportRequest,
                 fileKey
             )
-        )
+        }
+        absenceReportRepository.save(report)
     }
 }

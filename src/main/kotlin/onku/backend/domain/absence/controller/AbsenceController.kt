@@ -10,6 +10,7 @@ import onku.backend.global.response.SuccessResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -21,7 +22,8 @@ class AbsenceController(
 ) {
     @PostMapping("")
     @Operation(summary = "불참 사유서 제출", description = "불참 사유서 제출하는 API 입니다")
-    fun submitAttendanceReport(@CurrentMember member: Member, submitAbsenceReportRequest: SubmitAbsenceReportRequest): ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
+    fun submitAttendanceReport(@CurrentMember member: Member,
+                               @RequestBody submitAbsenceReportRequest: SubmitAbsenceReportRequest): ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
         return ResponseEntity.ok(SuccessResponse.ok(absenceFacade.submitAbsenceReport(member, submitAbsenceReportRequest)))
     }
 }
