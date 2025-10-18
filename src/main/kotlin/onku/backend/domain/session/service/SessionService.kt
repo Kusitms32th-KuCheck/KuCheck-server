@@ -1,6 +1,6 @@
 package onku.backend.domain.session.service
 
-import onku.backend.domain.absence.validator.AbsenceValidator
+import onku.backend.domain.session.validator.SessionValidator
 import onku.backend.domain.session.Session
 import onku.backend.domain.session.dto.SessionAboutAbsenceResponse
 import onku.backend.domain.session.repository.SessionRepository
@@ -18,7 +18,7 @@ import java.time.ZoneId
 @Service
 class SessionService(
     private val sessionRepository: SessionRepository,
-    private val absenceValidator: AbsenceValidator,
+    private val sessionValidator: SessionValidator,
     private val clock: Clock = Clock.system(ZoneId.of("Asia/Seoul"))
 ) {
     @Transactional(readOnly = true)
@@ -28,7 +28,7 @@ class SessionService(
         val sessions = sessionRepository.findUpcomingSessions(now, pageable)
 
         return sessions.map { s ->
-            val active = absenceValidator.isImminentSession(s, now)
+            val active = sessionValidator.isImminentSession(s, now)
             SessionAboutAbsenceResponse(
                 sessionId = s.id,
                 title = s.title,

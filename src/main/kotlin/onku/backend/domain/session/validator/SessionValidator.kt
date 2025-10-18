@@ -1,6 +1,7 @@
-package onku.backend.domain.absence.validator
+package onku.backend.domain.session.validator
 
 import onku.backend.domain.session.Session
+import onku.backend.domain.session.enums.SessionCategory
 import org.springframework.stereotype.Component
 import java.time.DayOfWeek
 import java.time.LocalDateTime
@@ -8,7 +9,7 @@ import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
 
 @Component
-class AbsenceValidator {
+class SessionValidator {
 
     private val zone: ZoneId = ZoneId.of("Asia/Seoul")
 
@@ -26,5 +27,10 @@ class AbsenceValidator {
         val upcomingSaturday = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
         val sessionDate = session.startTime.atZone(zone).toLocalDate()
         return sessionDate == upcomingSaturday
+    }
+
+    /** 휴회 세션인지 여부 */
+    fun isRestSession(session: Session) : Boolean{
+        return (session.category == SessionCategory.REST)
     }
 }

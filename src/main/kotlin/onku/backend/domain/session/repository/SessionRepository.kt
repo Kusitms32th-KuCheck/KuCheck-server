@@ -1,6 +1,7 @@
 package onku.backend.domain.session.repository
 
 import onku.backend.domain.session.Session
+import onku.backend.domain.session.enums.SessionCategory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Query
@@ -26,7 +27,11 @@ interface SessionRepository : CrudRepository<Session, Long> {
     @Query("""
         SELECT s
         FROM Session s
-        WHERE s.startTime >= :now
+        WHERE s.startTime >= :now AND s.category <> :restCategory
     """)
-    fun findUpcomingSessions(@Param("now") now: LocalDateTime, pageable: Pageable): Page<Session>
+    fun findUpcomingSessions(
+        @Param("now") now: LocalDateTime,
+        pageable: Pageable,
+        @Param("restCategory") restCategory: SessionCategory = SessionCategory.REST
+    ): Page<Session>
 }
