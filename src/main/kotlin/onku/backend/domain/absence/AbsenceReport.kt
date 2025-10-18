@@ -46,6 +46,12 @@ class AbsenceReport(
     @Column(name = "approval")
     @Enumerated(EnumType.STRING)
     val approval : AbsenceReportApproval,
+
+    @Column(name = "lateDateTime")
+    var lateDateTime: LocalDateTime?,
+
+    @Column(name = "leaveDateTime")
+    var leaveDateTime: LocalDateTime?
 ) : BaseEntity() {
     companion object {
         fun createAbsenceReport(
@@ -60,7 +66,9 @@ class AbsenceReport(
                 url = fileKey,
                 status = submitAbsenceReportRequest.absenceType,
                 reason = submitAbsenceReportRequest.reason,
-                approval = AbsenceReportApproval.SUBMIT
+                approval = AbsenceReportApproval.SUBMIT,
+                leaveDateTime = submitAbsenceReportRequest.leaveDateTime,
+                lateDateTime = submitAbsenceReportRequest.lateDateTime
             )
         }
     }
@@ -75,5 +83,7 @@ class AbsenceReport(
         this.url = fileKey
         this.status = submitAbsenceReportRequest.absenceType
         this.updatedAt = LocalDateTime.now()
+        this.leaveDateTime = submitAbsenceReportRequest.leaveDateTime
+        this.lateDateTime = submitAbsenceReportRequest.lateDateTime
     }
 }
