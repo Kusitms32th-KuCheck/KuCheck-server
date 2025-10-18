@@ -3,7 +3,7 @@ package onku.backend.domain.absence.facade
 import onku.backend.domain.absence.dto.request.SubmitAbsenceReportRequest
 import onku.backend.domain.absence.dto.response.GetMyAbsenceReportResponse
 import onku.backend.domain.absence.service.AbsenceService
-import onku.backend.domain.absence.validator.AbsenceValidator
+import onku.backend.domain.session.validator.SessionValidator
 import onku.backend.domain.member.Member
 import onku.backend.domain.session.service.SessionService
 import onku.backend.global.exception.CustomException
@@ -20,16 +20,20 @@ class AbsenceFacade(
     private val absenceService : AbsenceService,
     private val s3Service: S3Service,
     private val sessionService: SessionService,
-    private val absenceValidator: AbsenceValidator
+    private val sessionValidator: SessionValidator
 ) {
     fun submitAbsenceReport(member: Member, submitAbsenceReportRequest: SubmitAbsenceReportRequest): GetPreSignedUrlDto {
         val session = sessionService.getById(submitAbsenceReportRequest.sessionId)
+        //세션 검증
         when {
-            absenceValidator.isPastSession(session) -> {
+            sessionValidator.isPastSession(session) -> {
                 throw CustomException(ErrorCode.SESSION_PAST)
             }
-            absenceValidator.isImminentSession(session) -> {
+            sessionValidator.isImminentSession(session) -> {
                 throw CustomException(ErrorCode.SESSION_IMMINENT)
+            }
+            sessionValidator.isRestSession(session) -> {
+                throw CustomException(ErrorCode.INVALID_SESSION)
             }
         }
         val preSignedUrlDto = s3Service.getPostS3Url(member.id!!, submitAbsenceReportRequest.fileName, FolderName.ABSENCE.name)

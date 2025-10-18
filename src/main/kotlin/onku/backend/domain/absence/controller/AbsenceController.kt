@@ -2,6 +2,7 @@ package onku.backend.domain.absence.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import onku.backend.domain.absence.dto.request.SubmitAbsenceReportRequest
 import onku.backend.domain.absence.dto.response.GetMyAbsenceReportResponse
 import onku.backend.domain.absence.facade.AbsenceFacade
@@ -22,7 +23,7 @@ class AbsenceController(
     @PostMapping("")
     @Operation(summary = "불참 사유서 제출", description = "불참 사유서 제출하는 API 입니다")
     fun submitAbsenceReport(@CurrentMember member: Member,
-                            @RequestBody submitAbsenceReportRequest: SubmitAbsenceReportRequest): ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
+                            @RequestBody @Valid submitAbsenceReportRequest: SubmitAbsenceReportRequest): ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
         return ResponseEntity.ok(SuccessResponse.ok(absenceFacade.submitAbsenceReport(member, submitAbsenceReportRequest)))
     }
 
