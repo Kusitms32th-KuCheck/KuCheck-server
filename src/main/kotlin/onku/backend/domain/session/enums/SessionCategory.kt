@@ -1,3 +1,3 @@
 package onku.backend.domain.session.enums
 
-enum class SessionCategory { GENERAL, HOLIDAY }
+enum class SessionCategory { GENERAL, HOLIDAY, REST }
