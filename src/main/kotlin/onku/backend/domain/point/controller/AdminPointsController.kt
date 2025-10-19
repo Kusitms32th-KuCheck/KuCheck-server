@@ -2,7 +2,9 @@ package onku.backend.domain.points.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import onku.backend.domain.point.dto.AdminPointsRowDto
+import jakarta.validation.Valid
+import onku.backend.domain.point.dto.*
+import onku.backend.domain.point.service.AdminPointsCommandService
 import onku.backend.domain.points.service.AdminPointsService
 import onku.backend.global.page.PageResponse
 import onku.backend.global.response.SuccessResponse
@@ -16,7 +18,8 @@ import org.springframework.web.bind.annotation.*
     description = "운영진 상벌점 대시보드 조회 API"
 )
 class AdminPointsController(
-    private val adminPointsService: AdminPointsService
+    private val adminPointsService: AdminPointsService,
+    private val commandService: AdminPointsCommandService
 ) {
 
     @GetMapping("/overview")
@@ -32,5 +35,33 @@ class AdminPointsController(
         val year = 2025
         val body = adminPointsService.getAdminOverview(year, safePage, size)
         return ResponseEntity.ok(SuccessResponse.ok(body))
+    }
+
+    @PatchMapping("/study")
+    @Operation(summary = "스터디 점수 수정", description = "memberId와 studyPoints를 받아 수정합니다.")
+    fun updateStudyPoints(@RequestBody @Valid req: UpdateStudyPointsRequest): ResponseEntity<SuccessResponse<Unit>> {
+        commandService.updateStudyPoints(req.memberId!!, req.studyPoints!!)
+        return ResponseEntity.ok(SuccessResponse.ok(Unit))
+    }
+
+    @PatchMapping("/kupporters")
+    @Operation(summary = "큐포터즈 점수 수정", description = "memberId와 kuportersPoints를 받아 수정합니다.")
+    fun updateKupportersPoints(@RequestBody @Valid req: UpdateKupportersPointsRequest): ResponseEntity<SuccessResponse<Unit>> {
+        commandService.updateKupportersPoints(req.memberId!!, req.kuportersPoints!!)
+        return ResponseEntity.ok(SuccessResponse.ok(Unit))
+    }
+
+    @PatchMapping("/memo")
+    @Operation(summary = "메모 수정", description = "memberId와 memo를 받아 수정합니다.")
+    fun updateMemo(@RequestBody @Valid req: UpdateMemoRequest): ResponseEntity<SuccessResponse<Unit>> {
+        commandService.updateMemo(req.memberId!!, req.memo!!)
+        return ResponseEntity.ok(SuccessResponse.ok(Unit))
+    }
+
+    @PatchMapping("/is-tf")
+    @Operation(summary = "TF 여부 수정", description = "memberId와 isTf를 받아 Member의 isTf를 수정합니다.")
+    fun updateIsTf(@RequestBody @Valid req: UpdateIsTfRequest): ResponseEntity<SuccessResponse<Unit>> {
+        commandService.updateIsTf(req.memberId!!, req.isTf!!)
+        return ResponseEntity.ok(SuccessResponse.ok(Unit))
     }
 }
