@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface ManualPointRecordRepository : JpaRepository<ManualPoint, Long> {
     fun findByMemberIdIn(memberIds: Collection<Long>): List<ManualPoint>
+    fun findByMemberId(memberId: Long): ManualPoint?
 }
