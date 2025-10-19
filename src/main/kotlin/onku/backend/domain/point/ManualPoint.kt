@@ -4,7 +4,7 @@ import jakarta.persistence.*
 import onku.backend.domain.member.Member
 
 @Entity
-class ManualPointRecord(
+class ManualPoint(
     @Id
     @Column(name = "member_id")
     val memberId: Long? = null,
