@@ -31,7 +31,13 @@ class Member(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "approval", nullable = false, length = 20)
-    var approval: ApprovalStatus = ApprovalStatus.PENDING
+    var approval: ApprovalStatus = ApprovalStatus.PENDING,
+
+    @Column(name = "is_tf", nullable = false)
+    var isTf: Boolean = false,
+
+    @Column(name = "is_staff", nullable = false)
+    var isStaff: Boolean = false
 ) : BaseEntity() {
     fun approve() {
         this.approval = ApprovalStatus.APPROVED
