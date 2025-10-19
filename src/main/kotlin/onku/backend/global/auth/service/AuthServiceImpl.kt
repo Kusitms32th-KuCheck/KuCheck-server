@@ -66,7 +66,7 @@ class AuthServiceImpl(
                             AuthLoginResult(
                                 status = ApprovalStatus.APPROVED,
                                 memberId = member.id,
-                                role = member.role.name
+                                role = member.role
                             )
                         )
                     )
