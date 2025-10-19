@@ -119,4 +119,17 @@ class ExceptionAdvice {
         val body = ErrorResponse.of<Any>(code.errorCode, code.message)
         return ResponseEntity(body, code.status)
     }
+
+    @ExceptionHandler(
+        org.springframework.dao.DataIntegrityViolationException::class,
+        org.springframework.dao.DuplicateKeyException::class,
+        org.hibernate.exception.ConstraintViolationException::class,
+        java.sql.SQLIntegrityConstraintViolationException::class
+    )
+    fun handleIntegrityViolation(e: Exception): ResponseEntity<ErrorResponse<*>> {
+        val code = ErrorCode.SQL_INTEGRITY_VIOLATION
+        val body = ErrorResponse.of<Any>(code.errorCode, code.message)
+        return ResponseEntity(body, code.status)
+    }
+
 }
