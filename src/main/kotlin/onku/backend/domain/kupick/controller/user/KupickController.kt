@@ -10,6 +10,7 @@ import onku.backend.global.response.SuccessResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 class KupickController(
     private val kupickFacade: KupickFacade
 ) {
-    @GetMapping("/application")
+    @PostMapping("/application")
     @Operation(
         summary = "큐픽 신청 서류 제출",
         description = "큐픽 신청용 서류 제출 signedUrl 반환"
@@ -30,7 +31,7 @@ class KupickController(
         return ResponseEntity.ok(SuccessResponse.ok(kupickFacade.submitApplication(member, fileName)))
     }
 
-    @GetMapping("/view")
+    @PostMapping("/view")
     @Operation(
         summary = "큐픽 시청 서류 제출",
         description = "큐픽 시청 증빙 서류 제출 signedUrl 반환"
