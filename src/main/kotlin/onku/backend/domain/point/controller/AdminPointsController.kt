@@ -1,11 +1,11 @@
-package onku.backend.domain.points.controller
+package onku.backend.domain.point.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import onku.backend.domain.point.dto.*
 import onku.backend.domain.point.service.AdminPointsCommandService
-import onku.backend.domain.points.service.AdminPointsService
+import onku.backend.domain.point.service.AdminPointsService
 import onku.backend.global.page.PageResponse
 import onku.backend.global.response.SuccessResponse
 import org.springframework.http.ResponseEntity

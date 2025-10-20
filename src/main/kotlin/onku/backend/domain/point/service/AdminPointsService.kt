@@ -1,4 +1,4 @@
-package onku.backend.domain.points.service
+package onku.backend.domain.point.service
 
 import onku.backend.domain.attendance.repository.AttendanceRepository
 import onku.backend.domain.kupick.repository.KupickRepository
