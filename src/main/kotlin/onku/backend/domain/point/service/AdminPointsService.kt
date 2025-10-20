@@ -4,13 +4,14 @@ import onku.backend.domain.attendance.repository.AttendanceRepository
 import onku.backend.domain.kupick.repository.KupickRepository
 import onku.backend.domain.member.MemberProfile
 import onku.backend.domain.member.repository.MemberProfileRepository
-import onku.backend.domain.point.dto.AdminPointsRowDto
+import onku.backend.domain.point.dto.*
 import onku.backend.domain.point.repository.ManualPointRepository
+import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.page.PageResponse
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
+import java.time.*
 import kotlin.math.max
 
 @Service
@@ -18,7 +19,9 @@ class AdminPointsService(
     private val memberProfileRepository: MemberProfileRepository,
     private val attendanceRepository: AttendanceRepository,
     private val kupickRepository: KupickRepository,
-    private val manualPointRecordRepository: ManualPointRepository
+    private val manualPointRecordRepository: ManualPointRepository,
+    private val sessionRepository: SessionRepository,
+    private val clock: Clock
 ) {
 
     @Transactional(readOnly = true)
@@ -37,7 +40,6 @@ class AdminPointsService(
         val startOfYear: LocalDateTime = LocalDateTime.of(year, 1, 1, 0, 0, 0)
         val startOfNextYear: LocalDateTime = LocalDateTime.of(year + 1, 1, 1, 0, 0, 0)
 
-        // 출결 집계 (8~12월만)
         val attendances = attendanceRepository.findByMemberIdInAndAttendanceTimeBetween(
             memberIds, startOfYear, startOfNextYear
         )
@@ -51,7 +53,6 @@ class AdminPointsService(
             }
         }
 
-        // 큐픽 참여 (8~12월만)
         val kupickRows = kupickRepository.findMemberMonthParticipation(memberIds, startOfYear, startOfNextYear)
         val kupickMonthMapByMember: MutableMap<Long, MutableMap<Int, Boolean>> = mutableMapOf()
         memberIds.forEach { id -> kupickMonthMapByMember[id] = defaultMonthMapBool() }
@@ -114,6 +115,121 @@ class AdminPointsService(
             studyPoints = 0,
             kuportersPoints = 0,
             memo = null
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getMonthlyPaged(
+        year: Int,
+        month: Int,
+        page: Int,
+        size: Int
+    ): MonthlyAttendancePageResponse {
+        require(month in 8..12) { "month must be 8..12" }
+
+        val zone: ZoneId = clock.zone
+        val startZdt = ZonedDateTime.of(LocalDate.of(year, month, 1), LocalTime.MIN, zone)
+        val endZdt = startZdt.plusMonths(1)
+        val start = startZdt.toLocalDateTime()
+        val end = endZdt.toLocalDateTime()
+
+        val sessionDates: List<LocalDate> = sessionRepository.findStartTimesBetween(start, end)
+            .map { it.toLocalDate() }
+            .distinct()
+            .sorted()
+        val sessionDays: List<Int> = sessionDates.map { it.dayOfMonth }
+
+        val pageable = PageRequest.of(page, size)
+        val memberPage = memberProfileRepository.findAllByOrderByPartAscNameAsc(pageable)
+
+        val pageMemberIds = memberPage.content.mapNotNull { it.memberId }
+        if (pageMemberIds.isEmpty()) {
+            return MonthlyAttendancePageResponse(
+                year = year,
+                month = month,
+                sessionDates = sessionDays,
+                members = PageResponse.from(
+                    memberPage.map { p ->
+                        MemberMonthlyAttendanceDto(
+                            memberId = p.memberId!!,
+                            name = p.name ?: "Unknown",
+                            records = emptyList()
+                        )
+                    }
+                )
+            )
+        }
+
+        val attendances = attendanceRepository
+            .findByMemberIdInAndAttendanceTimeBetween(pageMemberIds, start, end)
+
+        data class Row(
+            val memberId: Long,
+            val date: LocalDate,
+            val attendanceId: Long?,
+            val status: onku.backend.domain.attendance.enums.AttendanceStatus?,
+            val point: Int?
+        )
+
+        val rows: List<Row> = attendances.map { a ->
+            Row(
+                memberId = a.memberId,
+                date = a.attendanceTime.toLocalDate(),
+                attendanceId = a.id,
+                status = a.status,
+                point = a.status.points
+            )
+        }
+
+        val nameById = memberPage.content.associate { it.memberId!! to (it.name ?: "Unknown") }
+        val byMember = rows.groupBy { it.memberId }
+
+        val memberDtos = memberPage.content.map { profile ->
+            val mid = profile.memberId!!
+            val base = byMember[mid]
+                ?.sortedBy { it.date }
+                ?.map {
+                    AttendanceRecordDto(
+                        date = it.date,
+                        attendanceId = it.attendanceId,
+                        status = it.status,
+                        point = it.point
+                    )
+                }
+                ?.toMutableList()
+                ?: mutableListOf()
+
+            if (sessionDates.isNotEmpty()) {
+                val recorded = base.map { it.date }.toSet()
+                sessionDates.filter { it !in recorded }.forEach { d ->
+                    base.add(
+                        AttendanceRecordDto(
+                            date = d,
+                            attendanceId = null,
+                            status = null,
+                            point = null
+                        )
+                    )
+                }
+                base.sortBy { it.date }
+            }
+
+            MemberMonthlyAttendanceDto(
+                memberId = mid,
+                name = nameById[mid] ?: "Unknown",
+                records = base
+            )
+        }
+
+        val dtoPage = memberPage.map { p ->
+            memberDtos.first { it.memberId == p.memberId }
+        }
+
+        return MonthlyAttendancePageResponse(
+            year = year,
+            month = month,
+            sessionDates = sessionDays,
+            members = PageResponse.from(dtoPage)
         )
     }
 }
