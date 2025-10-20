@@ -65,6 +65,19 @@ class AdminPointsController(
         return ResponseEntity.ok(SuccessResponse.ok(Unit))
     }
 
+    @PatchMapping("/kupick")
+    @Operation(
+        summary = "이번 달 큐픽 존재 여부 수정",
+        description = "memberId, isKupick(boolean)을 받아 이번 달 큐픽 레코드를 승인/미승인 처리합니다." +
+                "이번 달 제출 레코드가 없으면 먼저 생성한 뒤 동일하게 approval을 갱신합니다."
+    )
+    fun updateKupick(
+        @RequestBody @Valid req: UpdateKupickRequest
+    ): ResponseEntity<SuccessResponse<Unit>> {
+        commandService.updateKupickApproval(req.memberId!!, req.isKupick!!)
+        return ResponseEntity.ok(SuccessResponse.ok(Unit))
+    }
+
     @GetMapping("/monthly")
     @Operation(
         summary = "월간 출석 현황 [운영진]",
