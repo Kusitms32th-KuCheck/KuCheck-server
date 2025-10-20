@@ -5,7 +5,7 @@ import onku.backend.domain.kupick.repository.KupickRepository
 import onku.backend.domain.member.MemberProfile
 import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.point.dto.AdminPointsRowDto
-import onku.backend.domain.point.repository.ManualPointRecordRepository
+import onku.backend.domain.point.repository.ManualPointRepository
 import onku.backend.global.page.PageResponse
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -18,7 +18,7 @@ class AdminPointsService(
     private val memberProfileRepository: MemberProfileRepository,
     private val attendanceRepository: AttendanceRepository,
     private val kupickRepository: KupickRepository,
-    private val manualPointRecordRepository: ManualPointRecordRepository
+    private val manualPointRecordRepository: ManualPointRepository
 ) {
 
     @Transactional(readOnly = true)

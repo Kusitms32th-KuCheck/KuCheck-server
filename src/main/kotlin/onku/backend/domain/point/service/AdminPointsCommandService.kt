@@ -3,14 +3,14 @@ package onku.backend.domain.point.service
 import onku.backend.domain.member.MemberErrorCode
 import onku.backend.domain.member.repository.MemberRepository
 import onku.backend.domain.point.ManualPoint
-import onku.backend.domain.point.repository.ManualPointRecordRepository
+import onku.backend.domain.point.repository.ManualPointRepository
 import onku.backend.global.exception.CustomException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class AdminPointsCommandService(
-    private val manualPointRecordRepository: ManualPointRecordRepository,
+    private val manualPointRecordRepository: ManualPointRepository,
     private val memberRepository: MemberRepository
 ) {
 
