@@ -64,4 +64,20 @@ class AdminPointsController(
         commandService.updateIsTf(req.memberId!!, req.isTf!!)
         return ResponseEntity.ok(SuccessResponse.ok(Unit))
     }
+
+    @GetMapping("/monthly")
+    @Operation(
+        summary = "월간 출석 현황 [운영진]",
+        description = "year, month, page, size를 받아 멤버별 [date, attendanceId, status, point] 목록을 페이징으로 반환"
+    )
+    fun getMonthly(
+        @RequestParam month: Int,
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+    ): ResponseEntity<SuccessResponse<MonthlyAttendancePageResponse>> {
+        val safePage = if (page < 1) 0 else page - 1
+        val year = 2025
+        val body = adminPointsService.getMonthlyPaged(year, month, safePage, size)
+        return ResponseEntity.ok(SuccessResponse.ok(body))
+    }
 }
