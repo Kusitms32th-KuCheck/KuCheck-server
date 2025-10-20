@@ -34,4 +34,14 @@ interface SessionRepository : CrudRepository<Session, Long> {
         pageable: Pageable,
         @Param("restCategory") restCategory: SessionCategory = SessionCategory.REST
     ): Page<Session>
+
+    @Query("""
+        select s.startTime 
+        from Session s 
+        where s.startTime >= :start and s.startTime < :end
+    """)
+    fun findStartTimesBetween(
+        @Param("start") start: LocalDateTime,
+        @Param("end") end: LocalDateTime
+    ): List<LocalDateTime>
 }
