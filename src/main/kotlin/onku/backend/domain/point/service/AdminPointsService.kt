@@ -53,7 +53,7 @@ class AdminPointsService(
                 mapForMember[month] = (mapForMember[month] ?: 0) + attendance.status.points // 동일 월 포인트 합산
             }
 
-        // 3) 큐픽 참여 여부를 월별로 표시 (기본 false → 참여 시 true)
+        // 큐픽 참여 여부를 월별로 표시 (기본 false → 참여 시 true)
         val kupickParticipationByMember: MutableMap<Long, MutableMap<Int, Boolean>> = mutableMapOf()
         memberIds.forEach { id -> kupickParticipationByMember[id] = initMonthParticipationMap() }
         kupickRepository.findMemberMonthParticipation(memberIds, startOfAug, endExclusive)
