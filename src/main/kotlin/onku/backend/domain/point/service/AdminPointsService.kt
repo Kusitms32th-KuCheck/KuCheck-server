@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.*
 import kotlin.math.max
+import onku.backend.global.time.TimeRangeUtil
 
 @Service
 class AdminPointsService(
@@ -41,8 +42,10 @@ class AdminPointsService(
         if (memberIds.isEmpty()) return PageResponse.from(profilePage.map { emptyOverviewRow(it) })
 
         // 조회 구간 설정: 8월 ~ 12월
-        val startOfAug: LocalDateTime = LocalDateTime.of(year, Month.AUGUST, 1, 0, 0, 0)
-        val endExclusive: LocalDateTime = LocalDateTime.of(year + 1, 1, 1, 0, 0, 0)
+        val augRange = TimeRangeUtil.monthRange(year, 8, clock.zone)
+        val decRange = TimeRangeUtil.monthRange(year, 12, clock.zone)
+        val startOfAug: LocalDateTime = augRange.startOfMonth
+        val endExclusive: LocalDateTime = decRange.startOfNextMonth
 
         // 출석 레코드 → 월별 포인트 합산
         val monthlyAttendanceTotals: MutableMap<Long, MutableMap<Int, Int>> = mutableMapOf()
@@ -130,11 +133,9 @@ class AdminPointsService(
         require(month in 8..12) { "month must be 8..12" }
 
         // 조회 구간 설정
-        val zone: ZoneId = clock.zone
-        val startZdt = ZonedDateTime.of(LocalDate.of(year, month, 1), LocalTime.MIN, zone)
-        val endZdt = startZdt.plusMonths(1)
-        val start = startZdt.toLocalDateTime()
-        val end = endZdt.toLocalDateTime()
+        val monthRange = TimeRangeUtil.monthRange(year, month, clock.zone)
+        val start: LocalDateTime = monthRange.startOfMonth
+        val end: LocalDateTime = monthRange.startOfNextMonth
 
         // 세션 시작일 (중복 제거/오름차순)
         val sessionDates: List<LocalDate> = sessionRepository.findStartTimesBetween(start, end)
