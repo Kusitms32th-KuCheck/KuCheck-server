@@ -25,7 +25,7 @@ class SessionService(
     fun getUpcomingSessionsForAbsence(pageable: Pageable): Page<SessionAboutAbsenceResponse> {
         val now = LocalDateTime.now(clock)
 
-        val sessions = sessionRepository.findUpcomingSessions(now, pageable)
+        val sessions = sessionRepository.findUpcomingSessions(now.toLocalDate(), pageable)
 
         return sessions.map { s ->
             val active = sessionValidator.isImminentSession(s, now)

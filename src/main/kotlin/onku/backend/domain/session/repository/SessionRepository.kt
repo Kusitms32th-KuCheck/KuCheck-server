@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 interface SessionRepository : CrudRepository<Session, Long> {
@@ -24,13 +25,15 @@ interface SessionRepository : CrudRepository<Session, Long> {
     )
     fun findOpenSession(@Param("now") now: LocalDateTime): Session?
 
-    @Query("""
+    @Query(
+        """
         SELECT s
         FROM Session s
-        WHERE s.startTime >= :now AND s.category <> :restCategory
-    """)
+        WHERE s.startDate >= :now AND s.category <> :restCategory
+    """
+    )
     fun findUpcomingSessions(
-        @Param("now") now: LocalDateTime,
+        @Param("now") now: LocalDate,
         pageable: Pageable,
         @Param("restCategory") restCategory: SessionCategory = SessionCategory.REST
     ): Page<Session>
