@@ -3,6 +3,7 @@ package onku.backend.domain.session.service
 import onku.backend.domain.session.validator.SessionValidator
 import onku.backend.domain.session.Session
 import onku.backend.domain.session.dto.SessionAboutAbsenceResponse
+import onku.backend.domain.session.dto.SessionSaveRequest
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
@@ -41,5 +42,20 @@ class SessionService(
     @Transactional(readOnly = true)
     fun getById(id : Long) : Session {
         return sessionRepository.findByIdOrNull(id) ?: throw CustomException(ErrorCode.SESSION_NOT_FOUND)
+    }
+
+    @Transactional
+    fun saveAll(requests: List<SessionSaveRequest>): Boolean {
+        val sessions = requests.map { r ->
+            Session(
+                title = r.title,
+                startDate = r.sessionDate,
+                category = r.category,
+                week = r.week,
+                sessionDetail = null
+            )
+        }
+        sessionRepository.saveAll(sessions)
+        return true
     }
 }

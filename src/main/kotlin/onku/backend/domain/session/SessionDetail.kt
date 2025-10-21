@@ -12,15 +12,15 @@ class SessionDetail(
     val id: Long? = null,
 
     @Column(name = "place")
-    val place : String,
+    val place : String?,
 
     @Column(name = "start_time")
-    val startTime : LocalTime,
+    val startTime : LocalTime?,
 
     @Column(name = "end_time")
-    val endTime : LocalTime,
+    val endTime : LocalTime?,
 
     @Column(name = "content")
-    val content : String
+    val content : String?
 ) : BaseEntity() {
 }

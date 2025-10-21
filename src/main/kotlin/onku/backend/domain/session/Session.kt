@@ -14,7 +14,7 @@ class Session(
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_detail_id")
-    val sessionDetail: SessionDetail,
+    val sessionDetail: SessionDetail? = null,
 
     @Column(name = "title", nullable = false, length = 255)
     val title: String,
