@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import onku.backend.domain.point.dto.*
-import onku.backend.domain.point.service.AdminPointsCommandService
-import onku.backend.domain.point.service.AdminPointsService
+import onku.backend.domain.point.service.AdminPointCommandService
+import onku.backend.domain.point.service.AdminPointService
 import onku.backend.global.page.PageResponse
 import onku.backend.global.response.SuccessResponse
 import org.springframework.http.ResponseEntity
@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.*
     name = "운영진 상벌점",
     description = "운영진 상벌점 대시보드 조회 API"
 )
-class AdminPointsController(
-    private val adminPointsService: AdminPointsService,
-    private val commandService: AdminPointsCommandService
+class AdminPointController(
+    private val adminPointsService: AdminPointService,
+    private val commandService: AdminPointCommandService
 ) {
 
     @GetMapping("/overview")
@@ -30,7 +30,7 @@ class AdminPointsController(
     fun overview(
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int
-    ): ResponseEntity<SuccessResponse<PageResponse<AdminPointsRowDto>>> {
+    ): ResponseEntity<SuccessResponse<PageResponse<AdminPointOverviewDto>>> {
         val safePage = if (page < 1) 0 else page - 1
         val year = 2025
         val body = adminPointsService.getAdminOverview(year, safePage, size)

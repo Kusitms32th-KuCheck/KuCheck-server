@@ -5,7 +5,10 @@ import onku.backend.domain.kupick.repository.KupickRepository
 import onku.backend.domain.member.MemberErrorCode
 import onku.backend.domain.member.MemberProfile
 import onku.backend.domain.member.repository.MemberProfileRepository
-import onku.backend.domain.point.dto.*
+import onku.backend.domain.point.dto.AdminPointOverviewDto
+import onku.backend.domain.point.dto.AttendanceRecordDto
+import onku.backend.domain.point.dto.MemberMonthlyAttendanceDto
+import onku.backend.domain.point.dto.MonthlyAttendancePageResponse
 import onku.backend.domain.point.repository.ManualPointRepository
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
@@ -18,7 +21,7 @@ import kotlin.math.max
 import onku.backend.global.time.TimeRangeUtil
 
 @Service
-class AdminPointsService(
+class AdminPointService(
     private val memberProfileRepository: MemberProfileRepository,
     private val attendanceRepository: AttendanceRepository,
     private val kupickRepository: KupickRepository,
@@ -32,7 +35,7 @@ class AdminPointsService(
         year: Int,
         page: Int,
         size: Int
-    ): PageResponse<AdminPointsRowDto> {
+    ): PageResponse<AdminPointOverviewDto> {
         val safePageIndex = max(0, page)
         val pageRequest = PageRequest.of(safePageIndex, size)
 
@@ -79,7 +82,7 @@ class AdminPointsService(
             val kupickMap = kupickParticipationByMember[memberId] ?: initMonthParticipationMap()
             val manual = manualPointsByMember[memberId]
 
-            AdminPointsRowDto(
+            AdminPointOverviewDto(
                 memberId = memberId,
                 name = profile.name,
                 part = profile.part,
@@ -105,8 +108,8 @@ class AdminPointsService(
     private fun initMonthParticipationMap(): MutableMap<Int, Boolean> =
         (8..12).associateWith { false }.toMutableMap()
 
-    private fun emptyOverviewRow(profile: onku.backend.domain.member.MemberProfile): AdminPointsRowDto {
-        return AdminPointsRowDto(
+    private fun emptyOverviewRow(profile: onku.backend.domain.member.MemberProfile): AdminPointOverviewDto {
+        return AdminPointOverviewDto(
             memberId = profile.memberId!!,
             name = profile.name,
             part = profile.part,
@@ -157,7 +160,7 @@ class AdminPointsService(
             val memberId: Long,
             val date: LocalDate,
             val attendanceId: Long?,
-            val status: onku.backend.domain.attendance.enums.AttendanceStatus?,
+            val status: onku.backend.domain.attendance.enums.AttendancePointType?,
             val point: Int?
         )
 

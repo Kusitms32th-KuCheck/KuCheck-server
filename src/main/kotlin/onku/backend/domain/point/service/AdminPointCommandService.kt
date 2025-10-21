@@ -15,7 +15,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
-class AdminPointsCommandService(
+class AdminPointCommandService(
     private val manualPointRecordRepository: ManualPointRepository,
     private val memberRepository: MemberRepository,
     private val kupickRepository: KupickRepository,
