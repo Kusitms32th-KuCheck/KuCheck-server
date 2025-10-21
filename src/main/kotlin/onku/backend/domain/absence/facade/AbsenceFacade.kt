@@ -51,7 +51,7 @@ class AbsenceFacade(
                 absenceReportApproval = v.absenceReportApproval,
                 submitDateTime = v.submitDateTime,
                 sessionTitle = v.sessionTitle,
-                sessionStartDateTime = v.sessionStartDateTime
+                sessionStartDate = v.sessionStartDate
             )
         }
         return PageResponse.from(responses)

@@ -58,9 +58,8 @@ class AttendanceService(
 
         val consumed = tokenCache.consumeToken(token)
             ?: throw CustomException(ErrorCode.UNAUTHORIZED)
-
         val state =
-            if (now.isAfter(session.lateThresholdTime)) AttendanceStatus.LATE
+            if (now.toLocalTime().isAfter(session.sessionDetail.startTime)) AttendanceStatus.LATE
             else AttendanceStatus.PRESENT
 
         try {

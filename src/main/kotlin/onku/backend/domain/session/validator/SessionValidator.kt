@@ -15,7 +15,7 @@ class SessionValidator {
 
     /** 지난 세션 여부 */
     fun isPastSession(session: Session, now: LocalDateTime = LocalDateTime.now(zone)): Boolean {
-        return session.endTime.isBefore(now)
+        return session.startDate.isBefore(now.toLocalDate())
     }
 
     /** 금/토에 바로 앞 토요일 세션인지 여부 */
@@ -25,7 +25,7 @@ class SessionValidator {
         if (!isFriOrSat) return false
 
         val upcomingSaturday = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
-        val sessionDate = session.startTime.atZone(zone).toLocalDate()
+        val sessionDate = session.startDate
         return sessionDate == upcomingSaturday
     }
 
