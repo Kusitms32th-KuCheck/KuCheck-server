@@ -49,6 +49,18 @@ class Kupick(
                 submitDate = applicationDate
             )
         }
+
+        fun createKupick(member: Member, nowDate: LocalDateTime): Kupick {
+            return Kupick(
+                member = member,
+                submitDate = nowDate,
+                applicationImageUrl = "null",
+                applicationDate = null,
+                viewImageUrl = null,
+                viewDate = null,
+                approval = false
+            )
+        }
     }
 
     fun submitView(viewImageUrl: String, nowDate: LocalDateTime) {

@@ -58,4 +58,20 @@ interface KupickRepository : JpaRepository<Kupick, Long> {
         @Param("end") end: LocalDateTime,
         pageable: Pageable
     ): Page<KupickWithProfile>
+
+    @Query(
+        """
+        SELECT k.member.id, FUNCTION('month', k.submitDate)
+        FROM Kupick k
+        WHERE k.submitDate IS NOT NULL
+          AND k.submitDate >= :start
+          AND k.submitDate < :end
+          AND k.member.id IN :memberIds
+        """
+    )
+    fun findMemberMonthParticipation(
+        memberIds: Collection<Long>,
+        start: LocalDateTime,
+        end: LocalDateTime
+    ): List<Array<Any>>
 }
