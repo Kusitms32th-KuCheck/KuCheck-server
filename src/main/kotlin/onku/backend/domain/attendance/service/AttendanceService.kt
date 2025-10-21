@@ -2,7 +2,7 @@ package onku.backend.domain.attendance.service
 
 import onku.backend.domain.attendance.AttendanceErrorCode
 import onku.backend.domain.attendance.dto.*
-import onku.backend.domain.attendance.enums.AttendanceStatus
+import onku.backend.domain.attendance.enums.AttendancePointType
 import onku.backend.domain.attendance.repository.AttendanceRepository
 import onku.backend.domain.member.Member
 import onku.backend.domain.member.repository.MemberProfileRepository
@@ -60,8 +60,8 @@ class AttendanceService(
             ?: throw CustomException(ErrorCode.UNAUTHORIZED)
 
         val state =
-            if (now.isAfter(session.lateThresholdTime)) AttendanceStatus.LATE
-            else AttendanceStatus.PRESENT
+            if (now.isAfter(session.lateThresholdTime)) AttendancePointType.LATE
+            else AttendancePointType.PRESENT
 
         try {
             attendanceRepository.insertOnly(
