@@ -11,18 +11,10 @@ import java.time.LocalDateTime
 
 interface SessionRepository : CrudRepository<Session, Long> {
 
-    @Query(
-        value = """
-        SELECT *
-        FROM session s
-        WHERE :now BETWEEN TIMESTAMPADD(SECOND, -s.open_grace_seconds, s.start_time)
-                        AND TIMESTAMPADD(SECOND,  s.close_grace_seconds, s.end_time)
-        ORDER BY s.start_time DESC
-        LIMIT 1
-        """,
-        nativeQuery = true
-    )
-    fun findOpenSession(@Param("now") now: LocalDateTime): Session?
+    fun findFirstByStartTimeLessThanEqualAndEndTimeGreaterThanEqualOrderByStartTimeDesc(
+        startTimeUpperBound: LocalDateTime,
+        endTimeLowerBound: LocalDateTime
+    ): Session?
 
     @Query("""
         SELECT s

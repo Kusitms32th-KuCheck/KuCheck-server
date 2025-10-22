@@ -10,6 +10,7 @@ import onku.backend.domain.member.Member
 import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.point.MemberPointHistory
 import onku.backend.domain.point.repository.MemberPointHistoryRepository
+import onku.backend.domain.session.Session
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
@@ -33,6 +34,9 @@ class AttendanceService(
     private val clock: Clock
 ) {
     private val ttlSeconds: Long = 15L
+    private val OPEN_GRACE_MINUTES: Long = 30
+    private val LATE_THRESHOLD_MINUTES: Long = 20
+
 
     @Transactional(readOnly = true)
     fun issueAttendanceTokenFor(member: Member): AttendanceTokenResponse {
@@ -44,11 +48,20 @@ class AttendanceService(
         return AttendanceTokenResponse(token = token, expAt = expAt)
     }
 
+    private fun findOpenSession(now: LocalDateTime): Session? {
+        val startUpper = now.plusMinutes(OPEN_GRACE_MINUTES)
+        val endLower = now
+        return sessionRepository
+            .findFirstByStartTimeLessThanEqualAndEndTimeGreaterThanEqualOrderByStartTimeDesc(
+                startUpper, endLower
+            )
+    }
+
     @Transactional
     fun scanAndRecordBy(admin: Member, token: String): AttendanceResponse {
         val now = LocalDateTime.now(clock)
 
-        val session = sessionRepository.findOpenSession(now)
+        val session = findOpenSession(now)
             ?: throw CustomException(AttendanceErrorCode.SESSION_NOT_OPEN)
 
         val peek = tokenCache.peek(token)
@@ -57,17 +70,14 @@ class AttendanceService(
         val memberId = peek.memberId
         val memberName = memberProfileRepository.findById(memberId).orElse(null)?.name ?: "Unknown"
 
-        val already = attendanceRepository.existsBySessionIdAndMemberId(session.id!!, memberId)
-        if (already) {
+        if (attendanceRepository.existsBySessionIdAndMemberId(session.id!!, memberId)) {
             throw CustomException(AttendanceErrorCode.ATTENDANCE_ALREADY_RECORDED)
         }
 
-        val consumed = tokenCache.consumeToken(token)
-            ?: throw CustomException(ErrorCode.UNAUTHORIZED)
+        tokenCache.consumeToken(token) ?: throw CustomException(ErrorCode.UNAUTHORIZED)
 
-        val state =
-            if (now.isAfter(session.lateThresholdTime)) AttendancePointType.LATE
-            else AttendancePointType.PRESENT
+        val lateThreshold = session.startTime.plusMinutes(LATE_THRESHOLD_MINUTES)
+        val state = if (now.isAfter(lateThreshold)) AttendancePointType.LATE else AttendancePointType.PRESENT
 
         try {
             attendanceRepository.insertOnly(
