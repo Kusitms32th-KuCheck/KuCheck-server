@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import onku.backend.domain.session.dto.request.SessionSaveRequest
+import onku.backend.domain.session.dto.request.UpsertSessionDetailRequest
 import onku.backend.domain.session.dto.response.GetInitialSessionResponse
 import onku.backend.domain.session.facade.SessionFacade
 import onku.backend.global.page.PageResponse
@@ -39,5 +40,16 @@ class SessionManagerController(
     ) : ResponseEntity<SuccessResponse<PageResponse<GetInitialSessionResponse>>> {
         val safePage = if (page < 1) 0 else page - 1
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.getInitialSession(safePage, size)))
+    }
+
+    @PostMapping("/detail")
+    @Operation(
+        summary = "세션 상세정보 upsert",
+        description = "세션 상세정보를 새로 입력하거나 수정합니다."
+    )
+    fun upsertSessionDetail(
+        @RequestBody @Valid upsertSessionDetailRequest : UpsertSessionDetailRequest
+    ) : ResponseEntity<SuccessResponse<Long>> {
+        return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.upsertSessionDetail(upsertSessionDetailRequest)))
     }
 }

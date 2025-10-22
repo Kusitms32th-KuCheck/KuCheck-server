@@ -12,9 +12,14 @@ class Session(
     @Column(name = "session_id")
     val id: Long? = null,
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(
+        fetch = FetchType.LAZY,
+        cascade = [CascadeType.PERSIST, CascadeType.MERGE],
+        optional = true,
+        orphanRemoval = true
+    )
     @JoinColumn(name = "session_detail_id")
-    val sessionDetail: SessionDetail? = null,
+    var sessionDetail: SessionDetail? = null,
 
     @Column(name = "title", nullable = false, length = 255)
     val title: String,

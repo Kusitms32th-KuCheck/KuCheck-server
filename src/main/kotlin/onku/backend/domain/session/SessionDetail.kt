@@ -11,16 +11,17 @@ class SessionDetail(
     @Column(name = "session_detail_id")
     val id: Long? = null,
 
-    @Column(name = "place")
-    val place : String?,
+    @Column(name = "place", nullable = false)
+    var place: String,
 
-    @Column(name = "start_time")
-    val startTime : LocalTime?,
+    @Column(name = "start_time", nullable = false)
+    var startTime: LocalTime,
 
-    @Column(name = "end_time")
-    val endTime : LocalTime?,
+    @Column(name = "end_time", nullable = false)
+    var endTime: LocalTime,
 
-    @Column(name = "content")
-    val content : String?
+    @Column(name = "content", nullable = false)
+    var content: String
 ) : BaseEntity() {
+
 }
