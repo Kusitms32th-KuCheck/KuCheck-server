@@ -17,7 +17,7 @@ import java.time.LocalTime
         Index(name = "idx_member_point_type", columnList = "type")
     ]
 )
-class MemberPoint(
+class MemberPointHistory(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "record_id")
@@ -57,9 +57,9 @@ class MemberPoint(
             occurredAt: LocalDateTime,
             week: Int,
             time: LocalTime? = null
-        ): MemberPoint {
+        ): MemberPointHistory {
             return when (status) {
-                AttendancePointType.EARLY_LEAVE -> MemberPoint(
+                AttendancePointType.EARLY_LEAVE -> MemberPointHistory(
                     member = member,
                     category = PointCategory.ATTENDANCE,
                     type = status.name,
@@ -70,7 +70,7 @@ class MemberPoint(
                 )
                 AttendancePointType.PRESENT,
                 AttendancePointType.PRESENT_HOLIDAY,
-                AttendancePointType.LATE -> MemberPoint(
+                AttendancePointType.LATE -> MemberPointHistory(
                     member = member,
                     category = PointCategory.ATTENDANCE,
                     type = status.name,
@@ -81,7 +81,7 @@ class MemberPoint(
                 )
                 AttendancePointType.EXCUSED,
                 AttendancePointType.ABSENT,
-                AttendancePointType.ABSENT_WITH_DOC -> MemberPoint(
+                AttendancePointType.ABSENT_WITH_DOC -> MemberPointHistory(
                     member = member,
                     category = PointCategory.ATTENDANCE,
                     type = status.name,
@@ -96,8 +96,8 @@ class MemberPoint(
             member: Member,
             manualType: ManualPointType,
             occurredAt: LocalDateTime
-        ): MemberPoint {
-            return MemberPoint(
+        ): MemberPointHistory {
+            return MemberPointHistory(
                 member = member,
                 category = PointCategory.MANUAL,
                 type = manualType.name,
