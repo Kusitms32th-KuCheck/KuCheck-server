@@ -4,6 +4,7 @@ import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
 import onku.backend.domain.session.dto.request.SessionSaveRequest
 import onku.backend.domain.session.dto.request.UpsertSessionDetailRequest
 import onku.backend.domain.session.dto.response.GetInitialSessionResponse
+import onku.backend.domain.session.dto.response.UpsertSessionDetailResponse
 import onku.backend.domain.session.service.SessionDetailService
 import onku.backend.domain.session.service.SessionService
 import onku.backend.global.page.PageResponse
@@ -31,8 +32,8 @@ class SessionFacade(
         return PageResponse.from(initialSessionPage)
     }
 
-    fun upsertSessionDetail(upsertSessionDetailRequest: UpsertSessionDetailRequest): Long {
+    fun upsertSessionDetail(upsertSessionDetailRequest: UpsertSessionDetailRequest): UpsertSessionDetailResponse {
         val session = sessionService.getById(upsertSessionDetailRequest.sessionId)
-        return sessionDetailService.upsertSessionDetail(session, upsertSessionDetailRequest)
+        return UpsertSessionDetailResponse(sessionDetailService.upsertSessionDetail(session, upsertSessionDetailRequest))
     }
 }

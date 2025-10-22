@@ -6,6 +6,7 @@ import jakarta.validation.Valid
 import onku.backend.domain.session.dto.request.SessionSaveRequest
 import onku.backend.domain.session.dto.request.UpsertSessionDetailRequest
 import onku.backend.domain.session.dto.response.GetInitialSessionResponse
+import onku.backend.domain.session.dto.response.UpsertSessionDetailResponse
 import onku.backend.domain.session.facade.SessionFacade
 import onku.backend.global.page.PageResponse
 import onku.backend.global.response.SuccessResponse
@@ -49,7 +50,9 @@ class SessionManagerController(
     )
     fun upsertSessionDetail(
         @RequestBody @Valid upsertSessionDetailRequest : UpsertSessionDetailRequest
-    ) : ResponseEntity<SuccessResponse<Long>> {
+    ) : ResponseEntity<SuccessResponse<UpsertSessionDetailResponse>> {
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.upsertSessionDetail(upsertSessionDetailRequest)))
     }
+
+
 }
