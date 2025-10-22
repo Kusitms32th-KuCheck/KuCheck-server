@@ -26,7 +26,7 @@ class Session(
     @Column(name = "category", nullable = false, length = 32)
     val category: SessionCategory,
 
-    @Column(name = "week", nullable = false)
+    @Column(name = "week", nullable = false, unique = true)
     val week: Long,
 
 ) : BaseEntity()
