@@ -40,4 +40,11 @@ class SessionDetailService(
         sessionRepository.save(session)
         return (detail.id ?: 0L)
     }
+
+    @Transactional(readOnly = true)
+    fun getById(id : Long) : SessionDetail {
+        return sessionDetailRepository.findById(id).orElseThrow{
+            CustomException(SessionErrorCode.SESSION_DETAIL_NOT_FOUND)
+        }
+    }
 }

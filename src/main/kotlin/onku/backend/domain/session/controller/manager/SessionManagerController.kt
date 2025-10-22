@@ -3,13 +3,17 @@ package onku.backend.domain.session.controller.manager
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import onku.backend.domain.member.Member
 import onku.backend.domain.session.dto.request.SessionSaveRequest
+import onku.backend.domain.session.dto.request.UploadSessionImageRequest
 import onku.backend.domain.session.dto.request.UpsertSessionDetailRequest
 import onku.backend.domain.session.dto.response.GetInitialSessionResponse
 import onku.backend.domain.session.dto.response.UpsertSessionDetailResponse
 import onku.backend.domain.session.facade.SessionFacade
+import onku.backend.global.annotation.CurrentMember
 import onku.backend.global.page.PageResponse
 import onku.backend.global.response.SuccessResponse
+import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -52,6 +56,18 @@ class SessionManagerController(
         @RequestBody @Valid upsertSessionDetailRequest : UpsertSessionDetailRequest
     ) : ResponseEntity<SuccessResponse<UpsertSessionDetailResponse>> {
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.upsertSessionDetail(upsertSessionDetailRequest)))
+    }
+
+    @PostMapping("/detail/image")
+    @Operation(
+        summary = "세션 상세정보 이미지 업로드",
+        description = "세션의 이미지를 업로드 합니다."
+    )
+    fun uploadSessionImage(
+        @CurrentMember member: Member,
+        @RequestBody uploadSessionImageRequest : UploadSessionImageRequest
+    ) : ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
+        return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.uploadSessionImage(member, uploadSessionImageRequest)))
     }
 
 

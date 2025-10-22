@@ -1,20 +1,28 @@
 package onku.backend.domain.session.facade
 
+import onku.backend.domain.member.Member
 import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
 import onku.backend.domain.session.dto.request.SessionSaveRequest
+import onku.backend.domain.session.dto.request.UploadSessionImageRequest
 import onku.backend.domain.session.dto.request.UpsertSessionDetailRequest
 import onku.backend.domain.session.dto.response.GetInitialSessionResponse
 import onku.backend.domain.session.dto.response.UpsertSessionDetailResponse
 import onku.backend.domain.session.service.SessionDetailService
+import onku.backend.domain.session.service.SessionImageService
 import onku.backend.domain.session.service.SessionService
 import onku.backend.global.page.PageResponse
+import onku.backend.global.s3.dto.GetPreSignedUrlDto
+import onku.backend.global.s3.enums.FolderName
+import onku.backend.global.s3.service.S3Service
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 
 @Component
 class SessionFacade(
     private val sessionService: SessionService,
-    private val sessionDetailService: SessionDetailService
+    private val sessionDetailService: SessionDetailService,
+    private val sessionImageService : SessionImageService,
+    private val s3Service: S3Service
 ) {
     fun showSessionAboutAbsence(page: Int, size: Int): PageResponse<SessionAboutAbsenceResponse> {
         val pageRequest = PageRequest.of(page, size)
@@ -34,6 +42,27 @@ class SessionFacade(
 
     fun upsertSessionDetail(upsertSessionDetailRequest: UpsertSessionDetailRequest): UpsertSessionDetailResponse {
         val session = sessionService.getById(upsertSessionDetailRequest.sessionId)
-        return UpsertSessionDetailResponse(sessionDetailService.upsertSessionDetail(session, upsertSessionDetailRequest))
+        return UpsertSessionDetailResponse(
+            sessionDetailService.upsertSessionDetail(
+                session,
+                upsertSessionDetailRequest
+            )
+        )
+    }
+
+    fun uploadSessionImage(
+        member: Member,
+        uploadSessionImageRequest: UploadSessionImageRequest
+    ): GetPreSignedUrlDto {
+        val sessionDetail = sessionDetailService.getById(uploadSessionImageRequest.sessionDetailId)
+        val getS3UrlDto = s3Service.getPostS3Url(
+            member.id!!,
+            uploadSessionImageRequest.imageFileName,
+            FolderName.SESSION.name
+        )
+        sessionImageService.uploadImage(getS3UrlDto.key, sessionDetail)
+        return GetPreSignedUrlDto(
+            getS3UrlDto.preSignedUrl
+        )
     }
 }
