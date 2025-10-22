@@ -2,8 +2,9 @@ package onku.backend.domain.session.service
 
 import onku.backend.domain.session.validator.SessionValidator
 import onku.backend.domain.session.Session
-import onku.backend.domain.session.dto.SessionAboutAbsenceResponse
-import onku.backend.domain.session.dto.SessionSaveRequest
+import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
+import onku.backend.domain.session.dto.request.SessionSaveRequest
+import onku.backend.domain.session.dto.response.GetInitialSessionResponse
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
@@ -57,5 +58,19 @@ class SessionService(
         }
         sessionRepository.saveAll(sessions)
         return true
+    }
+
+    @Transactional(readOnly = true)
+    fun getInitialSession(pageable: Pageable) : Page<GetInitialSessionResponse> {
+        val initialSessions = sessionRepository.findAll(pageable)
+        return initialSessions.map { s ->
+            GetInitialSessionResponse(
+                sessionId = s.id!!,
+                startDate = s.startDate,
+                title = s.title,
+                category = s.category,
+                sessionDetailId = s.sessionDetail?.id
+            )
+        }
     }
 }

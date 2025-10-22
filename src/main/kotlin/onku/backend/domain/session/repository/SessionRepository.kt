@@ -37,4 +37,11 @@ interface SessionRepository : CrudRepository<Session, Long> {
         pageable: Pageable,
         @Param("restCategory") restCategory: SessionCategory = SessionCategory.REST
     ): Page<Session>
+
+
+    @Query("""
+        SELECT s
+        FROM Session s
+        """)
+    fun findAll(pageable: Pageable): Page<Session>
 }

@@ -3,14 +3,13 @@ package onku.backend.domain.session.controller.manager
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import onku.backend.domain.session.dto.SessionSaveRequest
+import onku.backend.domain.session.dto.request.SessionSaveRequest
+import onku.backend.domain.session.dto.response.GetInitialSessionResponse
 import onku.backend.domain.session.facade.SessionFacade
+import onku.backend.global.page.PageResponse
 import onku.backend.global.response.SuccessResponse
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/session/manager")
@@ -27,5 +26,18 @@ class SessionManagerController(
         @RequestBody @Valid sessionSaveRequestList : List<SessionSaveRequest>
     ) : ResponseEntity<SuccessResponse<Boolean>> {
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.sessionSave(sessionSaveRequestList)))
+    }
+
+    @GetMapping("")
+    @Operation(
+        summary = "초기에 저장한 세션정보 불러오기",
+        description = "초기에 저장한 세션정보들을 불러옵니다."
+    )
+    fun getInitialSession(
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int
+    ) : ResponseEntity<SuccessResponse<PageResponse<GetInitialSessionResponse>>> {
+        val safePage = if (page < 1) 0 else page - 1
+        return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.getInitialSession(safePage, size)))
     }
 }

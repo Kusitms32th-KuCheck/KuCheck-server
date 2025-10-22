@@ -1,4 +1,4 @@
-package onku.backend.domain.session.dto
+package onku.backend.domain.session.dto.request
 
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull

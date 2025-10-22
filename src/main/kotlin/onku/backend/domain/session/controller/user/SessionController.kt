@@ -2,7 +2,7 @@ package onku.backend.domain.session.controller.user
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import onku.backend.domain.session.dto.SessionAboutAbsenceResponse
+import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
 import onku.backend.domain.session.facade.SessionFacade
 import onku.backend.global.page.PageResponse
 import onku.backend.global.response.SuccessResponse
