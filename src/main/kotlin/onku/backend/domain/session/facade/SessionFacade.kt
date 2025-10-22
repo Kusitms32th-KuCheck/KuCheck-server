@@ -1,11 +1,13 @@
 package onku.backend.domain.session.facade
 
 import onku.backend.domain.member.Member
+import onku.backend.domain.session.dto.request.DeleteSessionImageRequest
 import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
 import onku.backend.domain.session.dto.request.SessionSaveRequest
 import onku.backend.domain.session.dto.request.UploadSessionImageRequest
 import onku.backend.domain.session.dto.request.UpsertSessionDetailRequest
 import onku.backend.domain.session.dto.response.GetInitialSessionResponse
+import onku.backend.domain.session.dto.response.UploadSessionImageResponse
 import onku.backend.domain.session.dto.response.UpsertSessionDetailResponse
 import onku.backend.domain.session.service.SessionDetailService
 import onku.backend.domain.session.service.SessionImageService
@@ -53,14 +55,24 @@ class SessionFacade(
     fun uploadSessionImage(
         member: Member,
         uploadSessionImageRequest: UploadSessionImageRequest
-    ): GetPreSignedUrlDto {
+    ): UploadSessionImageResponse {
         val sessionDetail = sessionDetailService.getById(uploadSessionImageRequest.sessionDetailId)
         val getS3UrlDto = s3Service.getPostS3Url(
             member.id!!,
             uploadSessionImageRequest.imageFileName,
             FolderName.SESSION.name
         )
-        sessionImageService.uploadImage(getS3UrlDto.key, sessionDetail)
+        val sessionImage = sessionImageService.uploadImage(getS3UrlDto.key, sessionDetail)
+        return UploadSessionImageResponse(
+            sessionImage.id!!,
+            getS3UrlDto.preSignedUrl
+        )
+    }
+
+    fun deleteSessionImage(deleteSessionImageRequest: DeleteSessionImageRequest): GetPreSignedUrlDto {
+        val sessionImage = sessionImageService.getById(deleteSessionImageRequest.sessionImageId)
+        val getS3UrlDto = s3Service.getDeleteS3Url(sessionImage.url)
+        sessionImageService.deleteImage(sessionImage.id!!)
         return GetPreSignedUrlDto(
             getS3UrlDto.preSignedUrl
         )

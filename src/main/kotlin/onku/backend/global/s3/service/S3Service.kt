@@ -6,9 +6,11 @@ import onku.backend.global.s3.dto.GetS3UrlDto
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
+import software.amazon.awssdk.services.s3.presigner.model.DeleteObjectPresignRequest
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
 import java.net.URL
@@ -60,6 +62,24 @@ class S3Service(
             .build()
 
         val presigned = s3Presigner.presignGetObject(presignReq)
+        val url: URL = presigned.url()
+
+        return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key)
+    }
+
+    @Transactional(readOnly = true)
+    fun getDeleteS3Url(key: String): GetS3UrlDto {
+        val deleteReq = DeleteObjectRequest.builder()
+            .bucket(bucket)
+            .key(key)
+            .build()
+
+        val presignReq = DeleteObjectPresignRequest.builder()
+            .signatureDuration(DEFAULT_EXPIRE)
+            .deleteObjectRequest(deleteReq)
+            .build()
+
+        val presigned = s3Presigner.presignDeleteObject(presignReq)
         val url: URL = presigned.url()
 
         return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key)

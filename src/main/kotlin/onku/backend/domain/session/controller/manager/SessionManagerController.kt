@@ -4,10 +4,12 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import onku.backend.domain.member.Member
+import onku.backend.domain.session.dto.request.DeleteSessionImageRequest
 import onku.backend.domain.session.dto.request.SessionSaveRequest
 import onku.backend.domain.session.dto.request.UploadSessionImageRequest
 import onku.backend.domain.session.dto.request.UpsertSessionDetailRequest
 import onku.backend.domain.session.dto.response.GetInitialSessionResponse
+import onku.backend.domain.session.dto.response.UploadSessionImageResponse
 import onku.backend.domain.session.dto.response.UpsertSessionDetailResponse
 import onku.backend.domain.session.facade.SessionFacade
 import onku.backend.global.annotation.CurrentMember
@@ -66,9 +68,19 @@ class SessionManagerController(
     fun uploadSessionImage(
         @CurrentMember member: Member,
         @RequestBody uploadSessionImageRequest : UploadSessionImageRequest
-    ) : ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
+    ) : ResponseEntity<SuccessResponse<UploadSessionImageResponse>> {
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.uploadSessionImage(member, uploadSessionImageRequest)))
     }
 
+    @DeleteMapping("/detail/image")
+    @Operation(
+        summary = "세션 상세정보 이미지 삭제",
+        description = "세션 상세정보 이미지 삭제를 합니다 (삭제용 presignedUrl 발급)"
+    )
+    fun deleteSessionImage(
+        @RequestBody deleteSessionImageRequest : DeleteSessionImageRequest
+    ) : ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
+        return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.deleteSessionImage(deleteSessionImageRequest)))
+    }
 
 }
