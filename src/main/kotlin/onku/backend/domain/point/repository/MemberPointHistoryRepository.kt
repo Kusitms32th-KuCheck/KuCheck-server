@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
-interface MemberPointRepository : JpaRepository<MemberPointHistory, Long> {
+interface MemberPointHistoryRepository : JpaRepository<MemberPointHistory, Long> {
 
     fun findByMemberOrderByOccurredAtDesc(member: Member, pageable: Pageable): Page<MemberPointHistory>
 

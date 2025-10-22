@@ -3,8 +3,8 @@ package onku.backend.domain.point.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import onku.backend.domain.member.Member
-import onku.backend.domain.point.dto.UserPointHistoryResponse
-import onku.backend.domain.point.service.MemberPointService
+import onku.backend.domain.point.dto.MemberPointHistoryResponse
+import onku.backend.domain.point.service.MemberPointHistoryService
 import onku.backend.global.annotation.CurrentMember
 import onku.backend.global.response.SuccessResponse
 import org.springframework.http.ResponseEntity
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
     description = "사용자 상벌점 조회 API"
 )
 class MemberPointController(
-    private val memberPointService: MemberPointService
+    private val memberPointService: MemberPointHistoryService
 ) {
     @GetMapping("/history")
     @Operation(
@@ -31,7 +31,7 @@ class MemberPointController(
         @CurrentMember member: Member,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int
-    ): ResponseEntity<SuccessResponse<UserPointHistoryResponse>> {
+    ): ResponseEntity<SuccessResponse<MemberPointHistoryResponse>> {
         val body = memberPointService.getHistory(member, page, size)
         return ResponseEntity.ok(SuccessResponse.ok(body))
     }

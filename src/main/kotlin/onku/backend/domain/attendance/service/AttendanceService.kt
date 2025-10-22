@@ -1,11 +1,15 @@
 package onku.backend.domain.attendance.service
 
+import jakarta.persistence.EntityManager
+import jakarta.persistence.PersistenceContext
 import onku.backend.domain.attendance.AttendanceErrorCode
 import onku.backend.domain.attendance.dto.*
 import onku.backend.domain.attendance.enums.AttendancePointType
 import onku.backend.domain.attendance.repository.AttendanceRepository
 import onku.backend.domain.member.Member
 import onku.backend.domain.member.repository.MemberProfileRepository
+import onku.backend.domain.point.MemberPointHistory
+import onku.backend.domain.point.repository.MemberPointHistoryRepository
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
@@ -23,7 +27,9 @@ class AttendanceService(
     private val sessionRepository: SessionRepository,
     private val attendanceRepository: AttendanceRepository,
     private val memberProfileRepository: MemberProfileRepository,
+    private val memberPointHistoryRepository: MemberPointHistoryRepository,
     private val tokenGenerator: TokenGenerator,
+    @PersistenceContext private val em: EntityManager,
     private val clock: Clock
 ) {
     private val ttlSeconds: Long = 15L
@@ -72,6 +78,18 @@ class AttendanceService(
                 createdAt = now,
                 updatedAt = now
             )
+
+            val memberRef = em.getReference(Member::class.java, memberId)
+            val week: Long = session.week
+            val history = MemberPointHistory.ofAttendance(
+                member = memberRef,
+                status = state,
+                occurredAt = now,
+                week = week,
+                time = now.toLocalTime()
+            )
+            memberPointHistoryRepository.save(history)
+
         } catch (e: DataIntegrityViolationException) {
             throw CustomException(AttendanceErrorCode.ATTENDANCE_ALREADY_RECORDED)
         }

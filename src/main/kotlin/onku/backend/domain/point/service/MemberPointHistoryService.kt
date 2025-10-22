@@ -2,20 +2,20 @@ package onku.backend.domain.point.service
 
 import onku.backend.domain.member.Member
 import onku.backend.domain.point.converter.MemberPointConverter
-import onku.backend.domain.point.dto.UserPointHistoryResponse
-import onku.backend.domain.point.repository.MemberPointRepository
+import onku.backend.domain.point.dto.MemberPointHistoryResponse
+import onku.backend.domain.point.repository.MemberPointHistoryRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.math.max
 
 @Service
-class MemberPointService(
-    private val recordRepository: MemberPointRepository
+class MemberPointHistoryService(
+    private val recordRepository: MemberPointHistoryRepository
 ) {
 
     @Transactional(readOnly = true)
-    fun getHistory(member: Member, page1Based: Int, size: Int): UserPointHistoryResponse {
+    fun getHistory(member: Member, page1Based: Int, size: Int): MemberPointHistoryResponse {
         val safePage = max(0, page1Based - 1)
         val pageable = PageRequest.of(safePage, size)
 
@@ -29,7 +29,7 @@ class MemberPointService(
         val page = recordRepository.findByMemberOrderByOccurredAtDesc(member, pageable)
         val records = page.content.map(MemberPointConverter::toResponse)
 
-        return UserPointHistoryResponse(
+        return MemberPointHistoryResponse(
             memberId = member.id!!,
             plusPoints = plusPoints,
             minusPoints = minusPoints,

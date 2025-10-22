@@ -41,7 +41,7 @@ class MemberPointHistory(
     val occurredAt: LocalDateTime,
 
     @Column(name = "week")
-    val week: Int? = null,
+    val week: Long? = null,
 
     @Column(name = "attendance_time")
     val attendanceTime: LocalTime? = null,
@@ -55,7 +55,7 @@ class MemberPointHistory(
             member: Member,
             status: AttendancePointType,
             occurredAt: LocalDateTime,
-            week: Int,
+            week: Long,
             time: LocalTime? = null
         ): MemberPointHistory {
             return when (status) {
@@ -63,7 +63,7 @@ class MemberPointHistory(
                     member = member,
                     category = PointCategory.ATTENDANCE,
                     type = status.name,
-                    points = status.points,      // -1
+                    points = status.points,
                     occurredAt = occurredAt,
                     week = week,
                     earlyLeaveTime = time
