@@ -5,6 +5,7 @@ import onku.backend.domain.session.SessionErrorCode
 import onku.backend.domain.session.SessionImage
 import onku.backend.domain.session.repository.SessionImageRepository
 import onku.backend.global.exception.CustomException
+import onku.backend.global.s3.dto.GetS3UrlDto
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -12,13 +13,18 @@ import org.springframework.transaction.annotation.Transactional
 class SessionImageService(
     private val sessionImageRepository: SessionImageRepository,
 ) {
-    fun uploadImage(key: String, sessionDetail: SessionDetail) : SessionImage {
-        return sessionImageRepository.save(
+    @Transactional
+    fun uploadImages(
+        sessionDetail: SessionDetail,
+        preSignedImages: List<GetS3UrlDto>
+    ): List<SessionImage> {
+        val entities = preSignedImages.map { info ->
             SessionImage(
                 sessionDetail = sessionDetail,
-                url = key
+                url = info.key
             )
-        )
+        }
+        return sessionImageRepository.saveAll(entities).toList()
     }
 
     @Transactional

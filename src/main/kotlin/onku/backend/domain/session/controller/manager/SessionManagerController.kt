@@ -68,7 +68,7 @@ class SessionManagerController(
     fun uploadSessionImage(
         @CurrentMember member: Member,
         @RequestBody uploadSessionImageRequest : UploadSessionImageRequest
-    ) : ResponseEntity<SuccessResponse<UploadSessionImageResponse>> {
+    ) : ResponseEntity<SuccessResponse<List<UploadSessionImageResponse>>> {
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.uploadSessionImage(member, uploadSessionImageRequest)))
     }
 

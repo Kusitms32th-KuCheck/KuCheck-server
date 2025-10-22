@@ -4,5 +4,5 @@ import jakarta.validation.constraints.NotNull
 
 data class UploadSessionImageRequest (
     @field:NotNull val sessionDetailId : Long,
-    val imageFileName : String
+    val imageFileName : List<SessionImageRequest>
 )

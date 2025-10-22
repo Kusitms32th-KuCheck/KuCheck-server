@@ -55,18 +55,29 @@ class SessionFacade(
     fun uploadSessionImage(
         member: Member,
         uploadSessionImageRequest: UploadSessionImageRequest
-    ): UploadSessionImageResponse {
+    ): List<UploadSessionImageResponse> {
         val sessionDetail = sessionDetailService.getById(uploadSessionImageRequest.sessionDetailId)
-        val getS3UrlDto = s3Service.getPostS3Url(
-            member.id!!,
-            uploadSessionImageRequest.imageFileName,
-            FolderName.SESSION.name
+
+        val preSignedList = uploadSessionImageRequest.imageFileName.map { image ->
+            val preSign = s3Service.getPostS3Url(
+                member.id!!,
+                image.fileName,
+                FolderName.SESSION.name
+            )
+            preSign
+        }
+        val savedImages = sessionImageService.uploadImages(
+            sessionDetail = sessionDetail,
+            preSignedImages = preSignedList
         )
-        val sessionImage = sessionImageService.uploadImage(getS3UrlDto.key, sessionDetail)
-        return UploadSessionImageResponse(
-            sessionImage.id!!,
-            getS3UrlDto.preSignedUrl
-        )
+
+        return savedImages.map { entity ->
+            val preSign = preSignedList.first { it.key == entity.url }
+            UploadSessionImageResponse(
+                sessionImageId = entity.id!!,
+                sessionImagePreSignedUrl = preSign.preSignedUrl
+            )
+        }
     }
 
     fun deleteSessionImage(deleteSessionImageRequest: DeleteSessionImageRequest): GetPreSignedUrlDto {
