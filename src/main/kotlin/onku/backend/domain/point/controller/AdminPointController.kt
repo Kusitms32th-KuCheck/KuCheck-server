@@ -65,6 +65,14 @@ class AdminPointController(
         return ResponseEntity.ok(SuccessResponse.ok(Unit))
     }
 
+    @PatchMapping("/is-staff")
+    @Operation(summary = "운영진 여부 수정", description = "memberId와 isStaff를 받아 Member의 isStaff를 수정합니다.")
+    fun updateIsStaff(@RequestBody @Valid req: UpdateIsStaffRequest): ResponseEntity<SuccessResponse<Unit>> {
+        commandService.updateIsStaff(req.memberId!!, req.isStaff!!)
+        return ResponseEntity.ok(SuccessResponse.ok(Unit))
+    }
+
+
     @PatchMapping("/kupick")
     @Operation(
         summary = "이번 달 큐픽 존재 여부 수정",
