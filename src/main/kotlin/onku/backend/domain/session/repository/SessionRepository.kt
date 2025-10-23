@@ -36,4 +36,24 @@ interface SessionRepository : CrudRepository<Session, Long> {
         @Param("start") start: LocalDateTime,
         @Param("end") end: LocalDateTime
     ): List<LocalDateTime>
+
+    @Query("""
+        SELECT s
+        FROM Session s
+        WHERE s.attendanceFinalized = false
+          AND s.startTime <= :pivot
+    """)
+    fun findFinalizeDue(
+        @Param("pivot") pivot: LocalDateTime
+    ): List<Session>
+
+    @Query("""
+        SELECT s
+        FROM Session s
+        WHERE s.attendanceFinalized = false
+          AND s.startTime > :pivot
+    """)
+    fun findUnfinalizedAfter(
+        @Param("pivot") pivot: LocalDateTime
+    ): List<Session>
 }
