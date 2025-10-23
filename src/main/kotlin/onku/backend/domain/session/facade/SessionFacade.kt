@@ -15,6 +15,7 @@ import onku.backend.domain.session.service.SessionService
 import onku.backend.global.page.PageResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import onku.backend.global.s3.enums.FolderName
+import onku.backend.global.s3.enums.UploadOption
 import onku.backend.global.s3.service.S3Service
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
@@ -62,7 +63,8 @@ class SessionFacade(
             val preSign = s3Service.getPostS3Url(
                 member.id!!,
                 image.fileName,
-                FolderName.SESSION.name
+                FolderName.SESSION.name,
+                UploadOption.IMAGE
             )
             preSign
         }

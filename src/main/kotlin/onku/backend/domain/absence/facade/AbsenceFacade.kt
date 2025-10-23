@@ -11,6 +11,7 @@ import onku.backend.global.exception.ErrorCode
 import onku.backend.global.page.PageResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import onku.backend.global.s3.enums.FolderName
+import onku.backend.global.s3.enums.UploadOption
 import onku.backend.global.s3.service.S3Service
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
@@ -36,7 +37,7 @@ class AbsenceFacade(
                 throw CustomException(ErrorCode.INVALID_SESSION)
             }
         }
-        val preSignedUrlDto = s3Service.getPostS3Url(member.id!!, submitAbsenceReportRequest.fileName, FolderName.ABSENCE.name)
+        val preSignedUrlDto = s3Service.getPostS3Url(member.id!!, submitAbsenceReportRequest.fileName, FolderName.ABSENCE.name, UploadOption.FILE)
         absenceService.submitAbsenceReport(member, submitAbsenceReportRequest, preSignedUrlDto.key, session)
         return GetPreSignedUrlDto(preSignedUrlDto.preSignedUrl)
     }

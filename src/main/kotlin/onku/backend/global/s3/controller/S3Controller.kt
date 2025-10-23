@@ -6,6 +6,7 @@ import onku.backend.domain.member.Member
 import onku.backend.global.annotation.CurrentMember
 import onku.backend.global.response.SuccessResponse
 import onku.backend.global.s3.dto.GetS3UrlDto
+import onku.backend.global.s3.enums.UploadOption
 import onku.backend.global.s3.service.S3Service
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,7 +25,7 @@ class S3Controller(
     @GetMapping("/postUrl")
     @Operation(summary = "업로드 용 postUrl", description = "업로드 용 PresignedUrl을 반환합니다.")
     fun postUrl(@CurrentMember member : Member, folderName : String, fileName : String) : ResponseEntity<SuccessResponse<GetS3UrlDto>> {
-        return ResponseEntity.ok(SuccessResponse.ok(s3Service.getPostS3Url(member.id!!, fileName, folderName)))
+        return ResponseEntity.ok(SuccessResponse.ok(s3Service.getPostS3Url(member.id!!, fileName, folderName, UploadOption.FILE)))
     }
 
     @GetMapping("/getUrl")
