@@ -5,20 +5,9 @@ import jakarta.validation.constraints.NotNull
 
 sealed interface UpdateManualPointRequest
 
-data class UpdateIsTfRequest(
-    @field:NotNull val memberId: Long?,
-    @field:NotNull val isTf: Boolean?
-) : UpdateManualPointRequest
-
-data class UpdateIsStaffRequest(
-    @field:NotNull val memberId: Long? = null,
-    @field:NotNull val isStaff: Boolean? = null
+data class ToggleMemberRequest(
+    @field:NotNull val memberId: Long? = null
 )
-
-data class UpdateKupickRequest(
-    @field:NotNull val memberId: Long?,
-    @field:NotNull val isKupick: Boolean?
-) : UpdateManualPointRequest
 
 data class UpdateKupportersPointsRequest(
     @field:NotNull val memberId: Long?,

@@ -39,51 +39,55 @@ class AdminPointController(
 
     @PatchMapping("/study")
     @Operation(summary = "스터디 점수 수정", description = "memberId와 studyPoints를 받아 수정합니다.")
-    fun updateStudyPoints(@RequestBody @Valid req: UpdateStudyPointsRequest): ResponseEntity<SuccessResponse<Unit>> {
-        commandService.updateStudyPoints(req.memberId!!, req.studyPoints!!)
-        return ResponseEntity.ok(SuccessResponse.ok(Unit))
+    fun updateStudyPoints(@RequestBody @Valid req: UpdateStudyPointsRequest)
+            : ResponseEntity<SuccessResponse<StudyPointsResult>> {
+        val result = commandService.updateStudyPoints(req.memberId!!, req.studyPoints!!)
+        return ResponseEntity.ok(SuccessResponse.ok(result))
     }
 
     @PatchMapping("/kupporters")
-    @Operation(summary = "큐포터즈 점수 수정", description = "memberId와 kuportersPoints를 받아 수정합니다.")
-    fun updateKupportersPoints(@RequestBody @Valid req: UpdateKupportersPointsRequest): ResponseEntity<SuccessResponse<Unit>> {
-        commandService.updateKupportersPoints(req.memberId!!, req.kuportersPoints!!)
-        return ResponseEntity.ok(SuccessResponse.ok(Unit))
+    @Operation(summary = "큐포터즈 점수 수정", description = "memberId와 kupportersPoints를 받아 수정합니다.")
+    fun updateKupportersPoints(@RequestBody @Valid req: UpdateKupportersPointsRequest)
+            : ResponseEntity<SuccessResponse<KupportersPointsResult>> {
+        val result = commandService.updateKupportersPoints(req.memberId!!, req.kuportersPoints!!)
+        return ResponseEntity.ok(SuccessResponse.ok(result))
     }
 
     @PatchMapping("/memo")
     @Operation(summary = "메모 수정", description = "memberId와 memo를 받아 수정합니다.")
-    fun updateMemo(@RequestBody @Valid req: UpdateMemoRequest): ResponseEntity<SuccessResponse<Unit>> {
-        commandService.updateMemo(req.memberId!!, req.memo!!)
-        return ResponseEntity.ok(SuccessResponse.ok(Unit))
+    fun updateMemo(@RequestBody @Valid req: UpdateMemoRequest)
+            : ResponseEntity<SuccessResponse<MemoResult>> {
+        val result = commandService.updateMemo(req.memberId!!, req.memo!!)
+        return ResponseEntity.ok(SuccessResponse.ok(result))
     }
 
     @PatchMapping("/is-tf")
-    @Operation(summary = "TF 여부 수정", description = "memberId와 isTf를 받아 Member의 isTf를 수정합니다.")
-    fun updateIsTf(@RequestBody @Valid req: UpdateIsTfRequest): ResponseEntity<SuccessResponse<Unit>> {
-        commandService.updateIsTf(req.memberId!!, req.isTf!!)
-        return ResponseEntity.ok(SuccessResponse.ok(Unit))
+    @Operation(summary = "TF 여부 토글", description = "memberId만 받아 현재 TF 여부를 반전시킵니다.")
+    fun updateIsTf(@RequestBody @Valid req: ToggleMemberRequest)
+            : ResponseEntity<SuccessResponse<IsTfResult>> {
+        val isTf = commandService.updateIsTf(req.memberId!!)
+        val result = IsTfResult(memberId = req.memberId!!, isTf = isTf)
+        return ResponseEntity.ok(SuccessResponse.ok(result))
     }
 
     @PatchMapping("/is-staff")
-    @Operation(summary = "운영진 여부 수정", description = "memberId와 isStaff를 받아 Member의 isStaff를 수정합니다.")
-    fun updateIsStaff(@RequestBody @Valid req: UpdateIsStaffRequest): ResponseEntity<SuccessResponse<Unit>> {
-        commandService.updateIsStaff(req.memberId!!, req.isStaff!!)
-        return ResponseEntity.ok(SuccessResponse.ok(Unit))
+    @Operation(summary = "운영진(Staff) 여부 토글", description = "memberId만 받아 현재 Staff 여부를 반전시킵니다.")
+    fun updateIsStaff(@RequestBody @Valid req: ToggleMemberRequest)
+            : ResponseEntity<SuccessResponse<IsStaffResult>> {
+        val isStaff = commandService.updateIsStaff(req.memberId!!)
+        val result = IsStaffResult(memberId = req.memberId!!, isStaff = isStaff)
+        return ResponseEntity.ok(SuccessResponse.ok(result))
     }
-
 
     @PatchMapping("/kupick")
     @Operation(
-        summary = "이번 달 큐픽 존재 여부 수정",
-        description = "memberId, isKupick(boolean)을 받아 이번 달 큐픽 레코드를 승인/미승인 처리합니다." +
-                "이번 달 제출 레코드가 없으면 먼저 생성한 뒤 동일하게 approval을 갱신합니다."
+        summary = "이번 달 큐픽 승인 토글",
+        description = "memberId만 받아 이번 달 큐픽 승인 여부를 반전시킵니다. 제출 레코드가 없으면 생성합니다."
     )
-    fun updateKupick(
-        @RequestBody @Valid req: UpdateKupickRequest
-    ): ResponseEntity<SuccessResponse<Unit>> {
-        commandService.updateKupickApproval(req.memberId!!, req.isKupick!!)
-        return ResponseEntity.ok(SuccessResponse.ok(Unit))
+    fun updateKupick(@RequestBody @Valid req: ToggleMemberRequest)
+            : ResponseEntity<SuccessResponse<KupickApprovalResult>> {
+        val result = commandService.updateKupickApproval(req.memberId!!)
+        return ResponseEntity.ok(SuccessResponse.ok(result))
     }
 
     @GetMapping("/monthly")

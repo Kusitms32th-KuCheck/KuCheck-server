@@ -7,6 +7,7 @@ import onku.backend.domain.member.MemberErrorCode
 import onku.backend.domain.member.repository.MemberRepository
 import onku.backend.domain.point.ManualPoint
 import onku.backend.domain.point.MemberPointHistory
+import onku.backend.domain.point.dto.*
 import onku.backend.domain.point.enums.ManualPointType
 import onku.backend.domain.point.repository.ManualPointRepository
 import onku.backend.domain.point.repository.MemberPointHistoryRepository
@@ -27,7 +28,7 @@ class AdminPointCommandService(
 ) {
 
     @Transactional
-    fun updateStudyPoints(memberId: Long, studyPoints: Int) {
+    fun updateStudyPoints(memberId: Long, studyPoints: Int): StudyPointsResult {
         val rec = manualPointRecordRepository.findByMemberId(memberId) ?: newManualRecord(memberId)
         val before = rec.studyPoints ?: 0
         val after = studyPoints
@@ -45,13 +46,14 @@ class AdminPointCommandService(
         }
         rec.studyPoints = after
         manualPointRecordRepository.save(rec)
+        return StudyPointsResult(memberId = rec.member.id!!, studyPoints = after)
     }
 
     @Transactional
-    fun updateKupportersPoints(memberId: Long, kuportersPoints: Int) {
+    fun updateKupportersPoints(memberId: Long, kupportersPoints: Int): KupportersPointsResult {
         val rec = manualPointRecordRepository.findByMemberId(memberId) ?: newManualRecord(memberId)
         val before = rec.kupportersPoints ?: 0
-        val after = kuportersPoints
+        val after = kupportersPoints
         val delta = after - before
         if (delta != 0) {
             val now = LocalDateTime.now(clock)
@@ -66,68 +68,61 @@ class AdminPointCommandService(
         }
         rec.kupportersPoints = after
         manualPointRecordRepository.save(rec)
+        return KupportersPointsResult(memberId = rec.member.id!!, kupportersPoints = after)
     }
 
     @Transactional
-    fun updateMemo(memberId: Long, memo: String) {
+    fun updateMemo(memberId: Long, memo: String): MemoResult {
         val rec = manualPointRecordRepository.findByMemberId(memberId) ?: newManualRecord(memberId)
         rec.memo = memo
         manualPointRecordRepository.save(rec)
+        return MemoResult(memberId = rec.member.id!!, memo = rec.memo)
     }
 
     @Transactional
-    fun updateIsTf(memberId: Long, isTf: Boolean) {
+    fun updateIsTf(memberId: Long): Boolean {
         val member = memberRepository.findById(memberId)
             .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
 
-        if (member.isTf != isTf) {
-            val now = LocalDateTime.now(clock)
-            val delta = if (isTf) ManualPointType.TF.points else -ManualPointType.TF.points
-            memberPointHistoryRepository.save(
-                MemberPointHistory.ofManual(
-                    member = member,
-                    manualType = ManualPointType.TF,
-                    occurredAt = now,
-                    points = delta
-                )
+        val now = LocalDateTime.now(clock)
+        val newValue = !member.isTf
+        val delta = if (newValue) ManualPointType.TF.points else -ManualPointType.TF.points
+
+        memberPointHistoryRepository.save(
+            MemberPointHistory.ofManual(
+                member = member,
+                manualType = ManualPointType.TF,
+                occurredAt = now,
+                points = delta
             )
-            member.isTf = isTf
-        }
-    }
-
-    @Transactional
-    fun updateIsStaff(memberId: Long, isStaff: Boolean) {
-        val member = memberRepository.findById(memberId)
-            .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
-
-        if (member.isStaff != isStaff) {
-            val now = LocalDateTime.now(clock)
-            val delta = if (isStaff) ManualPointType.STAFF.points else -ManualPointType.STAFF.points
-            memberPointHistoryRepository.save(
-                MemberPointHistory.ofManual(
-                    member = member,
-                    manualType = ManualPointType.STAFF,
-                    occurredAt = now,
-                    points = delta
-                )
-            )
-            member.isStaff = isStaff
-        }
-    }
-
-    private fun newManualRecord(memberId: Long): ManualPoint {
-        val memberRef = runCatching { memberRepository.getReferenceById(memberId) }
-            .getOrElse { throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
-        return ManualPoint(
-            member = memberRef,
-            studyPoints = 0,
-            kupportersPoints = 0,
-            memo = null
         )
+        member.isTf = newValue
+        return newValue
     }
 
     @Transactional
-    fun updateKupickApproval(memberId: Long, isKupick: Boolean): Long {
+    fun updateIsStaff(memberId: Long): Boolean {
+        val member = memberRepository.findById(memberId)
+            .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+
+        val now = LocalDateTime.now(clock)
+        val newValue = !member.isStaff
+        val delta = if (newValue) ManualPointType.STAFF.points else -ManualPointType.STAFF.points
+
+        memberPointHistoryRepository.save(
+            MemberPointHistory.ofManual(
+                member = member,
+                manualType = ManualPointType.STAFF,
+                occurredAt = now,
+                points = delta
+            )
+        )
+        member.isStaff = newValue
+        return newValue
+    }
+
+    @Transactional
+    fun updateKupickApproval(memberId: Long): KupickApprovalResult {
         val member = memberRepository.findById(memberId)
             .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
 
@@ -146,19 +141,37 @@ class AdminPointCommandService(
             kupickRepository.save(created)
         }
 
-        target.updateApproval(isKupick)
+        val newApproved = !target.approval
+        target.updateApproval(newApproved)
 
-        val points = if (isKupick) ManualPointType.KUPICK.points else -ManualPointType.KUPICK.points
+        val delta = if (newApproved) ManualPointType.KUPICK.points else -ManualPointType.KUPICK.points
         memberPointHistoryRepository.save(
             MemberPointHistory.ofManual(
                 member = member,
                 manualType = ManualPointType.KUPICK,
                 occurredAt = now,
-                points = points
+                points = delta
             )
         )
 
-        return kupickRepository.save(target).id
+        val savedId = kupickRepository.save(target).id
             ?: throw CustomException(KupickErrorCode.KUPICK_SAVE_FAILED)
+
+        return KupickApprovalResult(
+            memberId = member.id!!,
+            kupickId = savedId,
+            isKupick = newApproved
+        )
+    }
+
+    private fun newManualRecord(memberId: Long): ManualPoint {
+        val memberRef = runCatching { memberRepository.getReferenceById(memberId) }
+            .getOrElse { throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+        return ManualPoint(
+            member = memberRef,
+            studyPoints = 0,
+            kupportersPoints = 0,
+            memo = null
+        )
     }
 }
