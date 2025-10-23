@@ -9,15 +9,21 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 
 interface SessionRepository : CrudRepository<Session, Long> {
 
-    fun findTopByStartDateAndSessionDetail_StartTimeLessThanEqualAndSessionDetail_EndTimeGreaterThanEqualOrderBySessionDetail_StartTimeDesc(
-        date: LocalDate,
-        time1: LocalTime,
-        time2: LocalTime
-    ): Session?
+    @Query("""
+        SELECT s
+        FROM Session s
+        JOIN s.sessionDetail sd
+        WHERE function('timestamp', s.startDate, sd.startTime) <= :startBound
+          AND function('timestamp', s.startDate, sd.endTime)   >= :endBound
+        ORDER BY s.startDate DESC, sd.startTime DESC
+    """)
+    fun findOpenWindow(
+        @Param("startBound") startBound: LocalDateTime,
+        @Param("endBound") endBound: LocalDateTime
+    ): List<Session>
 
     @Query(
         """
@@ -39,10 +45,10 @@ interface SessionRepository : CrudRepository<Session, Long> {
     fun findAll(pageable: Pageable): Page<Session>
 
     @Query("""
-        select function('timestamp', sess.startDate, d.startTime)
-        from Session sess join sess.sessionDetail d
-        where function('timestamp', sess.startDate, d.startTime) >= :start
-          and function('timestamp', sess.startDate, d.startTime) <  :end
+        SELECT function('timestamp', sess.startDate, d.startTime)
+        FROM Session sess join sess.sessionDetail d
+        WHERE function('timestamp', sess.startDate, d.startTime) >= :start
+          AND function('timestamp', sess.startDate, d.startTime) <  :end
     """)
     fun findStartTimesBetween(
         @Param("start") start: LocalDateTime,

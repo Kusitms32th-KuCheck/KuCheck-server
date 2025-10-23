@@ -2,7 +2,6 @@ package onku.backend.domain.session
 
 import jakarta.persistence.*
 import onku.backend.global.entity.BaseEntity
-import java.time.LocalDateTime
 import java.time.LocalTime
 
 @Entity

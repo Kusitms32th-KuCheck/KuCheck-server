@@ -52,16 +52,8 @@ class AttendanceService(
     }
 
     private fun findOpenSession(now: LocalDateTime): Session? {
-        val date = now.toLocalDate()
-        val startUpperTime = now.plusMinutes(AttendancePolicy.OPEN_GRACE_MINUTES).toLocalTime()
-        val endLowerTime = now.toLocalTime()
-
-        return sessionRepository
-            .findTopByStartDateAndSessionDetail_StartTimeLessThanEqualAndSessionDetail_EndTimeGreaterThanEqualOrderBySessionDetail_StartTimeDesc(
-                date,
-                startUpperTime,
-                endLowerTime
-            )
+        val startBound = now.plusMinutes(AttendancePolicy.OPEN_GRACE_MINUTES)
+        return sessionRepository.findOpenWindow(startBound, now).firstOrNull()
     }
 
     @Transactional
