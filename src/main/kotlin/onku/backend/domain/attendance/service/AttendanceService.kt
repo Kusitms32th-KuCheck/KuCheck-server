@@ -3,6 +3,7 @@ package onku.backend.domain.attendance.service
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import onku.backend.domain.attendance.AttendanceErrorCode
+import onku.backend.domain.attendance.AttendancePolicy
 import onku.backend.domain.attendance.dto.*
 import onku.backend.domain.attendance.enums.AttendancePointType
 import onku.backend.domain.attendance.repository.AttendanceRepository
@@ -33,23 +34,24 @@ class AttendanceService(
     @PersistenceContext private val em: EntityManager,
     private val clock: Clock
 ) {
-    private val ttlSeconds: Long = 15L
-    private val OPEN_GRACE_MINUTES: Long = 30
-    private val LATE_THRESHOLD_MINUTES: Long = 20
-
-
     @Transactional(readOnly = true)
     fun issueAttendanceTokenFor(member: Member): AttendanceTokenResponse {
         val now = LocalDateTime.now(clock)
-        val expAt = now.plusSeconds(ttlSeconds)
+        val expAt = now.plusSeconds(AttendancePolicy.TOKEN_TTL_SECONDS)
         val token = tokenGenerator.generateOpaqueToken()
 
-        tokenCache.putAsActiveSingle(member.id!!, token, now, expAt, ttlSeconds)
+        tokenCache.putAsActiveSingle(
+            member.id!!,
+            token,
+            now,
+            expAt,
+            AttendancePolicy.TOKEN_TTL_SECONDS
+        )
         return AttendanceTokenResponse(token = token, expAt = expAt)
     }
 
     private fun findOpenSession(now: LocalDateTime): Session? {
-        val startUpper = now.plusMinutes(OPEN_GRACE_MINUTES)
+        val startUpper = now.plusMinutes(AttendancePolicy.OPEN_GRACE_MINUTES)
         val endLower = now
         return sessionRepository
             .findFirstByStartTimeLessThanEqualAndEndTimeGreaterThanEqualOrderByStartTimeDesc(
@@ -76,8 +78,14 @@ class AttendanceService(
 
         tokenCache.consumeToken(token) ?: throw CustomException(ErrorCode.UNAUTHORIZED)
 
-        val lateThreshold = session.startTime.plusMinutes(LATE_THRESHOLD_MINUTES)
-        val state = if (now.isAfter(lateThreshold)) AttendancePointType.LATE else AttendancePointType.PRESENT
+        val startTime = session.startTime
+        val lateThreshold = startTime.plusMinutes(AttendancePolicy.LATE_WINDOW_MINUTES)
+
+        val state = when {
+            now.isAfter(lateThreshold) -> AttendancePointType.ABSENT
+            !now.isBefore(startTime)   -> AttendancePointType.LATE
+            else                       -> AttendancePointType.PRESENT
+        }
 
         try {
             attendanceRepository.insertOnly(
