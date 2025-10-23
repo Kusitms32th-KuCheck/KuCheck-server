@@ -14,8 +14,16 @@ class FinalizeScheduler(
     private val finalizeService: AttendanceFinalizeService,
     private val clock: Clock
 ) {
-    fun scheduleOnce(sessionId: Long, runAt: LocalDateTime) {
+    private val registry = java.util.concurrent.ConcurrentHashMap<Long, java.util.concurrent.ScheduledFuture<*>>()
+
+    fun schedule(sessionId: Long, runAt: LocalDateTime) {
+        registry.remove(sessionId)?.cancel(false) // 기존 예약이 있으면 취소
+
         val instant = runAt.atZone(clock.zone).toInstant()
-        taskScheduler.schedule({ finalizeService.finalizeSession(sessionId) }, instant)
+        val future = taskScheduler.schedule(
+            { finalizeService.finalizeSession(sessionId) },
+            instant
+        )
+        if (future != null) registry[sessionId] = future
     }
 }
