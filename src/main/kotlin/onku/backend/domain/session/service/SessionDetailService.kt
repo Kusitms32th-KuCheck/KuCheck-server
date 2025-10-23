@@ -1,5 +1,7 @@
 package onku.backend.domain.session.service
 
+import onku.backend.domain.attendance.AttendancePolicy.ABSENT_START_MINUTES
+import onku.backend.domain.attendance.finalize.FinalizeEvent
 import onku.backend.domain.session.Session
 import onku.backend.domain.session.SessionDetail
 import onku.backend.domain.session.SessionErrorCode
@@ -7,13 +9,17 @@ import onku.backend.domain.session.dto.request.UpsertSessionDetailRequest
 import onku.backend.domain.session.repository.SessionDetailRepository
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import onku.backend.domain.session.util.SessionTimeUtil.absentBoundary
+import onku.backend.global.exception.ErrorCode
 
 @Service
 class SessionDetailService(
     private val sessionDetailRepository: SessionDetailRepository,
-    private val sessionRepository: SessionRepository
+    private val sessionRepository: SessionRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
     @Transactional
     fun upsertSessionDetail(session : Session, upsertSessionDetailRequest: UpsertSessionDetailRequest): Long {
@@ -38,6 +44,14 @@ class SessionDetailService(
         session.sessionDetail = detail
 
         sessionRepository.save(session)
+
+        val runAt = absentBoundary(session, ABSENT_START_MINUTES)
+        val sessionId = session.id ?: throw CustomException(ErrorCode.SESSION_NOT_FOUND)
+
+        applicationEventPublisher.publishEvent(
+            FinalizeEvent(sessionId, runAt)
+        )
+
         return (detail.id ?: 0L)
     }
 
