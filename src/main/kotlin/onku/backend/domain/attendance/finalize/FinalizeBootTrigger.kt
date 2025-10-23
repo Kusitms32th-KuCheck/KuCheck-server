@@ -10,9 +10,9 @@ import java.time.Clock
 import java.time.LocalDateTime
 
 @Component
-class FinalizeRebuilder(
+class FinalizeBootTrigger(
     private val sessionRepository: SessionRepository,
-    private val oneShot: FinalizeScheduler,
+    private val finalizeScheduler: FinalizeScheduler,
     private val attendanceFinalizeService: AttendanceFinalizeService,
     private val clock: Clock
 ) {
@@ -30,7 +30,7 @@ class FinalizeRebuilder(
         sessionRepository.findUnfinalizedAfter(pivot).forEach { s ->
             runCatching {
                 val runAt = SessionTimeUtil.absentBoundary(s, AttendancePolicy.ABSENT_START_MINUTES)
-                oneShot.scheduleOnce(s.id!!, runAt)
+                finalizeScheduler.schedule(s.id!!, runAt)
             }
         }
     }
