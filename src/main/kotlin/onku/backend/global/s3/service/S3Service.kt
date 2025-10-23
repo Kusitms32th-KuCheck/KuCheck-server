@@ -25,7 +25,11 @@ class S3Service(
     private val s3Presigner: S3Presigner
 ) {
     @Transactional(readOnly = true)
-    fun getPostS3Url(memberId: Long, filename: String, folderName : String, option : UploadOption): GetS3UrlDto {
+    fun getPostS3Url(memberId: Long, filename: String?, folderName : String, option : UploadOption): GetS3UrlDto {
+        if(filename.isNullOrBlank()) {
+            return GetS3UrlDto(preSignedUrl = "", key = "")
+        }
+
         val key = "$folderName/$memberId/${UUID.randomUUID()}/$filename"
         val contentType = when (option) {
             UploadOption.FILE -> guessFileType(filename)
@@ -52,7 +56,10 @@ class S3Service(
     }
 
     @Transactional(readOnly = true)
-    fun getGetS3Url(memberId: Long, key: String): GetS3UrlDto {
+    fun getGetS3Url(memberId: Long, key: String?): GetS3UrlDto {
+        if(key.isNullOrBlank()) {
+            return GetS3UrlDto("", "")
+        }
         val contentType = guessFileType(key)
 
         // 응답 Content-Type을 강제로 지정하고 싶으면 responseContentType 사용
