@@ -1,5 +1,6 @@
 package onku.backend.global.s3.controller
 
+import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import onku.backend.domain.member.Member
@@ -22,12 +23,14 @@ class S3Controller(
     /**
      * Todo 테스트용 컨트롤러임 나중에 지우기
      */
+    @Hidden
     @GetMapping("/postUrl")
     @Operation(summary = "업로드 용 postUrl", description = "업로드 용 PresignedUrl을 반환합니다.")
     fun postUrl(@CurrentMember member : Member, folderName : String, fileName : String) : ResponseEntity<SuccessResponse<GetS3UrlDto>> {
         return ResponseEntity.ok(SuccessResponse.ok(s3Service.getPostS3Url(member.id!!, fileName, folderName, UploadOption.FILE)))
     }
 
+    @Hidden
     @GetMapping("/getUrl")
     @Operation(summary = "조회 용 getUrl", description = "조회 용 PresignedUrl을 반환합니다.")
     fun getUrl(@CurrentMember member : Member, keyName: String) : ResponseEntity<SuccessResponse<GetS3UrlDto>> {
