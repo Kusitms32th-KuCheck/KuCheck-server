@@ -10,6 +10,11 @@ data class UpdateIsTfRequest(
     @field:NotNull val isTf: Boolean?
 ) : UpdateManualPointRequest
 
+data class UpdateIsStaffRequest(
+    @field:NotNull val memberId: Long? = null,
+    @field:NotNull val isStaff: Boolean? = null
+)
+
 data class UpdateKupickRequest(
     @field:NotNull val memberId: Long?,
     @field:NotNull val isKupick: Boolean?
