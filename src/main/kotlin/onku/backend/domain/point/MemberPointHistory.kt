@@ -95,13 +95,14 @@ class MemberPointHistory(
         fun ofManual(
             member: Member,
             manualType: ManualPointType,
-            occurredAt: LocalDateTime
+            occurredAt: LocalDateTime,
+            points: Int
         ): MemberPointHistory {
             return MemberPointHistory(
                 member = member,
                 category = PointCategory.MANUAL,
                 type = manualType.name,
-                points = manualType.points,
+                points = points,
                 occurredAt = occurredAt
             )
         }
