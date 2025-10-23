@@ -1,6 +1,7 @@
 package onku.backend.domain.kupick.service
 
 import onku.backend.domain.kupick.Kupick
+import onku.backend.domain.kupick.KupickErrorCode
 import onku.backend.domain.kupick.repository.KupickRepository
 import onku.backend.domain.kupick.repository.projection.KupickUrls
 import onku.backend.domain.kupick.repository.projection.KupickWithProfile
@@ -40,7 +41,7 @@ class KupickService(
         val kupick = kupickRepository.findThisMonthByMember(
             member,
             monthObject.startOfMonth,
-            monthObject.startOfNextMonth) ?: throw CustomException(ErrorCode.KUPICK_APPLICATION_FIRST)
+            monthObject.startOfNextMonth) ?: throw CustomException(KupickErrorCode.KUPICK_APPLICATION_FIRST)
         kupick.submitView(viewUrl, now)
     }
 
@@ -67,7 +68,7 @@ class KupickService(
     @Transactional
     fun decideApproval(kupickId: Long, approval: Boolean) {
         val kupick = kupickRepository.findByIdOrNull(kupickId)
-            ?: throw CustomException(ErrorCode.KUPICK_NOT_FOUND)
+            ?: throw CustomException(KupickErrorCode.KUPICK_NOT_FOUND)
         kupick.updateApproval(approval)
     }
 }

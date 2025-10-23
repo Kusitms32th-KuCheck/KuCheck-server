@@ -29,4 +29,10 @@ interface AttendanceRepository : CrudRepository<Attendance, Long> {
         @Param("createdAt") createdAt: LocalDateTime,
         @Param("updatedAt") updatedAt: LocalDateTime
     ): Int
+
+    fun findByMemberIdInAndAttendanceTimeBetween(
+        memberIds: Collection<Long>,
+        start: LocalDateTime,
+        end: LocalDateTime
+    ): List<Attendance>
 }
