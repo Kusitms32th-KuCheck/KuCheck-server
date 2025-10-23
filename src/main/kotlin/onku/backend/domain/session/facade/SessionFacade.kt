@@ -1,14 +1,12 @@
 package onku.backend.domain.session.facade
 
 import onku.backend.domain.member.Member
+import onku.backend.domain.session.dto.SessionImageDto
 import onku.backend.domain.session.dto.request.DeleteSessionImageRequest
-import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
 import onku.backend.domain.session.dto.request.SessionSaveRequest
 import onku.backend.domain.session.dto.request.UploadSessionImageRequest
 import onku.backend.domain.session.dto.request.UpsertSessionDetailRequest
-import onku.backend.domain.session.dto.response.GetInitialSessionResponse
-import onku.backend.domain.session.dto.response.UploadSessionImageResponse
-import onku.backend.domain.session.dto.response.UpsertSessionDetailResponse
+import onku.backend.domain.session.dto.response.*
 import onku.backend.domain.session.service.SessionDetailService
 import onku.backend.domain.session.service.SessionImageService
 import onku.backend.domain.session.service.SessionService
@@ -86,6 +84,32 @@ class SessionFacade(
         sessionImageService.deleteImage(sessionImage.id!!)
         return GetPreSignedUrlDto(
             getS3UrlDto.preSignedUrl
+        )
+    }
+
+    fun getSessionDetailPage(detailId: Long): GetDetailSessionResponse {
+        val detail = sessionDetailService.getById(detailId)
+        val images = sessionImageService.findAllBySessionDetailId(detailId)
+
+        val imageDtos = images.map { image ->
+            val preSignedUrl = s3Service.getGetS3Url(
+                memberId = 0,
+                key = image.url
+            ).preSignedUrl
+
+            SessionImageDto(
+                sessionImageId = image.id!!,
+                sessionImagePreSignedUrl = preSignedUrl
+            )
+        }
+
+        return GetDetailSessionResponse(
+            sessionDetailId = detail.id!!,
+            place = detail.place,
+            startTime = detail.startTime,
+            endTime = detail.endTime,
+            content = detail.content,
+            sessionImages = imageDtos
         )
     }
 }

@@ -8,6 +8,7 @@ import onku.backend.domain.session.dto.request.DeleteSessionImageRequest
 import onku.backend.domain.session.dto.request.SessionSaveRequest
 import onku.backend.domain.session.dto.request.UploadSessionImageRequest
 import onku.backend.domain.session.dto.request.UpsertSessionDetailRequest
+import onku.backend.domain.session.dto.response.GetDetailSessionResponse
 import onku.backend.domain.session.dto.response.GetInitialSessionResponse
 import onku.backend.domain.session.dto.response.UploadSessionImageResponse
 import onku.backend.domain.session.dto.response.UpsertSessionDetailResponse
@@ -81,6 +82,17 @@ class SessionManagerController(
         @RequestBody deleteSessionImageRequest : DeleteSessionImageRequest
     ) : ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.deleteSessionImage(deleteSessionImageRequest)))
+    }
+
+    @GetMapping("/detail/{id}")
+    @Operation(
+        summary = "세션 상세페이지 조회",
+        description = "세션 상세정보를 조회합니다."
+    )
+    fun getSessionDetailPage(
+        @PathVariable(name = "id") detailId : Long
+    ) : ResponseEntity<SuccessResponse<GetDetailSessionResponse>> {
+        return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.getSessionDetailPage(detailId)))
     }
 
 }

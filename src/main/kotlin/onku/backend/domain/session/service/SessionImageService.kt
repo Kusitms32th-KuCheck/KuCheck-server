@@ -36,4 +36,9 @@ class SessionImageService(
     fun getById(id : Long): SessionImage {
         return sessionImageRepository.findById(id).orElseThrow{CustomException(SessionErrorCode.SESSION_IMAGE_NOT_FOUND)}
     }
+
+    @Transactional(readOnly = true)
+    fun findAllBySessionDetailId(detailId : Long) : List<SessionImage> {
+        return sessionImageRepository.findAllBySessionDetailId(detailId)
+    }
 }
