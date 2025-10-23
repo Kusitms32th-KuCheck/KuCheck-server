@@ -10,18 +10,20 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
 interface AbsenceReportRepository : JpaRepository<AbsenceReport, Long> {
-    @Query("""
+    @Query(
+        """
         select
             ar.id as absenceReportId,
             ar.status as absenceType,
             ar.approval as absenceReportApproval,
             ar.createdAt as submitDateTime,
             s.title as sessionTitle,
-            s.startTime as sessionStartDateTime
+            s.startDate as sessionStartDateTime
         from AbsenceReport ar
         join ar.session s
         where ar.member = :member
-    """)
+    """
+    )
     fun findMyAbsenceReports(
         @Param("member") member: Member,
         pageable: Pageable
