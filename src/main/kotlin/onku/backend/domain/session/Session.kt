@@ -34,6 +34,9 @@ class Session(
     @Column(name = "is_reward", nullable = false)
     val isReward: Boolean,
 
+    var attendanceFinalized: Boolean = false,
+    var attendanceFinalizedAt: LocalDateTime? = null,
+
     @Column(name = "open_grace_seconds", nullable = false) // 세션 시작 이전 N초부터 출석 허용
     val openGraceSeconds: Long = 0,
 
