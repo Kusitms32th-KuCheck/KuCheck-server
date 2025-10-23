@@ -24,10 +24,10 @@ class SessionService(
     private val clock: Clock = Clock.system(ZoneId.of("Asia/Seoul"))
 ) {
     @Transactional(readOnly = true)
-    fun getUpcomingSessionsForAbsence(pageable: Pageable): Page<SessionAboutAbsenceResponse> {
+    fun getUpcomingSessionsForAbsence(): List<SessionAboutAbsenceResponse> {
         val now = LocalDateTime.now(clock)
 
-        val sessions = sessionRepository.findUpcomingSessions(now.toLocalDate(), pageable)
+        val sessions = sessionRepository.findUpcomingSessions(now.toLocalDate())
 
         return sessions.map { s ->
             val active = sessionValidator.isImminentSession(s, now)

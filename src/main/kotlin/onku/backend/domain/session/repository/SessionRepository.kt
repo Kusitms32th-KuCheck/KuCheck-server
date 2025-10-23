@@ -34,9 +34,8 @@ interface SessionRepository : CrudRepository<Session, Long> {
     )
     fun findUpcomingSessions(
         @Param("now") now: LocalDate,
-        pageable: Pageable,
         @Param("restCategory") restCategory: SessionCategory = SessionCategory.REST
-    ): Page<Session>
+    ): List<Session>
 
 
     @Query("""

@@ -27,10 +27,8 @@ class SessionFacade(
     private val sessionImageService : SessionImageService,
     private val s3Service: S3Service
 ) {
-    fun showSessionAboutAbsence(page: Int, size: Int): PageResponse<SessionAboutAbsenceResponse> {
-        val pageRequest = PageRequest.of(page, size)
-        val sessionPage = sessionService.getUpcomingSessionsForAbsence(pageRequest)
-        return PageResponse.from(sessionPage)
+    fun showSessionAboutAbsence(): List<SessionAboutAbsenceResponse> {
+        return sessionService.getUpcomingSessionsForAbsence()
     }
 
     fun sessionSave(sessionSaveRequestList: List<SessionSaveRequest>): Boolean {
