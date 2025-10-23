@@ -13,6 +13,7 @@ import onku.backend.domain.point.MemberPointHistory
 import onku.backend.domain.point.repository.MemberPointHistoryRepository
 import onku.backend.domain.session.Session
 import onku.backend.domain.session.repository.SessionRepository
+import onku.backend.domain.session.util.SessionTimeUtil
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
 import onku.backend.global.redis.cache.AttendanceTokenCache
@@ -51,11 +52,15 @@ class AttendanceService(
     }
 
     private fun findOpenSession(now: LocalDateTime): Session? {
-        val startUpper = now.plusMinutes(AttendancePolicy.OPEN_GRACE_MINUTES)
-        val endLower = now
+        val date = now.toLocalDate()
+        val startUpperTime = now.plusMinutes(AttendancePolicy.OPEN_GRACE_MINUTES).toLocalTime()
+        val endLowerTime = now.toLocalTime()
+
         return sessionRepository
-            .findFirstByStartTimeLessThanEqualAndEndTimeGreaterThanEqualOrderByStartTimeDesc(
-                startUpper, endLower
+            .findTopByStartDateAndSessionDetail_StartTimeLessThanEqualAndSessionDetail_EndTimeGreaterThanEqualOrderBySessionDetail_StartTimeDesc(
+                date,
+                startUpperTime,
+                endLowerTime
             )
     }
 
@@ -78,13 +83,13 @@ class AttendanceService(
 
         tokenCache.consumeToken(token) ?: throw CustomException(ErrorCode.UNAUTHORIZED)
 
-        val startTime = session.startTime
-        val lateThreshold = startTime.plusMinutes(AttendancePolicy.LATE_WINDOW_MINUTES)
+        val startDateTime = SessionTimeUtil.startDateTime(session)
+        val lateThreshold = startDateTime.plusMinutes(AttendancePolicy.LATE_WINDOW_MINUTES)
 
         val state = when {
-            now.isAfter(lateThreshold) -> AttendancePointType.ABSENT
-            !now.isBefore(startTime)   -> AttendancePointType.LATE
-            else                       -> AttendancePointType.PRESENT
+            now.isAfter(lateThreshold)  -> AttendancePointType.ABSENT
+            !now.isBefore(startDateTime) -> AttendancePointType.LATE
+            else                         -> AttendancePointType.PRESENT
         }
 
         try {

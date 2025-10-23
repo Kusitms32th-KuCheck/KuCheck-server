@@ -46,7 +46,7 @@ class AbsenceService(
                 absenceReportApproval = v.getAbsenceReportApproval(),
                 submitDateTime = v.getSubmitDateTime(),
                 sessionTitle = v.getSessionTitle(),
-                sessionStartDateTime = v.getSessionStartDateTime()
+                sessionStartDate = v.getSessionStartDateTime()
             )
         }
     }

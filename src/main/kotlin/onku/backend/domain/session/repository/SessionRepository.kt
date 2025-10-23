@@ -7,30 +7,42 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 interface SessionRepository : CrudRepository<Session, Long> {
 
-    fun findFirstByStartTimeLessThanEqualAndEndTimeGreaterThanEqualOrderByStartTimeDesc(
-        startTimeUpperBound: LocalDateTime,
-        endTimeLowerBound: LocalDateTime
+    fun findTopByStartDateAndSessionDetail_StartTimeLessThanEqualAndSessionDetail_EndTimeGreaterThanEqualOrderBySessionDetail_StartTimeDesc(
+        date: LocalDate,
+        time1: LocalTime,
+        time2: LocalTime
     ): Session?
+
+    @Query(
+        """
+        SELECT s
+        FROM Session s
+        WHERE s.startDate >= :now AND s.category <> :restCategory
+    """
+    )
+    fun findUpcomingSessions(
+        @Param("now") now: LocalDate,
+        @Param("restCategory") restCategory: SessionCategory = SessionCategory.REST
+    ): List<Session>
+
 
     @Query("""
         SELECT s
         FROM Session s
-        WHERE s.startTime >= :now AND s.category <> :restCategory
-    """)
-    fun findUpcomingSessions(
-        @Param("now") now: LocalDateTime,
-        pageable: Pageable,
-        @Param("restCategory") restCategory: SessionCategory = SessionCategory.REST
-    ): Page<Session>
+        """)
+    fun findAll(pageable: Pageable): Page<Session>
 
     @Query("""
-        select s.startTime 
-        from Session s 
-        where s.startTime >= :start and s.startTime < :end
+        select function('timestamp', sess.startDate, d.startTime)
+        from Session sess join sess.sessionDetail d
+        where function('timestamp', sess.startDate, d.startTime) >= :start
+          and function('timestamp', sess.startDate, d.startTime) <  :end
     """)
     fun findStartTimesBetween(
         @Param("start") start: LocalDateTime,
@@ -40,20 +52,18 @@ interface SessionRepository : CrudRepository<Session, Long> {
     @Query("""
         SELECT s
         FROM Session s
+        JOIN s.sessionDetail sd
         WHERE s.attendanceFinalized = false
-          AND s.startTime <= :pivot
+          AND function('timestamp', s.startDate, sd.startTime) <= :pivot
     """)
-    fun findFinalizeDue(
-        @Param("pivot") pivot: LocalDateTime
-    ): List<Session>
+    fun findFinalizeDue(@Param("pivot") pivot: LocalDateTime): List<Session>
 
     @Query("""
         SELECT s
         FROM Session s
+        JOIN s.sessionDetail sd
         WHERE s.attendanceFinalized = false
-          AND s.startTime > :pivot
+          AND function('timestamp', s.startDate, sd.startTime) > :pivot
     """)
-    fun findUnfinalizedAfter(
-        @Param("pivot") pivot: LocalDateTime
-    ): List<Session>
+    fun findUnfinalizedAfter(@Param("pivot") pivot: LocalDateTime): List<Session>
 }

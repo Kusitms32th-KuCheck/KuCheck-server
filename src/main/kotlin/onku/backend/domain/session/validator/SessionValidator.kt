@@ -15,18 +15,19 @@ class SessionValidator {
 
     /** 지난 세션 여부 */
     fun isPastSession(session: Session, now: LocalDateTime = LocalDateTime.now(zone)): Boolean {
-        return session.endTime.isBefore(now)
+        return session.startDate.isBefore(now.toLocalDate())
     }
 
     /** 금/토에 바로 앞 토요일 세션인지 여부 */
     fun isImminentSession(session: Session, now: LocalDateTime = LocalDateTime.now(zone)): Boolean {
+        val sessionDate = session.startDate  // 이미 LocalDate 타입
         val today = now.toLocalDate()
-        val isFriOrSat = today.dayOfWeek == DayOfWeek.FRIDAY || today.dayOfWeek == DayOfWeek.SATURDAY
-        if (!isFriOrSat) return false
 
-        val upcomingSaturday = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
-        val sessionDate = session.startTime.atZone(zone).toLocalDate()
-        return sessionDate == upcomingSaturday
+        // 세션이 속한 주의 목요일 계산
+        val sessionThursday = sessionDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.THURSDAY))
+
+        // 목요일 00:00부터는 불가 → 목요일보다 이전일 때만 true
+        return today.isBefore(sessionThursday)
     }
 
     /** 휴회 세션인지 여부 */

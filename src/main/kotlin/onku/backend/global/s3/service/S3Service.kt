@@ -3,12 +3,15 @@ package onku.backend.global.s3.service
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
 import onku.backend.global.s3.dto.GetS3UrlDto
+import onku.backend.global.s3.enums.UploadOption
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
+import software.amazon.awssdk.services.s3.presigner.model.DeleteObjectPresignRequest
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
 import java.net.URL
@@ -22,9 +25,18 @@ class S3Service(
     private val s3Presigner: S3Presigner
 ) {
     @Transactional(readOnly = true)
-    fun getPostS3Url(memberId: Long, filename: String, folderName : String): GetS3UrlDto {
+    fun getPostS3Url(memberId: Long, filename: String?, folderName : String, option : UploadOption): GetS3UrlDto {
+        if(filename.isNullOrBlank()) {
+            return GetS3UrlDto(preSignedUrl = "", key = "")
+        }
+
         val key = "$folderName/$memberId/${UUID.randomUUID()}/$filename"
-        val contentType = guessContentType(filename)
+        val contentType = when (option) {
+            UploadOption.FILE -> guessFileType(filename)
+            UploadOption.IMAGE -> guessImageType(filename)
+            else -> throw IllegalArgumentException("Unsupported upload option: $option")
+        }
+
 
         val putObjReq = PutObjectRequest.builder()
             .bucket(bucket)
@@ -44,8 +56,11 @@ class S3Service(
     }
 
     @Transactional(readOnly = true)
-    fun getGetS3Url(memberId: Long, key: String): GetS3UrlDto {
-        val contentType = guessContentType(key)
+    fun getGetS3Url(memberId: Long, key: String?): GetS3UrlDto {
+        if(key.isNullOrBlank()) {
+            return GetS3UrlDto("", "")
+        }
+        val contentType = guessFileType(key)
 
         // 응답 Content-Type을 강제로 지정하고 싶으면 responseContentType 사용
         val getObjReq = GetObjectRequest.builder()
@@ -65,7 +80,25 @@ class S3Service(
         return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key)
     }
 
-    private fun guessContentType(filename: String): String {
+    @Transactional(readOnly = true)
+    fun getDeleteS3Url(key: String): GetS3UrlDto {
+        val deleteReq = DeleteObjectRequest.builder()
+            .bucket(bucket)
+            .key(key)
+            .build()
+
+        val presignReq = DeleteObjectPresignRequest.builder()
+            .signatureDuration(DEFAULT_EXPIRE)
+            .deleteObjectRequest(deleteReq)
+            .build()
+
+        val presigned = s3Presigner.presignDeleteObject(presignReq)
+        val url: URL = presigned.url()
+
+        return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key)
+    }
+
+    private fun guessFileType(filename: String): String {
         val lower = filename.lowercase()
         return when {
             lower.endsWith(".jpg") || lower.endsWith(".jpeg") -> "image/jpeg"
@@ -73,6 +106,16 @@ class S3Service(
             lower.endsWith(".gif") -> "image/gif"
             lower.endsWith(".webp") -> "image/webp"
             lower.endsWith(".pdf") -> "application/pdf"
+            else -> throw CustomException(ErrorCode.INVALID_FILE_EXTENSION)
+        }
+    }
+
+    private fun guessImageType(filename: String): String {
+        val lower = filename.lowercase()
+        return when {
+            lower.endsWith(".jpg") || lower.endsWith(".jpeg") -> "image/jpeg"
+            lower.endsWith(".png") -> "image/png"
+            lower.endsWith(".heic") -> "image/heic"
             else -> throw CustomException(ErrorCode.INVALID_FILE_EXTENSION)
         }
     }

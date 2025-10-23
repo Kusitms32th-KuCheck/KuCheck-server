@@ -13,6 +13,7 @@ import onku.backend.domain.point.MemberPointHistory
 import onku.backend.domain.point.repository.MemberPointHistoryRepository
 import onku.backend.domain.session.Session
 import onku.backend.domain.session.repository.SessionRepository
+import onku.backend.domain.session.util.SessionTimeUtil
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
 import org.springframework.dao.DataIntegrityViolationException
@@ -38,6 +39,9 @@ class AttendanceFinalizeService(
             .orElseThrow { CustomException(ErrorCode.SESSION_NOT_FOUND) }
         if (session.attendanceFinalized) return
 
+        val startDateTime = SessionTimeUtil.startDateTime(session)
+        val absentBoundary = startDateTime.plusMinutes(AttendancePolicy.ABSENT_START_MINUTES)
+
         val targetIds: Set<Long> = memberRepository.findApprovedMemberIds().toSet()
         if (targetIds.isEmpty()) { markFinalized(session, now); return }
 
@@ -47,7 +51,6 @@ class AttendanceFinalizeService(
         if (missing.isNotEmpty()) {
             val papers = absenceReportRepository.findReportsBySessionAndMembers(sessionId, missing)
                 .associateBy { it.member.id!! }
-            val absentBoundary = session.startTime.plusMinutes(AttendancePolicy.ABSENT_START_MINUTES)
 
             missing.forEach { memberId ->
                 val status = mapApprovalToStatus(papers[memberId]?.approval)
@@ -70,7 +73,9 @@ class AttendanceFinalizeService(
                         )
                         memberPointHistoryRepository.save(history)
                     }
-                } catch (_: DataIntegrityViolationException) { }
+                } catch (_: DataIntegrityViolationException) {
+                    // 멱등: 유니크 제약 등으로 이미 들어간 경우 무시
+                }
             }
         }
         markFinalized(session, now)

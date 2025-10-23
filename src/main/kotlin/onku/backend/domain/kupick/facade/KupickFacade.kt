@@ -8,6 +8,7 @@ import onku.backend.domain.member.Member
 import onku.backend.global.page.PageResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import onku.backend.global.s3.enums.FolderName
+import onku.backend.global.s3.enums.UploadOption
 import onku.backend.global.s3.service.S3Service
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
@@ -18,7 +19,7 @@ class KupickFacade(
     private val kupickService: KupickService,
 ) {
     fun submitApplication(member: Member, fileName: String): GetPreSignedUrlDto {
-        val signedUrlDto = s3Service.getPostS3Url(member.id!!, fileName, FolderName.KUPICK_APPLICATION.name)
+        val signedUrlDto = s3Service.getPostS3Url(member.id!!, fileName, FolderName.KUPICK_APPLICATION.name, UploadOption.IMAGE)
         kupickService.submitApplication(member, signedUrlDto.key)
         return GetPreSignedUrlDto(
             signedUrlDto.preSignedUrl
@@ -26,7 +27,7 @@ class KupickFacade(
     }
 
     fun submitView(member: Member, fileName: String): GetPreSignedUrlDto {
-        val signedUrlDto = s3Service.getPostS3Url(member.id!!, fileName, FolderName.KUPICK_VIEW.name)
+        val signedUrlDto = s3Service.getPostS3Url(member.id!!, fileName, FolderName.KUPICK_VIEW.name, UploadOption.IMAGE)
         kupickService.submitView(member, signedUrlDto.key)
         return GetPreSignedUrlDto(
             signedUrlDto.preSignedUrl

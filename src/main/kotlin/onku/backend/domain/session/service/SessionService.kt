@@ -2,7 +2,9 @@ package onku.backend.domain.session.service
 
 import onku.backend.domain.session.validator.SessionValidator
 import onku.backend.domain.session.Session
-import onku.backend.domain.session.dto.SessionAboutAbsenceResponse
+import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
+import onku.backend.domain.session.dto.request.SessionSaveRequest
+import onku.backend.domain.session.dto.response.GetInitialSessionResponse
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
@@ -22,10 +24,10 @@ class SessionService(
     private val clock: Clock = Clock.system(ZoneId.of("Asia/Seoul"))
 ) {
     @Transactional(readOnly = true)
-    fun getUpcomingSessionsForAbsence(pageable: Pageable): Page<SessionAboutAbsenceResponse> {
+    fun getUpcomingSessionsForAbsence(): List<SessionAboutAbsenceResponse> {
         val now = LocalDateTime.now(clock)
 
-        val sessions = sessionRepository.findUpcomingSessions(now, pageable)
+        val sessions = sessionRepository.findUpcomingSessions(now.toLocalDate())
 
         return sessions.map { s ->
             val active = sessionValidator.isImminentSession(s, now)
@@ -41,5 +43,34 @@ class SessionService(
     @Transactional(readOnly = true)
     fun getById(id : Long) : Session {
         return sessionRepository.findByIdOrNull(id) ?: throw CustomException(ErrorCode.SESSION_NOT_FOUND)
+    }
+
+    @Transactional
+    fun saveAll(requests: List<SessionSaveRequest>): Boolean {
+        val sessions = requests.map { r ->
+            Session(
+                title = r.title,
+                startDate = r.sessionDate,
+                category = r.category,
+                week = r.week,
+                sessionDetail = null
+            )
+        }
+        sessionRepository.saveAll(sessions)
+        return true
+    }
+
+    @Transactional(readOnly = true)
+    fun getInitialSession(pageable: Pageable) : Page<GetInitialSessionResponse> {
+        val initialSessions = sessionRepository.findAll(pageable)
+        return initialSessions.map { s ->
+            GetInitialSessionResponse(
+                sessionId = s.id!!,
+                startDate = s.startDate,
+                title = s.title,
+                category = s.category,
+                sessionDetailId = s.sessionDetail?.id
+            )
+        }
     }
 }
