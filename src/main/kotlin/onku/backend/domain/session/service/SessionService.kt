@@ -35,6 +35,7 @@ class SessionService(
                 sessionId = s.id,
                 title = s.title,
                 week = s.week,
+                startDate = s.startDate,
                 active = active
             )
         }
