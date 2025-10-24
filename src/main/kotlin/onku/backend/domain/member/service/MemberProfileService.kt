@@ -11,6 +11,7 @@ import onku.backend.domain.member.dto.UpdateProfileImageResponse
 import onku.backend.domain.member.enums.ApprovalStatus
 import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.member.repository.MemberRepository
+import onku.backend.domain.point.repository.MemberPointHistoryRepository
 import onku.backend.global.exception.CustomException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,7 +21,8 @@ import org.springframework.transaction.annotation.Transactional
 class MemberProfileService(
     private val memberProfileRepository: MemberProfileRepository,
     private val memberRepository: MemberRepository,
-    private val memberService: MemberService
+    private val memberService: MemberService,
+    private val memberPointHistoryRepository: MemberPointHistoryRepository
 ) {
     fun submitOnboarding(member: Member, req: OnboardingRequest): OnboardingResponse {
         if (member.hasInfo) { // 이미 온보딩 완료된 사용자 차단
@@ -75,9 +77,14 @@ class MemberProfileService(
     fun getProfileSummary(member: Member): MemberProfileResponse {
         val profile = memberProfileRepository.findById(member.id!!)
             .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+
+        val sums = memberPointHistoryRepository.sumPointsForMember(member)
+        val total = sums.getTotalPoints()
+
         return MemberProfileResponse(
             name = profile.name,
-            part = profile.part
+            part = profile.part,
+            totalPoints = total
         )
     }
 
