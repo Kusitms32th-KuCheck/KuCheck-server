@@ -4,5 +4,6 @@ enum class FolderName{
     KUPICK_APPLICATION,
     KUPICK_VIEW,
     ABSENCE,
-    SESSION
+    SESSION,
+    MEMBER_PROFILE
 }
