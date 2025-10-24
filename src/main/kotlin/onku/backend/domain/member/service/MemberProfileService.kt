@@ -3,11 +3,7 @@ package onku.backend.domain.member.service
 import onku.backend.domain.member.Member
 import onku.backend.domain.member.MemberProfile
 import onku.backend.domain.member.MemberErrorCode
-import onku.backend.domain.member.dto.MemberProfileResponse
-import onku.backend.domain.member.dto.OnboardingRequest
-import onku.backend.domain.member.dto.OnboardingResponse
-import onku.backend.domain.member.dto.UpdateProfileImageRequest
-import onku.backend.domain.member.dto.UpdateProfileImageResponse
+import onku.backend.domain.member.dto.*
 import onku.backend.domain.member.enums.ApprovalStatus
 import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.member.repository.MemberRepository
@@ -85,6 +81,19 @@ class MemberProfileService(
             name = profile.name,
             part = profile.part,
             totalPoints = total
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getProfileBasics(member: Member): MemberProfileBasicsResponse {
+        val profile = memberProfileRepository.findById(member.id!!)
+            .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+
+        return MemberProfileBasicsResponse(
+            name = profile.name ?: "Unknown",
+            part = profile.part,
+            school = profile.school,
+            profileImageUrl = profile.profileImage
         )
     }
 
