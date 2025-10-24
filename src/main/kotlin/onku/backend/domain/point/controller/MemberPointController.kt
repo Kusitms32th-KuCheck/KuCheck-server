@@ -32,7 +32,8 @@ class MemberPointController(
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int
     ): ResponseEntity<SuccessResponse<MemberPointHistoryResponse>> {
-        val body = memberPointService.getHistory(member, page, size)
+        val safePage = if (page < 1) 0 else page - 1
+        val body = memberPointService.getHistory(member, safePage, size)
         return ResponseEntity.ok(SuccessResponse.ok(body))
     }
 }
