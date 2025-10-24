@@ -2,7 +2,7 @@ package onku.backend.domain.point.dto
 
 import onku.backend.domain.member.enums.Part
 
-data class AdminPointsRowDto(
+data class AdminPointOverviewDto(
     val memberId: Long,
     val name: String?,
     val part: Part,

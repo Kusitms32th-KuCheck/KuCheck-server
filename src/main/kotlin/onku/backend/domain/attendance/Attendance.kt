@@ -1,7 +1,7 @@
 package onku.backend.domain.attendance
 
 import jakarta.persistence.*
-import onku.backend.domain.attendance.enums.AttendanceStatus
+import onku.backend.domain.attendance.enums.AttendancePointType
 import onku.backend.global.entity.BaseEntity
 import java.time.LocalDateTime
 
@@ -29,5 +29,5 @@ class Attendance(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 32)
-    var status: AttendanceStatus
+    var status: AttendancePointType
 ) : BaseEntity()

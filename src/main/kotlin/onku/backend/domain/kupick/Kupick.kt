@@ -55,7 +55,7 @@ class Kupick(
                 member = member,
                 submitDate = nowDate,
                 applicationImageUrl = "null",
-                applicationDate = null,
+                applicationDate = nowDate,
                 viewImageUrl = null,
                 viewDate = null,
                 approval = false

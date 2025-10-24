@@ -21,7 +21,6 @@ class SessionDetail(
     var endTime: LocalTime,
 
     @Column(name = "content", nullable = false)
-    var content: String
+    var content: String,
 ) : BaseEntity() {
-
 }

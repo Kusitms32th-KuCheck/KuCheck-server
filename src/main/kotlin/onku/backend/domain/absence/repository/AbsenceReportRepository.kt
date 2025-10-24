@@ -28,4 +28,13 @@ interface AbsenceReportRepository : JpaRepository<AbsenceReport, Long> {
         @Param("member") member: Member,
         pageable: Pageable
     ): Page<GetMyAbsenceReportView>
+
+    @Query("""
+        select ar from AbsenceReport ar
+        where ar.session.id = :sessionId and ar.member.id in :memberIds
+      """)
+    fun findReportsBySessionAndMembers(
+        @Param("sessionId") sessionId: Long,
+        @Param("memberIds") memberIds: Collection<Long>
+    ): List<AbsenceReport>
 }

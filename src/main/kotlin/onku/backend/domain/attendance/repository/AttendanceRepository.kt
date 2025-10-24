@@ -35,4 +35,10 @@ interface AttendanceRepository : CrudRepository<Attendance, Long> {
         start: LocalDateTime,
         end: LocalDateTime
     ): List<Attendance>
+
+    @Query("""
+      select a.memberId from Attendance a
+      where a.sessionId = :sessionId
+    """)
+    fun findMemberIdsBySessionId(@Param("sessionId") sessionId: Long): List<Long>
 }
