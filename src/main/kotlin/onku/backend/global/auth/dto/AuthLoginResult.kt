@@ -7,4 +7,5 @@ data class AuthLoginResult(
     val status: ApprovalStatus,
     val memberId: Long? = null,
     val role: Role? = null,
+    val hasInfo: Boolean = false,
 )

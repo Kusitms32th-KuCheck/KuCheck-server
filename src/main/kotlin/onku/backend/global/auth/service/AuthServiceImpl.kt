@@ -1,13 +1,11 @@
 package onku.backend.global.auth.service
 
-import onku.backend.domain.member.Member
 import onku.backend.domain.member.enums.ApprovalStatus
-import onku.backend.domain.member.enums.Role
 import onku.backend.domain.member.enums.SocialType
-import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.member.service.MemberService
 import onku.backend.global.auth.AuthErrorCode
-import onku.backend.global.auth.dto.*
+import onku.backend.global.auth.dto.AuthLoginResult
+import onku.backend.global.auth.dto.KakaoLoginRequest
 import onku.backend.global.auth.jwt.JwtUtil
 import onku.backend.global.exception.CustomException
 import onku.backend.global.redis.cache.RefreshTokenCache
@@ -66,34 +64,63 @@ class AuthServiceImpl(
                             AuthLoginResult(
                                 status = ApprovalStatus.APPROVED,
                                 memberId = member.id,
-                                role = member.role
+                                role = member.role,
+                                hasInfo = member.hasInfo
                             )
                         )
                     )
             }
 
             ApprovalStatus.PENDING -> {
-                if (member.hasInfo) { // 이미 프로필이 있으면 온보딩 토큰 미발급
+                if (member.hasInfo) {
+                    // 온보딩 제출 완료(프로필 있음) → 온보딩 토큰 미발급
                     ResponseEntity
                         .status(HttpStatus.ACCEPTED)
-                        .body(SuccessResponse.ok(AuthLoginResult(status = ApprovalStatus.PENDING)))
+                        .body(
+                            SuccessResponse.ok(
+                                AuthLoginResult(
+                                    status = ApprovalStatus.PENDING,
+                                    memberId = member.id,
+                                    role = member.role,
+                                    hasInfo = true
+                                )
+                            )
+                        )
                 } else {
+                    // 온보딩 제출 전(프로필 없음) → 온보딩 토큰 발급
                     val onboarding = jwtUtil.createOnboardingToken(email, onboardingTtl.toMinutes())
                     val headers = HttpHeaders().apply {
                         add(HttpHeaders.AUTHORIZATION, "Bearer $onboarding")
                     }
-
                     ResponseEntity
                         .status(HttpStatus.OK)
                         .headers(headers)
-                        .body(SuccessResponse.ok(AuthLoginResult(status = ApprovalStatus.PENDING)))
+                        .body(
+                            SuccessResponse.ok(
+                                AuthLoginResult(
+                                    status = ApprovalStatus.PENDING,
+                                    memberId = member.id,
+                                    role = member.role,
+                                    hasInfo = false
+                                )
+                            )
+                        )
                 }
             }
 
             ApprovalStatus.REJECTED -> {
                 ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
-                    .body(SuccessResponse.ok(AuthLoginResult(status = ApprovalStatus.REJECTED)))
+                    .body(
+                        SuccessResponse.ok(
+                            AuthLoginResult(
+                                status = ApprovalStatus.REJECTED,
+                                memberId = member.id,
+                                role = member.role,
+                                hasInfo = member.hasInfo
+                            )
+                        )
+                    )
             }
         }
     }

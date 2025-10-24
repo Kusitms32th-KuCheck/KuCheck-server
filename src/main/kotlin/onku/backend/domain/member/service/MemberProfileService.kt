@@ -6,6 +6,8 @@ import onku.backend.domain.member.MemberErrorCode
 import onku.backend.domain.member.dto.MemberProfileResponse
 import onku.backend.domain.member.dto.OnboardingRequest
 import onku.backend.domain.member.dto.OnboardingResponse
+import onku.backend.domain.member.dto.UpdateProfileImageRequest
+import onku.backend.domain.member.dto.UpdateProfileImageResponse
 import onku.backend.domain.member.enums.ApprovalStatus
 import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.member.repository.MemberRepository
@@ -24,13 +26,17 @@ class MemberProfileService(
         if (member.hasInfo) { // 이미 온보딩 완료된 사용자 차단
             throw CustomException(MemberErrorCode.INVALID_MEMBER_STATE)
         }
-
         if (member.approval != ApprovalStatus.PENDING) { // PENDING 상태가 아닌 사용자 차단
             throw CustomException(MemberErrorCode.INVALID_MEMBER_STATE)
         }
 
-        createOrUpdateProfile(member.id!!, req)
-        memberService.markOnboarded(member)
+        // FCM 토큰 저장
+        val m = memberRepository.findById(member.id!!)
+            .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+        m.updateFcmToken(req.fcmToken)
+
+        createOrUpdateProfile(m.id!!, req)
+        memberService.markOnboarded(m)
 
         return OnboardingResponse(
             status = ApprovalStatus.PENDING
@@ -49,7 +55,8 @@ class MemberProfileService(
                 school = req.school,
                 major = req.major,
                 part = req.part,
-                phoneNumber = req.phoneNumber
+                phoneNumber = req.phoneNumber,
+                profileImage = req.profileImage
             )
             memberProfileRepository.save(profile)
         } else {
@@ -58,10 +65,12 @@ class MemberProfileService(
                 school = req.school,
                 major = req.major,
                 part = req.part,
-                phoneNumber = req.phoneNumber
+                phoneNumber = req.phoneNumber,
+                profileImage = req.profileImage
             )
         }
     }
+
     @Transactional(readOnly = true)
     fun getProfileSummary(member: Member): MemberProfileResponse {
         val profile = memberProfileRepository.findById(member.id!!)
@@ -70,5 +79,12 @@ class MemberProfileService(
             name = profile.name,
             part = profile.part
         )
+    }
+
+    fun updateProfileImage(member: Member, req: UpdateProfileImageRequest): UpdateProfileImageResponse {
+        val profile = memberProfileRepository.findById(member.id!!)
+            .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+        profile.profileImage = req.imageUrl
+        return UpdateProfileImageResponse(profileImageUrl = profile.profileImage!!)
     }
 }
