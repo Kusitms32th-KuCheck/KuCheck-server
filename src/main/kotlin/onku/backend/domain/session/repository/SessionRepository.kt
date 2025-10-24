@@ -9,6 +9,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 interface SessionRepository : CrudRepository<Session, Long> {
 
@@ -60,16 +61,22 @@ interface SessionRepository : CrudRepository<Session, Long> {
         FROM Session s
         JOIN s.sessionDetail sd
         WHERE s.attendanceFinalized = false
-          AND function('timestamp', s.startDate, sd.startTime) <= :pivot
+          AND (s.startDate < :pivotDate or (s.startDate = :pivotDate and sd.startTime <= :pivotTime))
     """)
-    fun findFinalizeDue(@Param("pivot") pivot: LocalDateTime): List<Session>
+    fun findFinalizeDue(
+        @Param("pivotDate") pivotDate: LocalDate,
+        @Param("pivotTime") pivotTime: LocalTime
+    ): List<Session>
 
     @Query("""
         SELECT s
         FROM Session s
         JOIN s.sessionDetail sd
         WHERE s.attendanceFinalized = false
-          AND function('timestamp', s.startDate, sd.startTime) > :pivot
+          AND (s.startDate > :pivotDate or (s.startDate = :pivotDate and sd.startTime > :pivotTime))
     """)
-    fun findUnfinalizedAfter(@Param("pivot") pivot: LocalDateTime): List<Session>
+    fun findUnfinalizedAfter(
+        @Param("pivotDate") pivotDate: LocalDate,
+        @Param("pivotTime") pivotTime: LocalTime
+    ): List<Session>
 }

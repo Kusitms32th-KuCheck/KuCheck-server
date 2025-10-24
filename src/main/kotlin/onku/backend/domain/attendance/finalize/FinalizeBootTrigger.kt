@@ -22,12 +22,12 @@ class FinalizeBootTrigger(
         val pivot = now.minusMinutes(AttendancePolicy.ABSENT_START_MINUTES)
 
         // 이미 결석 판정 시각을 지난 세션 → 즉시 finalize
-        sessionRepository.findFinalizeDue(pivot).forEach { s ->
+        sessionRepository.findFinalizeDue(pivot.toLocalDate(), pivot.toLocalTime()).forEach { s ->
             runCatching { attendanceFinalizeService.finalizeSession(s.id!!) }
         }
 
         // 아직 결석 판정 시각이 지나지 않은 세션 → 경계 시각으로 재예약
-        sessionRepository.findUnfinalizedAfter(pivot).forEach { s ->
+        sessionRepository.findUnfinalizedAfter(pivot.toLocalDate(), pivot.toLocalTime()).forEach { s ->
             runCatching {
                 val runAt = SessionTimeUtil.absentBoundary(s, AttendancePolicy.ABSENT_START_MINUTES)
                 finalizeScheduler.schedule(s.id!!, runAt)
