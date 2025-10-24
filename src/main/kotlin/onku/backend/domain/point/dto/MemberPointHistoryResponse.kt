@@ -15,6 +15,7 @@ data class MemberPointHistory(
 @Schema(description = "사용자 상/벌점 이력 응답")
 data class MemberPointHistoryResponse(
     val memberId: Long,
+    val name: String? = null,
     val plusPoints: Int,
     val minusPoints: Int,
     val totalPoints: Int,

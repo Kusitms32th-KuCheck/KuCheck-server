@@ -41,7 +41,7 @@ class MemberController(
     @GetMapping("/profile/summary")
     @Operation(
         summary = "내 프로필 요약 조회",
-        description = "[TEMP] 현재 로그인한 회원의 이름(name)과 파트(part)만 반환"
+        description = "현재 로그인한 회원의 이름(name), 파트(part), 상벌점 총합(totalPoints) 반환"
     )
     fun getMyProfileSummary(
         @CurrentMember member: Member
