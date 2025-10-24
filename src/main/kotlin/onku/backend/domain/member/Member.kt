@@ -37,7 +37,10 @@ class Member(
     var isTf: Boolean = false,
 
     @Column(name = "is_staff", nullable = false)
-    var isStaff: Boolean = false
+    var isStaff: Boolean = false,
+
+    @Column(name = "fcm_token")
+    var fcmToken: String? = null
 ) : BaseEntity() {
     fun approve() {
         this.approval = ApprovalStatus.APPROVED
@@ -48,5 +51,8 @@ class Member(
     fun updateEmail(newEmail: String?) {
         if (newEmail.isNullOrBlank()) return
         if (this.email != newEmail) this.email = newEmail
+    }
+    fun updateFcmToken(token: String?) {
+        if (!token.isNullOrBlank()) this.fcmToken = token
     }
 }
