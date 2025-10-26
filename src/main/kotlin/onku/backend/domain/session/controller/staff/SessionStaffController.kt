@@ -1,4 +1,4 @@
-package onku.backend.domain.session.controller.manager
+package onku.backend.domain.session.controller.staff
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -21,9 +21,9 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/v1/session/manager")
-@Tag(name = "[관리자용] 세션 API", description = "세션 관련 API")
-class SessionManagerController(
+@RequestMapping("/api/v1/session/staff")
+@Tag(name = "[STAFF] 세션 API", description = "세션 관련 API")
+class SessionStaffController(
     private val sessionFacade: SessionFacade
 ) {
     @PostMapping("")
