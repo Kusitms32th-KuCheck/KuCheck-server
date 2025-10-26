@@ -3,9 +3,12 @@ package onku.backend.domain.member.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import onku.backend.domain.member.dto.MemberApprovalResponse
+import onku.backend.domain.member.dto.UpdateApprovalRequest
 import onku.backend.domain.member.Member
 import onku.backend.domain.member.dto.*
 import onku.backend.domain.member.service.MemberProfileService
+import onku.backend.domain.member.service.MemberService
 import onku.backend.global.annotation.CurrentMember
 import onku.backend.global.response.SuccessResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
@@ -21,7 +24,8 @@ import org.springframework.web.bind.annotation.*
 @Tag(name = "회원 API", description = "온보딩 및 프로필 관련 API")
 class MemberController(
     private val memberProfileService: MemberProfileService,
-    private val s3Service: S3Service
+    private val s3Service: S3Service,
+    private val memberService: MemberService
 ) {
 
     @PostMapping("/onboarding")
@@ -79,5 +83,18 @@ class MemberController(
             option = UploadOption.IMAGE
         )
         return ResponseEntity.ok(SuccessResponse.ok(GetPreSignedUrlDto(preSignedUrl = dto.preSignedUrl)))
+    }
+
+    @Operation(
+        summary = "[STAFF] 회원 승인 상태 변경",
+        description = "PENDING 상태의 회원만 승인/거절할 수 있습니다. (PENDING → APPROVED/REJECTED)"
+    )
+    @PatchMapping("/{memberId}/approval")
+    fun updateApproval(
+        @PathVariable memberId: Long,
+        @RequestBody @Valid body: UpdateApprovalRequest
+    ): ResponseEntity<SuccessResponse<MemberApprovalResponse>> {
+        val result = memberService.updateApproval(memberId, body.status)
+        return ResponseEntity.ok(SuccessResponse.ok(result))
     }
 }
