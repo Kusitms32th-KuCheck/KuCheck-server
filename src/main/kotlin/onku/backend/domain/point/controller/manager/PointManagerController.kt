@@ -1,4 +1,4 @@
-package onku.backend.domain.point.controller
+package onku.backend.domain.point.controller.manager
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -12,12 +12,12 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/v1/admin/points")
+@RequestMapping("/api/v1/points/manage")
 @Tag(
-    name = "운영진 상벌점",
+    name = "[MANAGEMENT] 운영진 상벌점",
     description = "운영진 상벌점 대시보드 조회 API"
 )
-class AdminPointController(
+class PointManagerController(
     private val adminPointsService: AdminPointService,
     private val commandService: AdminPointCommandService
 ) {
