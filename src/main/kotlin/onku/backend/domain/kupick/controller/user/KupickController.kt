@@ -7,7 +7,6 @@ import onku.backend.domain.kupick.facade.KupickFacade
 import onku.backend.domain.member.Member
 import onku.backend.global.annotation.CurrentMember
 import onku.backend.global.response.SuccessResponse
-import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import onku.backend.global.s3.dto.GetUpdateAndDeleteUrlDto
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -39,7 +38,7 @@ class KupickController(
     )
     fun submitView(
         @CurrentMember member: Member, fileName: String
-    ) : ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
+    ) : ResponseEntity<SuccessResponse<GetUpdateAndDeleteUrlDto>> {
         return ResponseEntity.ok(SuccessResponse.ok(kupickFacade.submitView(member, fileName)))
     }
 

@@ -5,7 +5,6 @@ import onku.backend.domain.kupick.dto.response.ShowUpdateResponseDto
 import onku.backend.domain.kupick.dto.response.ViewMyKupickResponseDto
 import onku.backend.domain.kupick.service.KupickService
 import onku.backend.domain.member.Member
-import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import onku.backend.global.s3.dto.GetUpdateAndDeleteUrlDto
 import onku.backend.global.s3.enums.FolderName
 import onku.backend.global.s3.enums.UploadOption
@@ -29,11 +28,15 @@ class KupickFacade(
         )
     }
 
-    fun submitView(member: Member, fileName: String): GetPreSignedUrlDto {
+    fun submitView(member: Member, fileName: String): GetUpdateAndDeleteUrlDto {
         val signedUrlDto = s3Service.getPostS3Url(member.id!!, fileName, FolderName.KUPICK_VIEW.name, UploadOption.IMAGE)
-        kupickService.submitView(member, signedUrlDto.key)
-        return GetPreSignedUrlDto(
-            signedUrlDto.preSignedUrl
+        val oldDeletePreSignedUrl = kupickService
+            .submitView(member, signedUrlDto.key)
+            ?.let { oldKey -> s3Service.getDeleteS3Url(oldKey).preSignedUrl }
+            ?: ""
+        return GetUpdateAndDeleteUrlDto(
+            signedUrlDto.preSignedUrl,
+            oldDeletePreSignedUrl
         )
     }
 

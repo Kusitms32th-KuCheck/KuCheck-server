@@ -40,14 +40,19 @@ class KupickService(
     }
 
     @Transactional
-    fun submitView(member: Member, viewUrl: String) {
+    fun submitView(member: Member, viewUrl: String) : String? {
         val monthObject = TimeRangeUtil.getCurrentMonthRange()
         val now = LocalDateTime.now()
         val kupick = kupickRepository.findThisMonthByMember(
             member,
             monthObject.startOfMonth,
             monthObject.startOfNextMonth) ?: throw CustomException(KupickErrorCode.KUPICK_APPLICATION_FIRST)
+        val oldViewUrl = kupick.viewImageUrl
+        if(kupick.approval) {
+            throw CustomException(KupickErrorCode.KUPICK_NOT_UPDATE)
+        }
         kupick.submitView(viewUrl, now)
+        return oldViewUrl
     }
 
     @Transactional(readOnly = true)
