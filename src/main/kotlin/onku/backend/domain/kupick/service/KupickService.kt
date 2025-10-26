@@ -7,10 +7,7 @@ import onku.backend.domain.kupick.repository.projection.KupickUrls
 import onku.backend.domain.kupick.repository.projection.KupickWithProfile
 import onku.backend.domain.member.Member
 import onku.backend.global.exception.CustomException
-import onku.backend.global.exception.ErrorCode
 import onku.backend.global.time.TimeRangeUtil
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -56,12 +53,11 @@ class KupickService(
     }
 
     @Transactional(readOnly = true)
-    fun findAllAsShowUpdateResponse(year : Int, month : Int, pageRequest: PageRequest): Page<KupickWithProfile> {
+    fun findAllAsShowUpdateResponse(year : Int, month : Int): List<KupickWithProfile> {
         val monthObject = TimeRangeUtil.monthRange(year, month)
         return kupickRepository.findAllWithProfile(
             monthObject.startOfMonth,
             monthObject.startOfNextMonth,
-            pageRequest
         )
     }
 
