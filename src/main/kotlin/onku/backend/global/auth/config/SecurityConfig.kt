@@ -29,12 +29,24 @@ class SecurityConfig(
             "/api/v1/auth/kakao",
             "/api/v1/auth/reissue",
         )
-        // TODO: 엔드포인트가 늘어나면 arrayOf()로 수정
-        private const val ONBOARDING_ENDPOINT = "/api/v1/members/onboarding/**" // 온보딩
-        private const val ADMIN_ENDPOINT = "/api/v1/auth/admin/**" // 운영진 전체
-        private val MANAGEMENT_ENDPOINT = arrayOf(
-            "/api/v1/attendance/scan/**",
-            "/api/v1/kupick/manage/**") // 경총
+
+        private val ONBOARDING_ENDPOINT = arrayOf(
+            "/api/v1/members/onboarding/**",
+            "/api/v1/members/profile/image/url"
+        )
+
+        private val STAFF_ENDPOINT = arrayOf( // 운영진
+            "/api/v1/session/staff/**",
+            "/api/v1/members/*/approval"
+        )
+
+        private val MANAGEMENT_ENDPOINT = arrayOf( // 경총
+            "/api/v1/kupick/manage/**",
+            "/api/v1/points/manage/**",
+            "/api/v1/attendance/scan"
+        )
+
+//        private val EXECUTIVE = arrayOf("") // 회장단
     }
 
     @Bean
@@ -52,9 +64,10 @@ class SecurityConfig(
                     .requestMatchers(*ALLOWED_POST).permitAll()
 
                     // 권한 별 엔드포인트
-                    .requestMatchers(ONBOARDING_ENDPOINT).hasRole(Role.GUEST.name)
-                    .requestMatchers(ADMIN_ENDPOINT).hasRole(Role.ADMIN.name)
+                    .requestMatchers(*ONBOARDING_ENDPOINT).hasRole(Role.GUEST.name)
+                    .requestMatchers(*STAFF_ENDPOINT).hasRole(Role.STAFF.name)
                     .requestMatchers(*MANAGEMENT_ENDPOINT).hasRole(Role.MANAGEMENT.name)
+//                    .requestMatchers(*EXECUTIVE).hasAnyRole(Role.EXECUTIVE.name)
                     .anyRequest().hasRole(Role.USER.name)
             }
             .addFilterBefore(JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter::class.java)

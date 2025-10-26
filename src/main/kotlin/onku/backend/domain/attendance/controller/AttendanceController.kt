@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import onku.backend.domain.attendance.dto.AttendanceRequest
 import onku.backend.domain.attendance.dto.AttendanceResponse
 import onku.backend.domain.attendance.dto.AttendanceTokenResponse
+import onku.backend.domain.attendance.facade.AttendanceFacade
 import onku.backend.domain.attendance.service.AttendanceService
 import onku.backend.domain.member.Member
 import onku.backend.global.annotation.CurrentMember
@@ -17,18 +18,19 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/attendance")
 @Tag(name = "출석 API")
 class AttendanceController(
-    private val attendanceService: AttendanceService
+    private val attendanceService: AttendanceService,
+    private val attendanceFacade: AttendanceFacade
 ) {
-
     @PostMapping("/token")
-    @Operation(summary = "출석용 토큰 발급 [USER]", description = "15초 유효")
+    @Operation(summary = "출석용 토큰 발급 [USER]", description = "15초 유효 + 프로필(이름/파트/학교/프사) 포함")
     fun issueQrToken(@CurrentMember member: Member): ResponseEntity<SuccessResponse<AttendanceTokenResponse>> {
         val headers = HttpHeaders().apply { add(HttpHeaders.CACHE_CONTROL, "no-store") }
-        return ResponseEntity.ok().headers(headers).body(SuccessResponse.ok(attendanceService.issueAttendanceTokenFor(member)))
+        val body = attendanceFacade.issueTokenWithProfile(member)
+        return ResponseEntity.ok().headers(headers).body(SuccessResponse.ok(body))
     }
 
     @PostMapping("/scan")
-    @Operation(summary = "출석 스캔 [ADMIN]", description = "열린 세션 자동 선택 → 토큰 검증 & 소비 → insert")
+    @Operation(summary = "출석 스캔 [MANAGEMENT]", description = "열린 세션 자동 선택 → 토큰 검증 & 소비 → insert")
     fun scan(@CurrentMember admin: Member, @RequestBody req: AttendanceRequest): SuccessResponse<AttendanceResponse> {
         return SuccessResponse.ok(attendanceService.scanAndRecordBy(admin, req.token))
     }

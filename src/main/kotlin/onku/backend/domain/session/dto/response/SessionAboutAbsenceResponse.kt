@@ -1,6 +1,7 @@
 package onku.backend.domain.session.dto.response
 
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.LocalDate
 
 data class SessionAboutAbsenceResponse(
     @Schema(description = "세션 ID", example = "1")
@@ -9,6 +10,8 @@ data class SessionAboutAbsenceResponse(
     val title : String,
     @Schema(description = "세션 주차", example = "1")
     val week : Long,
+    @Schema(description = "세션 시작 일자", example = "2025-10-24")
+    val startDate : LocalDate,
     @Schema(description = "활성화 여부", example = "true")
     val active : Boolean
 )

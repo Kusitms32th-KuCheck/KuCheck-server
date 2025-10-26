@@ -36,7 +36,7 @@ class AttendanceService(
     private val clock: Clock
 ) {
     @Transactional(readOnly = true)
-    fun issueAttendanceTokenFor(member: Member): AttendanceTokenResponse {
+    fun issueAttendanceTokenFor(member: Member): AttendanceTokenCore {
         val now = LocalDateTime.now(clock)
         val expAt = now.plusSeconds(AttendancePolicy.TOKEN_TTL_SECONDS)
         val token = tokenGenerator.generateOpaqueToken()
@@ -48,7 +48,7 @@ class AttendanceService(
             expAt,
             AttendancePolicy.TOKEN_TTL_SECONDS
         )
-        return AttendanceTokenResponse(token = token, expAt = expAt)
+        return AttendanceTokenCore(token = token, expAt = expAt)
     }
 
     private fun findOpenSession(now: LocalDateTime): Session? {

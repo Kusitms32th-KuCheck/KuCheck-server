@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/kupick/manage")
-@Tag(name = "[관리자용] 큐픽 API", description = "큐픽 관련 CRUD API")
+@Tag(name = "[MANAGEMENT] 큐픽 API", description = "큐픽 관련 CRUD API")
 class KupickManagerController(
     private val kupickFacade: KupickFacade
 ) {

@@ -2,6 +2,7 @@ package onku.backend.domain.member.service
 
 import onku.backend.domain.member.Member
 import onku.backend.domain.member.MemberErrorCode
+import onku.backend.domain.member.dto.MemberApprovalResponse
 import onku.backend.domain.member.enums.ApprovalStatus
 import onku.backend.domain.member.enums.Role
 import onku.backend.domain.member.enums.SocialType
@@ -69,5 +70,32 @@ class MemberService(
             memberProfileRepository.deleteByMemberId(memberId)
         }
         memberRepository.deleteById(memberId)
+    }
+
+    fun updateApproval(memberId: Long, targetStatus: ApprovalStatus): MemberApprovalResponse {
+        if (targetStatus == ApprovalStatus.PENDING) {
+            throw CustomException(MemberErrorCode.INVALID_MEMBER_STATE)
+        }
+
+        val member: Member = memberRepository.findById(memberId)
+            .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+
+        if (member.approval != ApprovalStatus.PENDING) {
+            throw CustomException(MemberErrorCode.INVALID_MEMBER_STATE)
+        }
+
+        when (targetStatus) {
+            ApprovalStatus.APPROVED -> member.approve()
+            ApprovalStatus.REJECTED -> member.reject()
+            ApprovalStatus.PENDING -> { }
+        }
+
+        val saved = memberRepository.save(member)
+
+        return MemberApprovalResponse(
+            memberId = saved.id!!,
+            role = saved.role,
+            approval = saved.approval
+        )
     }
 }
