@@ -1,4 +1,4 @@
-package onku.backend.domain.admin.dto
+package onku.backend.domain.member.dto
 
 import jakarta.validation.constraints.NotNull
 import onku.backend.domain.member.enums.ApprovalStatus

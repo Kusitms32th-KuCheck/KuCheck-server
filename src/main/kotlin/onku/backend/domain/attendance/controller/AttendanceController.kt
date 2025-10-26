@@ -30,7 +30,7 @@ class AttendanceController(
     }
 
     @PostMapping("/scan")
-    @Operation(summary = "출석 스캔 [ADMIN]", description = "열린 세션 자동 선택 → 토큰 검증 & 소비 → insert")
+    @Operation(summary = "출석 스캔 [MANAGEMENT]", description = "열린 세션 자동 선택 → 토큰 검증 & 소비 → insert")
     fun scan(@CurrentMember admin: Member, @RequestBody req: AttendanceRequest): SuccessResponse<AttendanceResponse> {
         return SuccessResponse.ok(attendanceService.scanAndRecordBy(admin, req.token))
     }
