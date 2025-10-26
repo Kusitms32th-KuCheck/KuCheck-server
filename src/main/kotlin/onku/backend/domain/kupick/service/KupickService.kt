@@ -18,17 +18,25 @@ class KupickService(
     private val kupickRepository: KupickRepository,
 ) {
     @Transactional
-    fun submitApplication(member: Member, applicationUrl : String) {
+    fun submitApplication(member: Member, applicationUrl : String) : String? {
         val monthObject = TimeRangeUtil.getCurrentMonthRange()
         val existing = kupickRepository.findFirstByMemberAndApplicationDateBetween(
             member, monthObject.startOfMonth, monthObject.startOfNextMonth
         )
+
         val now = LocalDateTime.now()
-        existing
-            ?.updateApplication(applicationUrl, now)
-            ?: kupickRepository.save(
-                Kupick.createApplication(member, applicationUrl, LocalDateTime.now())
-            )
+
+        return if (existing != null) {
+            if(existing.approval) {
+                throw CustomException(KupickErrorCode.KUPICK_NOT_UPDATE)
+            }
+            val old = existing.applicationImageUrl
+            existing.updateApplication(applicationUrl, now)
+            old
+        } else {
+            kupickRepository.save(Kupick.createApplication(member, applicationUrl, now))
+            null
+        }
     }
 
     @Transactional
