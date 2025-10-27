@@ -43,13 +43,10 @@ interface SessionRepository : CrudRepository<Session, Long> {
         """
         SELECT s
         FROM Session s
-        WHERE s.startDate >= :today
         ORDER BY s.startDate ASC
     """
     )
-    fun findUpcomingSessionsOrderByStartDate(
-        @Param("today") today: LocalDate
-    ): List<Session>
+    fun findAllSessionsOrderByStartDate(): List<Session>
 
 
     @Query("""

@@ -94,9 +94,8 @@ class SessionService(
         }
     }
 
-    fun getUpcomingSessionCards(): List<SessionCardInfo> {
-        val today = TimeRangeUtil.todayDate()
-        return sessionRepository.findUpcomingSessionsOrderByStartDate(today)
+    fun getAllSessionsOrderByStartDate(): List<SessionCardInfo> {
+        return sessionRepository.findAllSessionsOrderByStartDate()
             .map { session ->
                 SessionCardInfo(
                     sessionId = session.id!!,

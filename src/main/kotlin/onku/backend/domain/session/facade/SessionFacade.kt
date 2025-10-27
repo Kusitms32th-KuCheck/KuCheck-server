@@ -117,7 +117,7 @@ class SessionFacade(
         return sessionService.getThisWeekSession()
     }
 
-    fun showUpcomingSessionCards(): List<SessionCardInfo> {
-        return sessionService.getUpcomingSessionCards()
+    fun showAllSessionCards(): List<SessionCardInfo> {
+        return sessionService.getAllSessionsOrderByStartDate()
     }
 }
