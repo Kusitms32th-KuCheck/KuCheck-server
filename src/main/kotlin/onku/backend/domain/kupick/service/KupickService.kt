@@ -7,10 +7,7 @@ import onku.backend.domain.kupick.repository.projection.KupickUrls
 import onku.backend.domain.kupick.repository.projection.KupickWithProfile
 import onku.backend.domain.member.Member
 import onku.backend.global.exception.CustomException
-import onku.backend.global.exception.ErrorCode
 import onku.backend.global.time.TimeRangeUtil
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,28 +18,41 @@ class KupickService(
     private val kupickRepository: KupickRepository,
 ) {
     @Transactional
-    fun submitApplication(member: Member, applicationUrl : String) {
+    fun submitApplication(member: Member, applicationUrl : String) : String? {
         val monthObject = TimeRangeUtil.getCurrentMonthRange()
         val existing = kupickRepository.findFirstByMemberAndApplicationDateBetween(
             member, monthObject.startOfMonth, monthObject.startOfNextMonth
         )
+
         val now = LocalDateTime.now()
-        existing
-            ?.updateApplication(applicationUrl, now)
-            ?: kupickRepository.save(
-                Kupick.createApplication(member, applicationUrl, LocalDateTime.now())
-            )
+
+        return if (existing != null) {
+            if(existing.approval) {
+                throw CustomException(KupickErrorCode.KUPICK_NOT_UPDATE)
+            }
+            val old = existing.applicationImageUrl
+            existing.updateApplication(applicationUrl, now)
+            old
+        } else {
+            kupickRepository.save(Kupick.createApplication(member, applicationUrl, now))
+            null
+        }
     }
 
     @Transactional
-    fun submitView(member: Member, viewUrl: String) {
+    fun submitView(member: Member, viewUrl: String) : String? {
         val monthObject = TimeRangeUtil.getCurrentMonthRange()
         val now = LocalDateTime.now()
         val kupick = kupickRepository.findThisMonthByMember(
             member,
             monthObject.startOfMonth,
             monthObject.startOfNextMonth) ?: throw CustomException(KupickErrorCode.KUPICK_APPLICATION_FIRST)
+        val oldViewUrl = kupick.viewImageUrl
+        if(kupick.approval) {
+            throw CustomException(KupickErrorCode.KUPICK_NOT_UPDATE)
+        }
         kupick.submitView(viewUrl, now)
+        return oldViewUrl
     }
 
     @Transactional(readOnly = true)
@@ -56,12 +66,11 @@ class KupickService(
     }
 
     @Transactional(readOnly = true)
-    fun findAllAsShowUpdateResponse(year : Int, month : Int, pageRequest: PageRequest): Page<KupickWithProfile> {
+    fun findAllAsShowUpdateResponse(year : Int, month : Int): List<KupickWithProfile> {
         val monthObject = TimeRangeUtil.monthRange(year, month)
         return kupickRepository.findAllWithProfile(
             monthObject.startOfMonth,
             monthObject.startOfNextMonth,
-            pageRequest
         )
     }
 

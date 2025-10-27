@@ -5,12 +5,10 @@ import onku.backend.domain.kupick.dto.response.ShowUpdateResponseDto
 import onku.backend.domain.kupick.dto.response.ViewMyKupickResponseDto
 import onku.backend.domain.kupick.service.KupickService
 import onku.backend.domain.member.Member
-import onku.backend.global.page.PageResponse
-import onku.backend.global.s3.dto.GetPreSignedUrlDto
+import onku.backend.global.s3.dto.GetUpdateAndDeleteUrlDto
 import onku.backend.global.s3.enums.FolderName
 import onku.backend.global.s3.enums.UploadOption
 import onku.backend.global.s3.service.S3Service
-import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 
 @Component
@@ -18,19 +16,27 @@ class KupickFacade(
     private val s3Service: S3Service,
     private val kupickService: KupickService,
 ) {
-    fun submitApplication(member: Member, fileName: String): GetPreSignedUrlDto {
+    fun submitApplication(member: Member, fileName: String): GetUpdateAndDeleteUrlDto {
         val signedUrlDto = s3Service.getPostS3Url(member.id!!, fileName, FolderName.KUPICK_APPLICATION.name, UploadOption.IMAGE)
-        kupickService.submitApplication(member, signedUrlDto.key)
-        return GetPreSignedUrlDto(
-            signedUrlDto.preSignedUrl
+        val oldDeletePreSignedUrl = kupickService
+            .submitApplication(member, signedUrlDto.key)
+            ?.let { oldKey -> s3Service.getDeleteS3Url(oldKey).preSignedUrl }
+            ?: ""
+        return GetUpdateAndDeleteUrlDto(
+            signedUrlDto.preSignedUrl,
+            oldDeletePreSignedUrl
         )
     }
 
-    fun submitView(member: Member, fileName: String): GetPreSignedUrlDto {
+    fun submitView(member: Member, fileName: String): GetUpdateAndDeleteUrlDto {
         val signedUrlDto = s3Service.getPostS3Url(member.id!!, fileName, FolderName.KUPICK_VIEW.name, UploadOption.IMAGE)
-        kupickService.submitView(member, signedUrlDto.key)
-        return GetPreSignedUrlDto(
-            signedUrlDto.preSignedUrl
+        val oldDeletePreSignedUrl = kupickService
+            .submitView(member, signedUrlDto.key)
+            ?.let { oldKey -> s3Service.getDeleteS3Url(oldKey).preSignedUrl }
+            ?: ""
+        return GetUpdateAndDeleteUrlDto(
+            signedUrlDto.preSignedUrl,
+            oldDeletePreSignedUrl
         )
     }
 
@@ -48,10 +54,9 @@ class KupickFacade(
         )
     }
 
-    fun showUpdate(year : Int, month : Int, page: Int, size: Int): PageResponse<ShowUpdateResponseDto> {
-        val pageRequest = PageRequest.of(page, size)
-        val profiles = kupickService.findAllAsShowUpdateResponse(year, month, pageRequest)
-        val dtoPage = profiles.map { p ->
+    fun showUpdate(year : Int, month : Int): List<ShowUpdateResponseDto> {
+        val profiles = kupickService.findAllAsShowUpdateResponse(year, month)
+        val dtoList = profiles.map { p ->
             val memberId = p.memberProfile.memberId!!
             val profile = p.memberProfile
 
@@ -74,7 +79,7 @@ class KupickFacade(
                 approval = p.kupick.approval
             )
         }
-        return PageResponse.from(dtoPage)
+        return dtoList
     }
 
     fun decideApproval(kupickApprovalRequest: KupickApprovalRequest): Boolean {
