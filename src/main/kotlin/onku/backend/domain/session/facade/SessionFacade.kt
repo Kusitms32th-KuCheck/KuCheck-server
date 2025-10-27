@@ -112,4 +112,12 @@ class SessionFacade(
             sessionImages = imageDtos
         )
     }
+
+    fun showThisWeekSessionInfo(): List<ThisWeekSessionInfo> {
+        return sessionService.getThisWeekSession()
+    }
+
+    fun showAllSessionCards(): List<SessionCardInfo> {
+        return sessionService.getAllSessionsOrderByStartDate()
+    }
 }
