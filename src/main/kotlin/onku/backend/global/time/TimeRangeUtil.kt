@@ -33,4 +33,8 @@ object TimeRangeUtil {
         val endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
         return WeekRange(startOfWeek, endOfWeek)
     }
+
+    fun todayDate() : LocalDate {
+        return LocalDate.now(ZONE)
+    }
 }

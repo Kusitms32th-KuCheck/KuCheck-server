@@ -2,6 +2,7 @@ package onku.backend.domain.session.controller.user
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import onku.backend.domain.session.dto.response.SessionCardInfo
 import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
 import onku.backend.domain.session.dto.response.ThisWeekSessionInfo
 import onku.backend.domain.session.facade.SessionFacade
@@ -34,5 +35,14 @@ class SessionController(
     )
     fun showThisWeekSessionInfo() : ResponseEntity<SuccessResponse<List<ThisWeekSessionInfo>>> {
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.showThisWeekSessionInfo()))
+    }
+
+    @GetMapping("/after/today")
+    @Operation(
+        summary = "전체 세션 정보 조회",
+        description = "오늘 부터의 전체 세션 정보를 시간순으로 조회합니다."
+    )
+    fun showUpcomingSessionCards() : ResponseEntity<SuccessResponse<List<SessionCardInfo>>> {
+        return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.showUpcomingSessionCards()))
     }
 }

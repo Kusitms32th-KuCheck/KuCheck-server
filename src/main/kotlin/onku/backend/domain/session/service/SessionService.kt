@@ -5,6 +5,7 @@ import onku.backend.domain.session.Session
 import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
 import onku.backend.domain.session.dto.request.SessionSaveRequest
 import onku.backend.domain.session.dto.response.GetInitialSessionResponse
+import onku.backend.domain.session.dto.response.SessionCardInfo
 import onku.backend.domain.session.dto.response.ThisWeekSessionInfo
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
@@ -77,6 +78,7 @@ class SessionService(
         }
     }
 
+    @Transactional(readOnly = true)
     fun getThisWeekSession(): List<ThisWeekSessionInfo> {
         val range = TimeRangeUtil.thisWeekRange()
         return sessionRepository.findThisWeekSunToSat(range.startOfWeek, range.endOfWeek).map {
@@ -90,5 +92,18 @@ class SessionService(
                 endTime = it.endTime
             )
         }
+    }
+
+    fun getUpcomingSessionCards(): List<SessionCardInfo> {
+        val today = TimeRangeUtil.todayDate()
+        return sessionRepository.findUpcomingSessionsOrderByStartDate(today)
+            .map { session ->
+                SessionCardInfo(
+                    sessionId = session.id!!,
+                    sessionCategory = session.category,
+                    title = session.title,
+                    startDate = session.startDate
+                )
+            }
     }
 }

@@ -39,6 +39,18 @@ interface SessionRepository : CrudRepository<Session, Long> {
         @Param("restCategory") restCategory: SessionCategory = SessionCategory.REST
     ): List<Session>
 
+    @Query(
+        """
+        SELECT s
+        FROM Session s
+        WHERE s.startDate >= :today
+        ORDER BY s.startDate ASC
+    """
+    )
+    fun findUpcomingSessionsOrderByStartDate(
+        @Param("today") today: LocalDate
+    ): List<Session>
+
 
     @Query("""
         SELECT s
