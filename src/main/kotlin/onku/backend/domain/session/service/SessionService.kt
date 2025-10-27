@@ -5,9 +5,11 @@ import onku.backend.domain.session.Session
 import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
 import onku.backend.domain.session.dto.request.SessionSaveRequest
 import onku.backend.domain.session.dto.response.GetInitialSessionResponse
+import onku.backend.domain.session.dto.response.ThisWeekSessionInfo
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
+import onku.backend.global.time.TimeRangeUtil
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -71,6 +73,21 @@ class SessionService(
                 title = s.title,
                 category = s.category,
                 sessionDetailId = s.sessionDetail?.id
+            )
+        }
+    }
+
+    fun getThisWeekSession(): List<ThisWeekSessionInfo> {
+        val range = TimeRangeUtil.thisWeekRange()
+        return sessionRepository.findThisWeekSunToSat(range.startOfWeek, range.endOfWeek).map {
+            ThisWeekSessionInfo(
+                sessionId = it.sessionId,
+                sessionDetailId = it.sessionDetailId,
+                title = it.title,
+                place = it.place,
+                startDate = it.startDate,
+                startTime = it.startTime,
+                endTime = it.endTime
             )
         }
     }

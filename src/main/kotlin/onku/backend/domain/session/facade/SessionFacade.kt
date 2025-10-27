@@ -112,4 +112,8 @@ class SessionFacade(
             sessionImages = imageDtos
         )
     }
+
+    fun showThisWeekSessionInfo(): List<ThisWeekSessionInfo> {
+        return sessionService.getThisWeekSession()
+    }
 }

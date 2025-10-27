@@ -1,6 +1,7 @@
 package onku.backend.domain.session.repository
 
 import onku.backend.domain.session.Session
+import onku.backend.domain.session.dto.response.ThisWeekSessionInfo
 import onku.backend.domain.session.enums.SessionCategory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -79,4 +80,24 @@ interface SessionRepository : CrudRepository<Session, Long> {
         @Param("pivotDate") pivotDate: LocalDate,
         @Param("pivotTime") pivotTime: LocalTime
     ): List<Session>
+
+
+    @Query("""
+        SELECT
+            s.id as sessionId,
+            sd.id as sessionDetailId,
+            s.title as title,
+            sd.place as place,
+            s.startDate as startDate,
+            sd.startTime as startTime,
+            sd.endTime as endTime
+        FROM Session s
+        LEFT JOIN s.sessionDetail sd
+        WHERE s.startDate BETWEEN :start AND :end
+        ORDER BY s.startDate ASC
+    """)
+    fun findThisWeekSunToSat(
+        @Param("start") start: LocalDate,
+        @Param("end") end: LocalDate
+    ): List<ThisWeekSessionInfo>
 }

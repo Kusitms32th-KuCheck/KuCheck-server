@@ -3,6 +3,7 @@ package onku.backend.domain.session.controller.user
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
+import onku.backend.domain.session.dto.response.ThisWeekSessionInfo
 import onku.backend.domain.session.facade.SessionFacade
 import onku.backend.global.response.SuccessResponse
 import org.springframework.http.ResponseEntity
@@ -24,5 +25,14 @@ class SessionController(
     fun showSessionAboutAbsence(
     ) : ResponseEntity<SuccessResponse<List<SessionAboutAbsenceResponse>>> {
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.showSessionAboutAbsence()))
+    }
+
+    @GetMapping("/this-week")
+    @Operation(
+        summary = "금주 세션 정보 조회",
+        description = "금주 세션 정보를 조회합니다."
+    )
+    fun showThisWeekSessionInfo() : ResponseEntity<SuccessResponse<List<ThisWeekSessionInfo>>> {
+        return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.showThisWeekSessionInfo()))
     }
 }
