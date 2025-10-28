@@ -6,8 +6,6 @@ import onku.backend.domain.absence.dto.response.GetMyAbsenceReportResponse
 import onku.backend.domain.absence.repository.AbsenceReportRepository
 import onku.backend.domain.member.Member
 import onku.backend.domain.session.Session
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -37,16 +35,16 @@ class AbsenceService(
     }
 
     @Transactional(readOnly = true)
-    fun getMyAbsenceReports(member: Member, pageable: Pageable): Page<GetMyAbsenceReportResponse> {
-        val page = absenceReportRepository.findMyAbsenceReports(member, pageable)
-        return page.map { v ->
+    fun getMyAbsenceReports(member: Member): List<GetMyAbsenceReportResponse> {
+        val absenceReports = absenceReportRepository.findMyAbsenceReports(member)
+        return absenceReports.map { a ->
             GetMyAbsenceReportResponse(
-                absenceReportId = v.getAbsenceReportId(),
-                absenceType = v.getAbsenceType(),
-                absenceReportApproval = v.getAbsenceReportApproval(),
-                submitDateTime = v.getSubmitDateTime(),
-                sessionTitle = v.getSessionTitle(),
-                sessionStartDate = v.getSessionStartDateTime()
+                absenceReportId = a.getAbsenceReportId(),
+                absenceType = a.getAbsenceType(),
+                absenceReportApproval = a.getAbsenceReportApproval(),
+                submitDateTime = a.getSubmitDateTime(),
+                sessionTitle = a.getSessionTitle(),
+                sessionStartDate = a.getSessionStartDateTime()
             )
         }
     }
