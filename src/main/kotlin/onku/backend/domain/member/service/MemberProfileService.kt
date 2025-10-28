@@ -80,7 +80,8 @@ class MemberProfileService(
         return MemberProfileResponse(
             name = profile.name,
             part = profile.part,
-            totalPoints = total
+            totalPoints = total,
+            profileImage = profile.profileImage
         )
     }
 
