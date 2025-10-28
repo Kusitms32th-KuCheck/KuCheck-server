@@ -8,12 +8,10 @@ import onku.backend.domain.member.Member
 import onku.backend.domain.session.service.SessionService
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
-import onku.backend.global.page.PageResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import onku.backend.global.s3.enums.FolderName
 import onku.backend.global.s3.enums.UploadOption
 import onku.backend.global.s3.service.S3Service
-import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 
 @Component
@@ -42,10 +40,9 @@ class AbsenceFacade(
         return GetPreSignedUrlDto(preSignedUrlDto.preSignedUrl)
     }
 
-    fun getMyAbsenceReport(member: Member, page: Int, size: Int): PageResponse<GetMyAbsenceReportResponse> {
-        val pageRequest = PageRequest.of(page, size)
-        val absenceReportPage = absenceService.getMyAbsenceReports(member, pageRequest)
-        val responses = absenceReportPage.map { v ->
+    fun getMyAbsenceReport(member: Member): List<GetMyAbsenceReportResponse> {
+        val absenceReportList = absenceService.getMyAbsenceReports(member)
+        val responses = absenceReportList.map { v ->
             GetMyAbsenceReportResponse(
                 absenceReportId = v.absenceReportId,
                 absenceType = v.absenceType,
@@ -55,7 +52,7 @@ class AbsenceFacade(
                 sessionStartDate = v.sessionStartDate
             )
         }
-        return PageResponse.from(responses)
+        return responses
     }
 
 }

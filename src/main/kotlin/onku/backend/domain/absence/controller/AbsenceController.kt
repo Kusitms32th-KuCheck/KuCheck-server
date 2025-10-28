@@ -8,7 +8,6 @@ import onku.backend.domain.absence.dto.response.GetMyAbsenceReportResponse
 import onku.backend.domain.absence.facade.AbsenceFacade
 import onku.backend.domain.member.Member
 import onku.backend.global.annotation.CurrentMember
-import onku.backend.global.page.PageResponse
 import onku.backend.global.response.SuccessResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import org.springframework.http.ResponseEntity
@@ -29,10 +28,8 @@ class AbsenceController(
 
     @GetMapping("")
     @Operation(summary = "불참 사유서 제출내역 조회", description = "내가 낸 불참 사유서 제출내역을 조회합니다.")
-    fun getMyAbsenceReport(@CurrentMember member: Member,
-                           @RequestParam(defaultValue = "1") page: Int,
-                           @RequestParam(defaultValue = "10") size: Int) : ResponseEntity<SuccessResponse<PageResponse<GetMyAbsenceReportResponse>>> {
-        val safePage = if (page < 1) 0 else page - 1
-        return ResponseEntity.ok(SuccessResponse.ok(absenceFacade.getMyAbsenceReport(member, safePage, size)))
+    fun getMyAbsenceReport(@CurrentMember member: Member)
+    : ResponseEntity<SuccessResponse<List<GetMyAbsenceReportResponse>>> {
+        return ResponseEntity.ok(SuccessResponse.ok(absenceFacade.getMyAbsenceReport(member)))
     }
 }
