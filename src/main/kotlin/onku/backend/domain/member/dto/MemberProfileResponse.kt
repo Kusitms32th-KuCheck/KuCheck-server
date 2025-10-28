@@ -5,5 +5,6 @@ import onku.backend.domain.member.enums.Part
 data class MemberProfileResponse(
     val name: String?,
     val part: Part,
-    val totalPoints: Long
+    val totalPoints: Long,
+    val profileImage: String?
 )

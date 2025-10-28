@@ -9,6 +9,10 @@ import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.member.repository.MemberRepository
 import onku.backend.domain.point.repository.MemberPointHistoryRepository
 import onku.backend.global.exception.CustomException
+import onku.backend.global.s3.dto.GetUpdateAndDeleteUrlDto
+import onku.backend.global.s3.enums.FolderName
+import onku.backend.global.s3.enums.UploadOption
+import onku.backend.global.s3.service.S3Service
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -18,7 +22,8 @@ class MemberProfileService(
     private val memberProfileRepository: MemberProfileRepository,
     private val memberRepository: MemberRepository,
     private val memberService: MemberService,
-    private val memberPointHistoryRepository: MemberPointHistoryRepository
+    private val memberPointHistoryRepository: MemberPointHistoryRepository,
+    private val s3Service: S3Service
 ) {
     fun submitOnboarding(member: Member, req: OnboardingRequest): OnboardingResponse {
         if (member.hasInfo) { // 이미 온보딩 완료된 사용자 차단
@@ -77,12 +82,17 @@ class MemberProfileService(
         val sums = memberPointHistoryRepository.sumPointsForMember(member)
         val total = sums.getTotalPoints()
 
+        val key = profile.profileImage
+        val url = key?.let { s3Service.getGetS3Url(member.id!!, it).preSignedUrl }
+
         return MemberProfileResponse(
             name = profile.name,
             part = profile.part,
-            totalPoints = total
+            totalPoints = total,
+            profileImage = url
         )
     }
+
 
     @Transactional(readOnly = true)
     fun getProfileBasics(member: Member): MemberProfileBasicsResponse {
@@ -97,10 +107,35 @@ class MemberProfileService(
         )
     }
 
-    fun updateProfileImage(member: Member, req: UpdateProfileImageRequest): UpdateProfileImageResponse {
+    @Transactional
+    fun issueProfileImageUploadUrl(member: Member, fileName: String): GetUpdateAndDeleteUrlDto {
+        val signedUrlDto = s3Service.getPostS3Url(
+            memberId = member.id!!,
+            filename = fileName,
+            folderName = FolderName.MEMBER_PROFILE.name,
+            option = UploadOption.IMAGE
+        )
+
+        val oldKey = submitProfileImage(member, signedUrlDto.key)
+
+        val oldDeletePreSignedUrl = if (!oldKey.isNullOrBlank()) {
+            s3Service.getDeleteS3Url(oldKey).preSignedUrl
+        } else {
+            ""
+        }
+
+        return GetUpdateAndDeleteUrlDto(
+            newUrl = signedUrlDto.preSignedUrl,
+            oldUrl = oldDeletePreSignedUrl
+        )
+    }
+
+    fun submitProfileImage(member: Member, newKey: String): String? {
         val profile = memberProfileRepository.findById(member.id!!)
             .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
-        profile.profileImage = req.imageUrl
-        return UpdateProfileImageResponse(profileImageUrl = profile.profileImage!!)
+
+        val old = profile.profileImage
+        profile.profileImage = newKey
+        return old
     }
 }
