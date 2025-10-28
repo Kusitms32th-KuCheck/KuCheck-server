@@ -9,6 +9,7 @@ import onku.backend.domain.session.dto.request.UpsertSessionDetailRequest
 import onku.backend.domain.session.dto.response.*
 import onku.backend.domain.session.service.SessionDetailService
 import onku.backend.domain.session.service.SessionImageService
+import onku.backend.domain.session.service.SessionNoticeService
 import onku.backend.domain.session.service.SessionService
 import onku.backend.global.page.PageResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
@@ -23,7 +24,8 @@ class SessionFacade(
     private val sessionService: SessionService,
     private val sessionDetailService: SessionDetailService,
     private val sessionImageService : SessionImageService,
-    private val s3Service: S3Service
+    private val s3Service: S3Service,
+    private val sessionNoticeService: SessionNoticeService
 ) {
     fun showSessionAboutAbsence(): List<SessionAboutAbsenceResponse> {
         return sessionService.getUpcomingSessionsForAbsence()
@@ -119,5 +121,30 @@ class SessionFacade(
 
     fun showAllSessionCards(): List<SessionCardInfo> {
         return sessionService.getAllSessionsOrderByStartDate()
+    }
+
+    fun getSessionNotice(sessionId: Long): GetSessionNoticeResponse {
+        val (session, detail, images) = sessionNoticeService.getSessionWithImages(sessionId)
+
+        // Presigned URL 생성
+        val imageDtos = images.map { img ->
+            val presign = s3Service.getGetS3Url(0L, img.url)
+            SessionImageDto(
+                sessionImageId = img.id!!,
+                sessionImagePreSignedUrl = presign.preSignedUrl
+            )
+        }
+
+        return GetSessionNoticeResponse(
+            sessionId = session.id!!,
+            sessionDetailId = detail.id!!,
+            title = session.title,
+            place = detail.place,
+            startDate = session.startDate,
+            startTime = detail.startTime,
+            endTime = detail.endTime,
+            content = detail.content,
+            images = imageDtos
+        )
     }
 }

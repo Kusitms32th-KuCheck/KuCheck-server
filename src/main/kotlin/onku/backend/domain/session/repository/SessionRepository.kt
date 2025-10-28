@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.*
 
 interface SessionRepository : CrudRepository<Session, Long> {
 
@@ -109,4 +110,12 @@ interface SessionRepository : CrudRepository<Session, Long> {
         @Param("start") start: LocalDate,
         @Param("end") end: LocalDate
     ): List<ThisWeekSessionInfo>
+
+    @Query("""
+        SELECT s
+        FROM Session s
+        LEFT JOIN FETCH s.sessionDetail sd
+        WHERE s.id = :id
+    """)
+    fun findWithDetail(@Param("id") id: Long): Session?
 }

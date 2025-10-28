@@ -2,6 +2,7 @@ package onku.backend.domain.session.service
 
 import onku.backend.domain.session.validator.SessionValidator
 import onku.backend.domain.session.Session
+import onku.backend.domain.session.SessionErrorCode
 import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
 import onku.backend.domain.session.dto.request.SessionSaveRequest
 import onku.backend.domain.session.dto.response.GetInitialSessionResponse
@@ -9,7 +10,6 @@ import onku.backend.domain.session.dto.response.SessionCardInfo
 import onku.backend.domain.session.dto.response.ThisWeekSessionInfo
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
-import onku.backend.global.exception.ErrorCode
 import onku.backend.global.time.TimeRangeUtil
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -46,7 +46,7 @@ class SessionService(
 
     @Transactional(readOnly = true)
     fun getById(id : Long) : Session {
-        return sessionRepository.findByIdOrNull(id) ?: throw CustomException(ErrorCode.SESSION_NOT_FOUND)
+        return sessionRepository.findByIdOrNull(id) ?: throw CustomException(SessionErrorCode.SESSION_NOT_FOUND)
     }
 
     @Transactional
