@@ -15,9 +15,9 @@ enum class Role {
 
     fun authorities(): List<String> = when (this) {
         GUEST -> listOf("GUEST")
-        USER -> listOf("USER")
-        STAFF -> listOf("STAFF", "USER")
-        MANAGEMENT -> listOf("MANAGEMENT", "STAFF", "USER")
-        EXECUTIVE -> listOf("EXECUTIVE", "MANAGEMENT", "STAFF", "USER")
+        USER -> listOf("USER", "GUEST")
+        STAFF -> listOf("STAFF", "USER", "GUEST")
+        MANAGEMENT -> listOf("MANAGEMENT", "STAFF", "USER", "GUEST")
+        EXECUTIVE -> listOf("EXECUTIVE", "MANAGEMENT", "STAFF", "USER", "GUEST")
     }
 }
