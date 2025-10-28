@@ -82,13 +82,17 @@ class MemberProfileService(
         val sums = memberPointHistoryRepository.sumPointsForMember(member)
         val total = sums.getTotalPoints()
 
+        val key = profile.profileImage
+        val url = key?.let { s3Service.getGetS3Url(member.id!!, it).preSignedUrl }
+
         return MemberProfileResponse(
             name = profile.name,
             part = profile.part,
             totalPoints = total,
-            profileImage = profile.profileImage
+            profileImage = url
         )
     }
+
 
     @Transactional(readOnly = true)
     fun getProfileBasics(member: Member): MemberProfileBasicsResponse {
