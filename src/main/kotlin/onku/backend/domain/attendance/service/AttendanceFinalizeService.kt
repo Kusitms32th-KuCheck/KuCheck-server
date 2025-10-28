@@ -12,10 +12,10 @@ import onku.backend.domain.member.repository.MemberRepository
 import onku.backend.domain.point.MemberPointHistory
 import onku.backend.domain.point.repository.MemberPointHistoryRepository
 import onku.backend.domain.session.Session
+import onku.backend.domain.session.SessionErrorCode
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.domain.session.util.SessionTimeUtil
 import onku.backend.global.exception.CustomException
-import onku.backend.global.exception.ErrorCode
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -36,7 +36,7 @@ class AttendanceFinalizeService(
     fun finalizeSession(sessionId: Long) {
         val now = LocalDateTime.now(clock)
         val session = sessionRepository.findById(sessionId)
-            .orElseThrow { CustomException(ErrorCode.SESSION_NOT_FOUND) }
+            .orElseThrow { CustomException(SessionErrorCode.SESSION_NOT_FOUND) }
         if (session.attendanceFinalized) return
 
         val startDateTime = SessionTimeUtil.startDateTime(session)
