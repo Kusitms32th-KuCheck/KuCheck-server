@@ -30,7 +30,7 @@ class AbsenceFacade(
             sessionValidator.isPastSession(session) -> {
                 throw CustomException(ErrorCode.SESSION_PAST)
             }
-            sessionValidator.isImminentSession(session) -> {
+            !sessionValidator.isImminentSession(session) -> {
                 throw CustomException(ErrorCode.SESSION_IMMINENT)
             }
             sessionValidator.isRestSession(session) -> {
