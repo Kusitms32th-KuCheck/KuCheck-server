@@ -12,6 +12,7 @@ import onku.backend.domain.member.service.MemberService
 import onku.backend.global.annotation.CurrentMember
 import onku.backend.global.response.SuccessResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
+import onku.backend.global.s3.dto.GetUpdateAndDeleteUrlDto
 import onku.backend.global.s3.enums.FolderName
 import onku.backend.global.s3.enums.UploadOption
 import onku.backend.global.s3.service.S3Service
@@ -54,35 +55,18 @@ class MemberController(
         return SuccessResponse.ok(body)
     }
 
-    @PatchMapping("/profile/image")
-    @Operation(
-        summary = "내 프로필 이미지 수정",
-        description = "이미지 URL을 입력받아 MemberProfile.profileImage를 수정하고 최종 URL을 반환"
-    )
-    fun updateMyProfileImage(
-        @CurrentMember member: Member,
-        @RequestBody @Valid req: UpdateProfileImageRequest
-    ): SuccessResponse<UpdateProfileImageResponse> {
-        val body = memberProfileService.updateProfileImage(member, req)
-        return SuccessResponse.ok(body)
-    }
-
     @GetMapping("/profile/image/url")
     @Operation(
         summary = "프로필 이미지 업로드용 Presigned URL 발급",
-        description = "업로드 URL 반환"
+        description = "URL 발급과 동시에 DB에 프로필 이미지 key를 저장 or 갱신하며, 이전 이미지 삭제용 URL도 함께 반환"
     )
     fun profileImagePostUrl(
         @CurrentMember member: Member,
         @RequestParam fileName: String
-    ): ResponseEntity<SuccessResponse<GetPreSignedUrlDto>> {
-        val dto = s3Service.getPostS3Url(
-            memberId = member.id!!,
-            filename = fileName,
-            folderName = FolderName.MEMBER_PROFILE.name,
-            option = UploadOption.IMAGE
-        )
-        return ResponseEntity.ok(SuccessResponse.ok(GetPreSignedUrlDto(preSignedUrl = dto.preSignedUrl)))
+    ): ResponseEntity<SuccessResponse<GetUpdateAndDeleteUrlDto>> {
+
+        val dto = memberProfileService.issueProfileImageUploadUrl(member, fileName)
+        return ResponseEntity.ok(SuccessResponse.ok(dto))
     }
 
     @Operation(
