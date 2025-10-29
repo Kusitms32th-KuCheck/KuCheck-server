@@ -13,7 +13,6 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import onku.backend.domain.session.util.SessionTimeUtil.absentBoundary
-import onku.backend.global.exception.ErrorCode
 
 @Service
 class SessionDetailService(
@@ -46,7 +45,7 @@ class SessionDetailService(
         sessionRepository.save(session)
 
         val runAt = absentBoundary(session, ABSENT_START_MINUTES)
-        val sessionId = session.id ?: throw CustomException(ErrorCode.SESSION_NOT_FOUND)
+        val sessionId = session.id ?: throw CustomException(SessionErrorCode.SESSION_NOT_FOUND)
 
         applicationEventPublisher.publishEvent(
             FinalizeEvent(sessionId, runAt)

@@ -20,7 +20,8 @@ class SessionDetail(
     @Column(name = "end_time", nullable = false)
     var endTime: LocalTime,
 
-    @Column(name = "content", nullable = false)
+    @Lob
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     var content: String,
 ) : BaseEntity() {
 }

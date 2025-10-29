@@ -11,11 +11,7 @@ import onku.backend.domain.member.service.MemberProfileService
 import onku.backend.domain.member.service.MemberService
 import onku.backend.global.annotation.CurrentMember
 import onku.backend.global.response.SuccessResponse
-import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import onku.backend.global.s3.dto.GetUpdateAndDeleteUrlDto
-import onku.backend.global.s3.enums.FolderName
-import onku.backend.global.s3.enums.UploadOption
-import onku.backend.global.s3.service.S3Service
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -25,7 +21,6 @@ import org.springframework.web.bind.annotation.*
 @Tag(name = "회원 API", description = "온보딩 및 프로필 관련 API")
 class MemberController(
     private val memberProfileService: MemberProfileService,
-    private val s3Service: S3Service,
     private val memberService: MemberService
 ) {
 

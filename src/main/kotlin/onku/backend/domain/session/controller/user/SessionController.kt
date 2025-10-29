@@ -2,6 +2,7 @@ package onku.backend.domain.session.controller.user
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import onku.backend.domain.session.dto.response.GetSessionNoticeResponse
 import onku.backend.domain.session.dto.response.SessionCardInfo
 import onku.backend.domain.session.dto.response.SessionAboutAbsenceResponse
 import onku.backend.domain.session.dto.response.ThisWeekSessionInfo
@@ -9,6 +10,7 @@ import onku.backend.domain.session.facade.SessionFacade
 import onku.backend.global.response.SuccessResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -44,5 +46,16 @@ class SessionController(
     )
     fun showAllSessionCards() : ResponseEntity<SuccessResponse<List<SessionCardInfo>>> {
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.showAllSessionCards()))
+    }
+
+    @GetMapping("/notice/{sessionId}")
+    @Operation(
+        summary = "세션 공지 조회",
+        description = "세션 Id에 맞는 세션 공지를 조회합니다."
+    )
+    fun getSessionNotice(
+        @PathVariable(name = "sessionId") sessionId : Long
+    ) : ResponseEntity<SuccessResponse<GetSessionNoticeResponse>> {
+        return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.getSessionNotice(sessionId)))
     }
 }

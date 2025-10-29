@@ -5,9 +5,9 @@ import onku.backend.domain.absence.dto.response.GetMyAbsenceReportResponse
 import onku.backend.domain.absence.service.AbsenceService
 import onku.backend.domain.session.validator.SessionValidator
 import onku.backend.domain.member.Member
+import onku.backend.domain.session.SessionErrorCode
 import onku.backend.domain.session.service.SessionService
 import onku.backend.global.exception.CustomException
-import onku.backend.global.exception.ErrorCode
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import onku.backend.global.s3.enums.FolderName
 import onku.backend.global.s3.enums.UploadOption
@@ -26,13 +26,13 @@ class AbsenceFacade(
         //세션 검증
         when {
             sessionValidator.isPastSession(session) -> {
-                throw CustomException(ErrorCode.SESSION_PAST)
+                throw CustomException(SessionErrorCode.SESSION_PAST)
             }
             !sessionValidator.isImminentSession(session) -> {
-                throw CustomException(ErrorCode.SESSION_IMMINENT)
+                throw CustomException(SessionErrorCode.SESSION_PAST)
             }
             sessionValidator.isRestSession(session) -> {
-                throw CustomException(ErrorCode.INVALID_SESSION)
+                throw CustomException(SessionErrorCode.INVALID_SESSION)
             }
         }
         val preSignedUrlDto = s3Service.getPostS3Url(member.id!!, submitAbsenceReportRequest.fileName, FolderName.ABSENCE.name, UploadOption.FILE)
