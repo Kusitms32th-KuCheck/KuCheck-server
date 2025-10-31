@@ -2,10 +2,7 @@ package onku.backend.domain.attendance.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import onku.backend.domain.attendance.dto.AttendanceRequest
-import onku.backend.domain.attendance.dto.AttendanceResponse
-import onku.backend.domain.attendance.dto.AttendanceTokenResponse
-import onku.backend.domain.attendance.dto.WeeklyAttendanceSummary
+import onku.backend.domain.attendance.dto.*
 import onku.backend.domain.attendance.facade.AttendanceFacade
 import onku.backend.domain.attendance.service.AttendanceService
 import onku.backend.domain.member.Member
@@ -45,5 +42,15 @@ class AttendanceController(
     fun getThisWeekSummary(): SuccessResponse<WeeklyAttendanceSummary> {
         val summary = attendanceService.getThisWeekSummary()
         return SuccessResponse.ok(summary)
+    }
+
+    @GetMapping("/availability")
+    @Operation(
+        summary = "지금 출석 가능 여부 확인 [USER]",
+        description = "열린 세션이 있는지 확인하고, 해당 세션에 이미 출석했는지 판단하여 가능 여부를 반환합니다."
+    )
+    fun checkAvailability(@CurrentMember member: Member): SuccessResponse<AttendanceAvailabilityResponse> {
+        val body = attendanceService.checkAvailabilityFor(member)
+        return SuccessResponse.ok(body)
     }
 }
