@@ -1,4 +1,4 @@
-package onku.backend.domain.attendance.controller
+package onku.backend.domain.attendance.controller.user
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -15,39 +15,26 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1/attendance")
 @Tag(name = "출석 API")
-class AttendanceController(
+class AttendanceMemberController(
     private val attendanceService: AttendanceService,
     private val attendanceFacade: AttendanceFacade
 ) {
+
     @PostMapping("/token")
-    @Operation(summary = "출석용 토큰 발급 [USER]", description = "15초 유효 + 프로필(이름/파트/학교/프사) 포함")
+    @Operation(
+        summary = "출석용 토큰 발급 [USER]",
+        description = "15초 유효 + 프로필(이름/파트/학교/프사) 포함"
+    )
     fun issueQrToken(@CurrentMember member: Member): ResponseEntity<SuccessResponse<AttendanceTokenResponse>> {
         val headers = HttpHeaders().apply { add(HttpHeaders.CACHE_CONTROL, "no-store") }
         val body = attendanceFacade.issueTokenWithProfile(member)
         return ResponseEntity.ok().headers(headers).body(SuccessResponse.ok(body))
     }
 
-    @PostMapping("/scan")
-    @Operation(summary = "출석 스캔 [MANAGEMENT]", description = "열린 세션 자동 선택 → 토큰 검증 & 소비 (반환값에 금주 출석 요약 조회를 추가했습니다. 출석 시 같이 업데이트해주시면 됩니다)")
-    fun scan(@CurrentMember admin: Member, @RequestBody req: AttendanceRequest): SuccessResponse<AttendanceResponse> {
-        return SuccessResponse.ok(attendanceService.scanAndRecordBy(admin, req.token))
-    }
-
-
-    @GetMapping("/weekly-summary")
-    @Operation(
-        summary = "금주 출석 요약 조회",
-        description = "이번 주 기간 내 출석/조퇴/지각/결석 인원 반환. 출석 페이지 첫 로딩 때 호출해주시면 됩니다!"
-    )
-    fun getThisWeekSummary(): SuccessResponse<WeeklyAttendanceSummary> {
-        val summary = attendanceService.getThisWeekSummary()
-        return SuccessResponse.ok(summary)
-    }
-
     @GetMapping("/availability")
     @Operation(
         summary = "지금 출석 가능 여부 확인 [USER]",
-        description = "열린 세션이 있는지 확인하고, 해당 세션에 이미 출석했는지 판단하여 가능 여부를 반환합니다."
+        description = "열린 세션 존재 및 기존 출석 기록 유무를 확인해 가능 여부 반환"
     )
     fun checkAvailability(@CurrentMember member: Member): SuccessResponse<AttendanceAvailabilityResponse> {
         val body = attendanceService.checkAvailabilityFor(member)
