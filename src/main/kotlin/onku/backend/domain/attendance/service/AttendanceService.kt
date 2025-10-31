@@ -17,6 +17,7 @@ import onku.backend.domain.session.util.SessionTimeUtil
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
 import onku.backend.global.redis.cache.AttendanceTokenCache
+import onku.backend.global.time.TimeRangeUtil
 import onku.backend.global.util.TokenGenerator
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
@@ -56,6 +57,40 @@ class AttendanceService(
         return sessionRepository.findOpenWindow(startBound, now).firstOrNull()
     }
 
+    @Transactional(readOnly = true)
+    fun getThisWeekSummary(): WeeklyAttendanceSummary {
+        val range = TimeRangeUtil.thisWeekRange()
+        val rows = attendanceRepository.countGroupedByStatusBetweenDates(
+            range.startOfWeek, range.endOfWeek
+        )
+
+        var present = 0L
+        var earlyLeave = 0L
+        var late = 0L
+        var absent = 0L
+
+        rows.forEach { r ->
+            when (r.getStatus()) {
+                AttendancePointType.PRESENT,
+                AttendancePointType.PRESENT_HOLIDAY -> present += r.getCnt()
+
+                AttendancePointType.EARLY_LEAVE -> earlyLeave += r.getCnt()
+                AttendancePointType.LATE -> late += r.getCnt()
+
+                AttendancePointType.EXCUSED,
+                AttendancePointType.ABSENT,
+                AttendancePointType.ABSENT_WITH_DOC -> absent += r.getCnt()
+            }
+        }
+
+        return WeeklyAttendanceSummary(
+            present = present,
+            earlyLeave = earlyLeave,
+            late = late,
+            absent = absent
+        )
+    }
+
     @Transactional
     fun scanAndRecordBy(admin: Member, token: String): AttendanceResponse {
         val now = LocalDateTime.now(clock)
@@ -79,7 +114,7 @@ class AttendanceService(
         val lateThreshold = startDateTime.plusMinutes(AttendancePolicy.LATE_WINDOW_MINUTES)
 
         val state = when {
-            now.isAfter(lateThreshold)  -> AttendancePointType.ABSENT
+            now.isAfter(lateThreshold)   -> AttendancePointType.ABSENT
             !now.isBefore(startDateTime) -> AttendancePointType.LATE
             else                         -> AttendancePointType.PRESENT
         }
@@ -109,12 +144,15 @@ class AttendanceService(
             throw CustomException(AttendanceErrorCode.ATTENDANCE_ALREADY_RECORDED)
         }
 
+        val weeklySummary = getThisWeekSummary()
+
         return AttendanceResponse(
             memberId = memberId,
             memberName = memberName,
             sessionId = session.id!!,
             state = state,
-            scannedAt = now
+            scannedAt = now,
+            thisWeekSummary = weeklySummary
         )
     }
 }

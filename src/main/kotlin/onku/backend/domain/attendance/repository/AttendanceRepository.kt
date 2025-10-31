@@ -1,11 +1,18 @@
 package onku.backend.domain.attendance.repository
 
 import onku.backend.domain.attendance.Attendance
+import onku.backend.domain.attendance.enums.AttendancePointType
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
+import java.time.LocalDate
 import java.time.LocalDateTime
+
+interface StatusCountProjection {
+    fun getStatus(): AttendancePointType
+    fun getCnt(): Long
+}
 
 interface AttendanceRepository : CrudRepository<Attendance, Long> {
 
@@ -41,4 +48,15 @@ interface AttendanceRepository : CrudRepository<Attendance, Long> {
       where a.sessionId = :sessionId
     """)
     fun findMemberIdsBySessionId(@Param("sessionId") sessionId: Long): List<Long>
+
+    @Query("""
+        select a.status as status, count(a) as cnt
+        from Attendance a
+        where function('date', a.attendanceTime) between :startDate and :endDate
+        group by a.status
+    """)
+    fun countGroupedByStatusBetweenDates(
+        @Param("startDate") startDate: LocalDate,
+        @Param("endDate") endDate: LocalDate
+    ): List<StatusCountProjection>
 }
