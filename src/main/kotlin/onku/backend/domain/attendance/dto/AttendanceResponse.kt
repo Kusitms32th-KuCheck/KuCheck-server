@@ -8,5 +8,6 @@ data class AttendanceResponse(
     val memberName: String,
     val sessionId: Long,
     val state: AttendancePointType,
-    val scannedAt: LocalDateTime
+    val scannedAt: LocalDateTime,
+    val thisWeekSummary: WeeklyAttendanceSummary
 )
