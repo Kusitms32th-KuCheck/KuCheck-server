@@ -5,6 +5,7 @@ import jakarta.persistence.PersistenceContext
 import onku.backend.domain.attendance.AttendanceErrorCode
 import onku.backend.domain.attendance.AttendancePolicy
 import onku.backend.domain.attendance.dto.*
+import onku.backend.domain.attendance.enums.AttendanceAvailabilityReason
 import onku.backend.domain.attendance.enums.AttendancePointType
 import onku.backend.domain.attendance.repository.AttendanceRepository
 import onku.backend.domain.member.Member
@@ -153,6 +154,30 @@ class AttendanceService(
             state = state,
             scannedAt = now,
             thisWeekSummary = weeklySummary
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun checkAvailabilityFor(member: Member): AttendanceAvailabilityResponse {
+        val now = LocalDateTime.now(clock)
+
+        val session = findOpenSession(now)
+            ?: return AttendanceAvailabilityResponse(
+                available = false,
+                reason = AttendanceAvailabilityReason.NO_OPEN_SESSION,
+            )
+
+        val already = attendanceRepository.existsBySessionIdAndMemberId(session.id!!, member.id!!)
+        if (already) {
+            return AttendanceAvailabilityResponse(
+                available = false,
+                reason = AttendanceAvailabilityReason.ALREADY_RECORDED,
+            )
+        }
+
+        return AttendanceAvailabilityResponse(
+            available = true,
+            reason = null,
         )
     }
 }
