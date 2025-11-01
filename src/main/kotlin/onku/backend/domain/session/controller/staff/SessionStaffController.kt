@@ -95,4 +95,15 @@ class SessionStaffController(
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.getSessionDetailPage(detailId)))
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(
+        summary = "세션 삭제",
+        description = "세션 ID로 세션과 상세, 연결된 모든 이미지를 삭제합니다. (S3에 저장된 이미지도 즉시 삭제)"
+    )
+    fun deleteSession(
+        @PathVariable id: Long
+    ): ResponseEntity<SuccessResponse<Boolean>> {
+        sessionFacade.deleteSession(id)
+        return ResponseEntity.ok(SuccessResponse.ok(true))
+    }
 }
