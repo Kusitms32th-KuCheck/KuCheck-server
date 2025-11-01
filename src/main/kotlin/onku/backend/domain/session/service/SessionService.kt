@@ -1,5 +1,9 @@
 package onku.backend.domain.session.service
 
+import jakarta.persistence.EntityManager
+import jakarta.persistence.PersistenceContext
+import onku.backend.domain.absence.repository.AbsenceReportRepository
+import onku.backend.domain.attendance.repository.AttendanceRepository
 import onku.backend.domain.session.validator.SessionValidator
 import onku.backend.domain.session.Session
 import onku.backend.domain.session.SessionErrorCode
@@ -8,8 +12,11 @@ import onku.backend.domain.session.dto.request.SessionSaveRequest
 import onku.backend.domain.session.dto.response.GetInitialSessionResponse
 import onku.backend.domain.session.dto.response.SessionCardInfo
 import onku.backend.domain.session.dto.response.ThisWeekSessionInfo
+import onku.backend.domain.session.repository.SessionDetailRepository
+import onku.backend.domain.session.repository.SessionImageRepository
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
+import onku.backend.global.s3.service.S3Service
 import onku.backend.global.time.TimeRangeUtil
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -24,7 +31,12 @@ import java.time.ZoneId
 class SessionService(
     private val sessionRepository: SessionRepository,
     private val sessionValidator: SessionValidator,
-    private val clock: Clock = Clock.system(ZoneId.of("Asia/Seoul"))
+    private val sessionImageRepository: SessionImageRepository,
+    private val s3Service: S3Service,
+    private val clock: Clock = Clock.system(ZoneId.of("Asia/Seoul")),
+    private val attendanceRepository: AttendanceRepository,
+    private val absenceReportRepository: AbsenceReportRepository,
+    private val sessionDetailRepository: SessionDetailRepository,
 ) {
     @Transactional(readOnly = true)
     fun getUpcomingSessionsForAbsence(): List<SessionAboutAbsenceResponse> {
@@ -104,5 +116,33 @@ class SessionService(
                     startDate = session.startDate
                 )
             }
+    }
+
+    /**
+     * - 해당 sessionId의 데이터가 Session 테이블에 존재하는지 확인
+     * - [삭제] Session id를 FK로 가지는 attendance, absenceReport 레코드 먼저 삭제
+     * - sessionDetail 존재 여부 확인 및 존재 시 detailId 조회
+     * - [삭제] FK를 고려하여 detailId에 해당하는 이미지(SessionImage) 먼저 삭제 (S3 + DB)
+     * - [삭제] detailId에 해당하는 sessionDetail 레코드 삭제
+     * - [삭제] sessionId에 해당하는 Session 레코드 삭제
+     */
+    @Transactional
+    fun deleteCascade(sessionId: Long) {
+        sessionRepository.findWithDetail(sessionId)
+            ?: throw CustomException(SessionErrorCode.SESSION_NOT_FOUND)
+
+        attendanceRepository.deleteAllBySessionId(sessionId)
+        absenceReportRepository.deleteAllBySessionId(sessionId)
+
+        val detailId = sessionRepository.findDetailIdBySessionId(sessionId)
+        if (detailId != null) {
+            val keys = sessionImageRepository.findAllImageKeysByDetailId(detailId).filter { it.isNotBlank() }
+            if (keys.isNotEmpty()) s3Service.deleteObjectsNow(keys)
+
+            sessionImageRepository.deleteByDetailIdBulk(detailId)
+            sessionRepository.detachDetailFromSession(sessionId)
+            sessionDetailRepository.deleteById(detailId)
+        }
+        sessionRepository.deleteById(sessionId)
     }
 }
