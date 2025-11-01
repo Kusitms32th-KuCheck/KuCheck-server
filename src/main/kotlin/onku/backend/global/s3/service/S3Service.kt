@@ -7,9 +7,8 @@ import onku.backend.global.s3.enums.UploadOption
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
-import software.amazon.awssdk.services.s3.model.GetObjectRequest
-import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.*
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.s3.presigner.model.DeleteObjectPresignRequest
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
@@ -22,7 +21,8 @@ import java.util.UUID
 class S3Service(
     @Value("\${cloud.aws.s3.bucket}")
     private val bucket : String,
-    private val s3Presigner: S3Presigner
+    private val s3Presigner: S3Presigner,
+    private val s3Client: S3Client
 ) {
     @Transactional(readOnly = true)
     fun getPostS3Url(memberId: Long, filename: String?, folderName : String, option : UploadOption): GetS3UrlDto {
@@ -98,6 +98,30 @@ class S3Service(
         return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key)
     }
 
+    fun deleteObjectsNow(keys: List<String>) {
+        val filtered = keys.asSequence().map(String::trim).filter(String::isNotEmpty).toList()
+        if (filtered.isEmpty()) return
+
+        filtered.chunked(1000).forEach { chunk ->
+            val delete = Delete.builder()
+                .quiet(true)
+                .objects(chunk.map { ObjectIdentifier.builder().key(it).build() })
+                .build()
+
+            val req = DeleteObjectsRequest.builder()
+                .bucket(bucket)
+                .delete(delete)
+                .build()
+
+            val resp = s3Client.deleteObjects(req)
+            val errors = resp.errors().orEmpty()
+
+            if (errors.any { it.code() != "NoSuchKey" }) {
+                throw CustomException(ErrorCode.SERVER_UNTRACKED_ERROR)
+            }
+        }
+    }
+
     private fun guessFileType(filename: String): String {
         val lower = filename.lowercase()
         return when {
@@ -123,6 +147,4 @@ class S3Service(
     companion object {
         private val DEFAULT_EXPIRE: Duration = Duration.ofMinutes(10)
     }
-
-
 }
