@@ -5,6 +5,7 @@ import onku.backend.domain.session.dto.response.ThisWeekSessionInfo
 import onku.backend.domain.session.enums.SessionCategory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
@@ -118,4 +119,11 @@ interface SessionRepository : CrudRepository<Session, Long> {
         WHERE s.id = :id
     """)
     fun findWithDetail(@Param("id") id: Long): Session?
+
+    @Query("select s.sessionDetail.id from Session s where s.id = :sessionId")
+    fun findDetailIdBySessionId(@Param("sessionId") sessionId: Long): Long?
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Session s set s.sessionDetail = null where s.id = :sessionId")
+    fun detachDetailFromSession(@Param("sessionId") sessionId: Long): Int
 }
