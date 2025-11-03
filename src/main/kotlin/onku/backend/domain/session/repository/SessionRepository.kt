@@ -33,6 +33,7 @@ interface SessionRepository : CrudRepository<Session, Long> {
         SELECT s
         FROM Session s
         WHERE s.startDate >= :now AND s.category <> :restCategory
+        ORDER BY s.startDate ASC
     """
     )
     fun findUpcomingSessions(
