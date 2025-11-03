@@ -9,5 +9,6 @@ data class SessionSaveRequest (
     @field:NotNull val week : Long,
     @field:NotNull val sessionDate : LocalDate,
     @field:NotBlank val title : String,
-    @field:NotNull val category: SessionCategory
+    @field:NotNull val category: SessionCategory,
+    @field:NotNull val isHoliday: Boolean,
     )
