@@ -23,5 +23,7 @@ data class GetSessionNoticeResponse(
     @Schema(description = "공지내용 데이터", example = "세션합니당")
     val content : String?,
     @Schema(description = "세션 관련 이미지", example = "객체임")
-    val images : List<SessionImageDto>
+    val images : List<SessionImageDto>,
+    @Schema(description = "공휴일 세션 여부", example = "true")
+    val isHoliday : Boolean?,
 )

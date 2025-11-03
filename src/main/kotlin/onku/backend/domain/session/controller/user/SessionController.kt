@@ -39,7 +39,7 @@ class SessionController(
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.showThisWeekSessionInfo()))
     }
 
-    @GetMapping("/after/today")
+    @GetMapping("")
     @Operation(
         summary = "전체 세션 정보 조회",
         description = "전체 세션 정보를 시간순으로 조회합니다."

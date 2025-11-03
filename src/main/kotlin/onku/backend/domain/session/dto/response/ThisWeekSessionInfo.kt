@@ -18,5 +18,7 @@ data class ThisWeekSessionInfo(
     @Schema(description = "시작 시각", example = "13:00")
     val startTime : LocalTime?,
     @Schema(description = "종료 시각", example = "16:00")
-    val endTime : LocalTime?
+    val endTime : LocalTime?,
+    @Schema(description = "공휴일 세션 여부", example = "true")
+    val isHoliday : Boolean?,
 )

@@ -101,7 +101,8 @@ class SessionService(
                 place = it.place,
                 startDate = it.startDate,
                 startTime = it.startTime,
-                endTime = it.endTime
+                endTime = it.endTime,
+                isHoliday = it.isHoliday,
             )
         }
     }
@@ -113,7 +114,8 @@ class SessionService(
                     sessionId = session.id!!,
                     sessionCategory = session.category,
                     title = session.title,
-                    startDate = session.startDate
+                    startDate = session.startDate,
+                    isHoliday = session.isHoliday,
                 )
             }
     }

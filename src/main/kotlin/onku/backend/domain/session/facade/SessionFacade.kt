@@ -144,7 +144,8 @@ class SessionFacade(
             startTime = detail.startTime,
             endTime = detail.endTime,
             content = detail.content,
-            images = imageDtos
+            images = imageDtos,
+            isHoliday = session.isHoliday,
         )
     }
     fun deleteSession(sessionId: Long) {
