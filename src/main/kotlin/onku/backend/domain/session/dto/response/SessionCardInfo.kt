@@ -12,5 +12,7 @@ data class SessionCardInfo(
     @Schema(description = "세션 제목", example = "아이디어 발제 및 커피챗")
     val title : String?,
     @Schema(description = "세션 시작 일자", example = "2025-09-27")
-    val startDate : LocalDate?
+    val startDate : LocalDate?,
+    @Schema(description = "공휴일 세션 여부", example = "true")
+    val isHoliday : Boolean?,
 )

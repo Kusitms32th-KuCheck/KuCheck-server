@@ -101,7 +101,8 @@ interface SessionRepository : CrudRepository<Session, Long> {
             sd.place as place,
             s.startDate as startDate,
             sd.startTime as startTime,
-            sd.endTime as endTime
+            sd.endTime as endTime,
+            s.isHoliday as isHoliday
         FROM Session s
         LEFT JOIN s.sessionDetail sd
         WHERE s.startDate BETWEEN :start AND :end
