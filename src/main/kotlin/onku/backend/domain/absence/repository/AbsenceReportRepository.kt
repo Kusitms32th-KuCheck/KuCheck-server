@@ -4,6 +4,7 @@ import onku.backend.domain.absence.AbsenceReport
 import onku.backend.domain.absence.repository.projection.GetMyAbsenceReportView
 import onku.backend.domain.member.Member
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
@@ -34,4 +35,8 @@ interface AbsenceReportRepository : JpaRepository<AbsenceReport, Long> {
         @Param("sessionId") sessionId: Long,
         @Param("memberIds") memberIds: Collection<Long>
     ): List<AbsenceReport>
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from AbsenceReport ar where ar.session.id = :sessionId")
+    fun deleteAllBySessionId(@Param("sessionId") sessionId: Long): Int
 }

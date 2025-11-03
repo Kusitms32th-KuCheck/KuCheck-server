@@ -46,6 +46,7 @@ dependencies {
 	implementation("software.amazon.awssdk:s3:2.25.34")
 	implementation("software.amazon.awssdk:auth:2.25.34")
 	implementation("software.amazon.awssdk:regions:2.25.34")
+	implementation("software.amazon.awssdk:url-connection-client:2.25.30")
 	//serializable
 	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 	//okhttp3

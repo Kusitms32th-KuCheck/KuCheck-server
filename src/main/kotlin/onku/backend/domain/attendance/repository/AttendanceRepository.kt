@@ -1,5 +1,6 @@
 package onku.backend.domain.attendance.repository
 
+import jakarta.transaction.Transactional
 import onku.backend.domain.attendance.Attendance
 import onku.backend.domain.attendance.enums.AttendancePointType
 import org.springframework.data.jpa.repository.Modifying
@@ -59,4 +60,8 @@ interface AttendanceRepository : CrudRepository<Attendance, Long> {
         @Param("startDate") startDate: LocalDate,
         @Param("endDate") endDate: LocalDate
     ): List<StatusCountProjection>
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from Attendance a where a.sessionId = :sessionId")
+    fun deleteAllBySessionId(@Param("sessionId") sessionId: Long): Int
 }

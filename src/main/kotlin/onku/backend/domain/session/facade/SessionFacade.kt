@@ -147,4 +147,7 @@ class SessionFacade(
             images = imageDtos
         )
     }
+    fun deleteSession(sessionId: Long) {
+        sessionService.deleteCascade(sessionId)
+    }
 }
