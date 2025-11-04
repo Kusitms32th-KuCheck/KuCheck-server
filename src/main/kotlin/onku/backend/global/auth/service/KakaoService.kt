@@ -4,7 +4,6 @@ import onku.backend.global.auth.AuthErrorCode
 import onku.backend.global.auth.dto.KakaoOAuthTokenResponse
 import onku.backend.global.auth.dto.KakaoProfile
 import onku.backend.global.exception.CustomException
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.util.LinkedMultiValueMap
@@ -12,14 +11,14 @@ import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestClient
 
 @Service
-class KakaoService(
-    @Value("\${oauth.kakao.client-id}") private val clientId: String,
-    @Value("\${oauth.kakao.redirect-uri}") private val redirectUri: String,
-    @Value("\${oauth.kakao.admin-key}") private val adminKey: String
-) {
+class KakaoService {
     private val client = RestClient.create()
 
-    fun getAccessToken(code: String): KakaoOAuthTokenResponse {
+    fun getAccessToken(
+        code: String,
+        redirectUri: String,
+        clientId: String
+    ): KakaoOAuthTokenResponse {
         val params: MultiValueMap<String, String> = LinkedMultiValueMap<String, String>().apply {
             add("grant_type", "authorization_code")
             add("client_id", clientId)
@@ -55,7 +54,7 @@ class KakaoService(
         }
     }
 
-    fun adminUnlink(userId: Long) {
+    fun adminUnlink(userId: Long, adminKey: String) {
         val form: MultiValueMap<String, String> = LinkedMultiValueMap<String, String>().apply {
             add("target_id_type", "user_id")
             add("target_id", userId.toString())
