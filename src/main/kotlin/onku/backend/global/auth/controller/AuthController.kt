@@ -47,13 +47,6 @@ class AuthController(
     fun withdraw(
         @CurrentMember member: Member,
         @RequestHeader("X-Refresh-Token") refreshToken: String
-    ): ResponseEntity<SuccessResponse<String>> {
-        val kakaoUserId = member.socialId
-        kakaoService.adminUnlink(kakaoUserId)
-        authService.logout(refreshToken)
-        val memberId = member.id ?: throw IllegalStateException("회원 ID가 없습니다.")
-        memberService.deleteMemberById(memberId)
-
-        return ResponseEntity.ok(SuccessResponse.ok("회원 탈퇴가 완료되었습니다."))
-    }
+    ): ResponseEntity<SuccessResponse<String>> =
+        authService.withdraw(member, refreshToken)
 }
