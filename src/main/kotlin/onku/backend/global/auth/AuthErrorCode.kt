@@ -15,4 +15,6 @@ enum class AuthErrorCode(
     KAKAO_TOKEN_EMPTY_RESPONSE("AUTH502", "카카오 토큰 응답이 비어 있습니다.", HttpStatus.BAD_GATEWAY),
     KAKAO_PROFILE_EMPTY_RESPONSE("AUTH502", "카카오 프로필 응답이 비어 있습니다.", HttpStatus.BAD_GATEWAY),
     KAKAO_API_COMMUNICATION_ERROR("AUTH502", "카카오 API 통신 중 오류가 발생했습니다.", HttpStatus.BAD_GATEWAY),
+    INVALID_REDIRECT_URI("AUTH400", "유효하지 않은 리다이렉트 URI입니다.", HttpStatus.BAD_REQUEST),
+    KAKAO_USER_ID_MISSING("AUTH400", "카카오 사용자 ID가 없습니다.", HttpStatus.BAD_REQUEST)
 }
