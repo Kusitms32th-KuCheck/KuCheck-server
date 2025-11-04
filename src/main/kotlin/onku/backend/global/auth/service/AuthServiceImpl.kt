@@ -1,5 +1,7 @@
 package onku.backend.global.auth.service
 
+import onku.backend.domain.member.Member
+import onku.backend.domain.member.MemberErrorCode
 import onku.backend.domain.member.enums.ApprovalStatus
 import onku.backend.domain.member.enums.SocialType
 import onku.backend.domain.member.service.MemberService
@@ -7,6 +9,7 @@ import onku.backend.global.auth.AuthErrorCode
 import onku.backend.global.auth.dto.AuthLoginResult
 import onku.backend.global.auth.dto.KakaoLoginRequest
 import onku.backend.global.auth.jwt.JwtUtil
+import onku.backend.global.config.KakaoProps
 import onku.backend.global.exception.CustomException
 import onku.backend.global.redis.cache.RefreshTokenCache
 import onku.backend.global.response.SuccessResponse
@@ -27,11 +30,19 @@ class AuthServiceImpl(
     private val refreshTokenCacheUtil: RefreshTokenCache,
     @Value("\${jwt.refresh-ttl}") private val refreshTtl: Duration,
     @Value("\${jwt.onboarding-ttl}") private val onboardingTtl: Duration,
+    private val kakaoProps: KakaoProps,
 ) : AuthService {
 
     @Transactional
     override fun kakaoLogin(dto: KakaoLoginRequest): ResponseEntity<SuccessResponse<AuthLoginResult>> {
-        val token = kakaoService.getAccessToken(dto.code)
+        val redirectUri = kakaoProps.redirectMap[dto.env]
+            ?: throw CustomException(AuthErrorCode.INVALID_REDIRECT_URI)
+
+        val token = kakaoService.getAccessToken(
+            code = dto.code,
+            redirectUri = redirectUri,
+            clientId = kakaoProps.clientId
+        )
         val profile = kakaoService.getProfile(token.accessToken)
 
         val socialId = profile.id
@@ -155,12 +166,24 @@ class AuthServiceImpl(
 
     @Transactional
     override fun logout(refreshToken: String): ResponseEntity<SuccessResponse<String>> {
-        val email = runCatching { jwtUtil.getEmail(refreshToken) }.getOrNull()
-        if (email != null) {
-            refreshTokenCacheUtil.deleteRefreshToken(email)
-        }
+        deleteRefreshTokenBy(refreshToken)
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(SuccessResponse.ok("로그아웃 되었습니다."))
+    }
+
+    @Transactional
+    override fun withdraw(member: Member, refreshToken: String): ResponseEntity<SuccessResponse<String>> {
+        kakaoService.adminUnlink(member.socialId, kakaoProps.adminKey)
+        deleteRefreshTokenBy(refreshToken)
+        val memberId = member.id ?: throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
+        memberService.deleteMemberById(memberId)
+        return ResponseEntity.ok(SuccessResponse.ok("회원 탈퇴가 완료되었습니다."))
+    }
+
+    private fun deleteRefreshTokenBy(refreshToken: String): String? {
+        val email = runCatching { jwtUtil.getEmail(refreshToken) }.getOrNull() ?: return null
+        refreshTokenCacheUtil.deleteRefreshToken(email)
+        return email
     }
 }
