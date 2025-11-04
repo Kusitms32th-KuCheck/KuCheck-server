@@ -1,7 +1,5 @@
 package onku.backend.domain.session.service
 
-import jakarta.persistence.EntityManager
-import jakarta.persistence.PersistenceContext
 import onku.backend.domain.absence.repository.AbsenceReportRepository
 import onku.backend.domain.attendance.repository.AttendanceRepository
 import onku.backend.domain.session.validator.SessionValidator
@@ -69,7 +67,8 @@ class SessionService(
                 startDate = r.sessionDate,
                 category = r.category,
                 week = r.week,
-                sessionDetail = null
+                sessionDetail = null,
+                isHoliday = r.isHoliday
             )
         }
         sessionRepository.saveAll(sessions)
