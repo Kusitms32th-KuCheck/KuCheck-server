@@ -5,6 +5,9 @@ import onku.backend.domain.kupick.dto.response.ShowUpdateResponseDto
 import onku.backend.domain.kupick.dto.response.ViewMyKupickResponseDto
 import onku.backend.domain.kupick.service.KupickService
 import onku.backend.domain.member.Member
+import onku.backend.global.alarm.AlarmMessage
+import onku.backend.global.alarm.AlarmTitle
+import onku.backend.global.alarm.FCMService
 import onku.backend.global.s3.dto.GetUpdateAndDeleteUrlDto
 import onku.backend.global.s3.enums.FolderName
 import onku.backend.global.s3.enums.UploadOption
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Component
 class KupickFacade(
     private val s3Service: S3Service,
     private val kupickService: KupickService,
+    private val fcmService: FCMService
 ) {
     fun submitApplication(member: Member, fileName: String): GetUpdateAndDeleteUrlDto {
         val signedUrlDto = s3Service.getPostS3Url(member.id!!, fileName, FolderName.KUPICK_APPLICATION.name, UploadOption.IMAGE)
@@ -84,6 +88,17 @@ class KupickFacade(
 
     fun decideApproval(kupickApprovalRequest: KupickApprovalRequest): Boolean {
         kupickService.decideApproval(kupickApprovalRequest.kupickId, kupickApprovalRequest.approval)
+        val info = kupickService.findFcmInfo(kupickApprovalRequest.kupickId)
+        val fcmToken = info?.fcmToken
+        val submitMonth = info?.submitDate?.monthValue
+        fcmToken?.let {
+            fcmService.sendMessageTo(
+                targetToken = it,
+                title = AlarmTitle.KUPICK,
+                body = AlarmMessage.kupick(submitMonth!!, kupickApprovalRequest.approval),
+                link = null
+            )
+        }
         return true
     }
 }
