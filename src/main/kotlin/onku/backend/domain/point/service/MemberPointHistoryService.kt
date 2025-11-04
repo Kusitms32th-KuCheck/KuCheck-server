@@ -19,8 +19,7 @@ class MemberPointHistoryService(
 ) {
 
     @Transactional(readOnly = true)
-    fun getHistory(member: Member, page1Based: Int, size: Int): MemberPointHistoryResponse {
-        val safePage = max(0, page1Based - 1)
+    fun getHistory(member: Member, safePage: Int, size: Int): MemberPointHistoryResponse {
         val pageable = PageRequest.of(safePage, size)
 
         val profile = memberProfileRepository.findById(member.id!!)
