@@ -10,7 +10,6 @@ import onku.backend.global.exception.CustomException
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import kotlin.math.max
 
 @Service
 class MemberPointHistoryService(
