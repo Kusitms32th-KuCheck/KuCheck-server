@@ -22,6 +22,9 @@ enum class AttendancePointType(
     @Schema(description = "결석(사유서 제출): -2점")
     ABSENT_WITH_DOC(-2),
 
+    @Schema(description = "기타 사유(사유서 제출): -1점")
+    ABSENT_WITH_CAUSE(-1),
+
     @Schema(description = "지각: -1점")
     LATE(-1),
 
