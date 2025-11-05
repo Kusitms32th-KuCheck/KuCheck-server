@@ -12,7 +12,6 @@ import org.springframework.data.repository.query.Param
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.*
 
 interface SessionRepository : CrudRepository<Session, Long> {
 
@@ -58,16 +57,23 @@ interface SessionRepository : CrudRepository<Session, Long> {
         """)
     fun findAll(pageable: Pageable): Page<Session>
 
-    @Query("""
-        SELECT function('timestamp', sess.startDate, d.startTime)
-        FROM Session sess join sess.sessionDetail d
-        WHERE function('timestamp', sess.startDate, d.startTime) >= :start
-          AND function('timestamp', sess.startDate, d.startTime) <  :end
-    """)
-    fun findStartTimesBetween(
-        @Param("start") start: LocalDateTime,
-        @Param("end") end: LocalDateTime
-    ): List<LocalDateTime>
+    interface StartParts {
+        fun getStartDate(): LocalDate
+        fun getStartTime(): LocalTime
+    }
+
+    @Query(
+        """
+        select s.startDate as startDate, d.startTime as startTime
+        from Session s
+        join s.sessionDetail d
+        where s.startDate between :startDate and :endDate
+        """
+    )
+    fun findStartDateAndTimeBetweenDates(
+        @Param("startDate") startDate: LocalDate,
+        @Param("endDate") endDate: LocalDate
+    ): List<StartParts>
 
     @Query("""
         SELECT s
