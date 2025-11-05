@@ -13,7 +13,7 @@ interface AbsenceReportRepository : JpaRepository<AbsenceReport, Long> {
         """
         select
             ar.id as absenceReportId,
-            ar.status as absenceType,
+            ar.submitType as absenceType,
             ar.approval as absenceReportApproval,
             ar.createdAt as submitDateTime,
             s.title as sessionTitle,
