@@ -1,6 +1,7 @@
 package onku.backend.domain.kupick.repository
 
 import onku.backend.domain.kupick.Kupick
+import onku.backend.domain.kupick.dto.KupickFcmInfo
 import onku.backend.domain.kupick.repository.projection.KupickUrls
 import onku.backend.domain.kupick.repository.projection.KupickWithProfile
 import onku.backend.domain.member.Member
@@ -71,4 +72,12 @@ interface KupickRepository : JpaRepository<Kupick, Long> {
         start: LocalDateTime,
         end: LocalDateTime
     ): List<Array<Any>>
+
+    @Query("""
+    SELECT new onku.backend.domain.kupick.dto.KupickFcmInfo(m.fcmToken, k.submitDate)
+    FROM Kupick k
+    JOIN k.member m
+    WHERE k.id = :kupickId
+""")
+    fun findFcmInfoByKupickId(@Param("kupickId") kupickId: Long): KupickFcmInfo?
 }
