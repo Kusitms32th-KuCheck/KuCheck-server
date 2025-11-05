@@ -4,7 +4,7 @@ import jakarta.validation.ConstraintValidator
 import jakarta.validation.ConstraintValidatorContext
 import onku.backend.domain.absence.dto.annotation.ValidAbsenceReport
 import onku.backend.domain.absence.dto.request.SubmitAbsenceReportRequest
-import onku.backend.domain.absence.enums.AbsenceType
+import onku.backend.domain.absence.enums.AbsenceSubmitType
 
 class AbsenceReportValidator : ConstraintValidator<ValidAbsenceReport, SubmitAbsenceReportRequest> {
     override fun isValid(
@@ -13,7 +13,7 @@ class AbsenceReportValidator : ConstraintValidator<ValidAbsenceReport, SubmitAbs
     ): Boolean {
         if (value == null) return true
 
-        val type = value.absenceType
+        val type = value.submitType
         val late = value.lateDateTime
         val leave = value.leaveDateTime
 
@@ -21,21 +21,21 @@ class AbsenceReportValidator : ConstraintValidator<ValidAbsenceReport, SubmitAbs
         context.disableDefaultConstraintViolation()
 
         return when (type) {
-            AbsenceType.LATE -> {
+            AbsenceSubmitType.LATE -> {
                 if (leave != null) {
                     context.buildConstraintViolationWithTemplate("지각일 경우 leaveDateTime은 비워야 합니다.")
                         .addPropertyNode("leaveDateTime").addConstraintViolation()
                     false
                 } else true
             }
-            AbsenceType.EARLY_LEAVE -> {
+            AbsenceSubmitType.EARLY_LEAVE -> {
                 if (late != null) {
                     context.buildConstraintViolationWithTemplate("조퇴일 경우 lateDateTime은 비워야 합니다.")
                         .addPropertyNode("lateDateTime").addConstraintViolation()
                     false
                 } else true
             }
-            AbsenceType.ABSENT -> {
+            AbsenceSubmitType.ABSENT -> {
                 var valid = true
                 if (late != null) {
                     context.buildConstraintViolationWithTemplate("결석일 경우 lateDateTime은 비워야 합니다.")

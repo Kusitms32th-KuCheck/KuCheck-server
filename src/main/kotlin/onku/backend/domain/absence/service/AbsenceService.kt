@@ -27,8 +27,8 @@ class AbsenceService(
             AbsenceReport.createAbsenceReport(
                 member = member,
                 session = session,
-                submitAbsenceReportRequest,
-                fileKey
+                submitAbsenceReportRequest = submitAbsenceReportRequest,
+                fileKey = fileKey
             )
         }
         absenceReportRepository.save(report)
@@ -40,7 +40,7 @@ class AbsenceService(
         return absenceReports.map { a ->
             GetMyAbsenceReportResponse(
                 absenceReportId = a.getAbsenceReportId(),
-                absenceType = a.getAbsenceType(),
+                absenceType = a.getAbsenceSubmitType(),
                 absenceReportApproval = a.getAbsenceReportApproval(),
                 submitDateTime = a.getSubmitDateTime(),
                 sessionTitle = a.getSessionTitle(),
