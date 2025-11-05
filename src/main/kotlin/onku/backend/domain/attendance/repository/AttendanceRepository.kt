@@ -1,6 +1,5 @@
 package onku.backend.domain.attendance.repository
 
-import jakarta.transaction.Transactional
 import onku.backend.domain.attendance.Attendance
 import onku.backend.domain.attendance.enums.AttendancePointType
 import org.springframework.data.jpa.repository.Modifying
@@ -12,7 +11,7 @@ import java.time.LocalDateTime
 
 interface StatusCountProjection {
     fun getStatus(): AttendancePointType
-    fun getCnt(): Long
+    fun getCount(): Long
 }
 
 interface AttendanceRepository : CrudRepository<Attendance, Long> {
