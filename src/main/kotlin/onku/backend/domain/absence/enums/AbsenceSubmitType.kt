@@ -1,5 +1,5 @@
 package onku.backend.domain.absence.enums
 
-enum class AbsenceType {
+enum class AbsenceSubmitType {
     ABSENT, LATE, EARLY_LEAVE
 }

@@ -3,12 +3,15 @@ package onku.backend.domain.member.service
 import onku.backend.domain.member.Member
 import onku.backend.domain.member.MemberErrorCode
 import onku.backend.domain.member.dto.MemberApprovalResponse
+import onku.backend.domain.member.dto.MemberRoleResponse
+import onku.backend.domain.member.dto.UpdateRoleRequest
 import onku.backend.domain.member.enums.ApprovalStatus
 import onku.backend.domain.member.enums.Role
 import onku.backend.domain.member.enums.SocialType
 import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.member.repository.MemberRepository
 import onku.backend.global.exception.CustomException
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -96,6 +99,24 @@ class MemberService(
             memberId = saved.id!!,
             role = saved.role,
             approval = saved.approval
+        )
+    }
+
+    @Transactional
+    fun updateRole(actor: Member, req: UpdateRoleRequest): MemberRoleResponse {
+        val targetMemberId = req.memberId ?: throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
+        val newRole = req.role ?: throw CustomException(MemberErrorCode.INVALID_REQUEST)
+
+        val target = memberRepository.findByIdOrNull(targetMemberId)
+            ?: throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
+
+        // TODO: actor.role에 따른 변경 허용 범위 검증 로직 복구/추가
+        target.role = newRole
+        memberRepository.save(target)
+
+        return MemberRoleResponse(
+            memberId = target.id!!,
+            role = target.role
         )
     }
 }

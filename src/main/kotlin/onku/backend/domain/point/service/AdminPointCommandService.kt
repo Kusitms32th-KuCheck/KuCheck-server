@@ -32,15 +32,15 @@ class AdminPointCommandService(
         val rec = manualPointRecordRepository.findByMemberId(memberId) ?: newManualRecord(memberId)
         val before = rec.studyPoints ?: 0
         val after = studyPoints
-        val delta = after - before
-        if (delta != 0) {
+        val diff = after - before
+        if (diff != 0) {
             val now = LocalDateTime.now(clock)
             memberPointHistoryRepository.save(
                 MemberPointHistory.ofManual(
                     member = rec.member,
                     manualType = ManualPointType.STUDY,
                     occurredAt = now,
-                    points = delta
+                    points = diff
                 )
             )
         }
@@ -54,15 +54,15 @@ class AdminPointCommandService(
         val rec = manualPointRecordRepository.findByMemberId(memberId) ?: newManualRecord(memberId)
         val before = rec.kupportersPoints ?: 0
         val after = kupportersPoints
-        val delta = after - before
-        if (delta != 0) {
+        val diff = after - before
+        if (diff != 0) {
             val now = LocalDateTime.now(clock)
             memberPointHistoryRepository.save(
                 MemberPointHistory.ofManual(
                     member = rec.member,
                     manualType = ManualPointType.KUPORTERS,
                     occurredAt = now,
-                    points = delta
+                    points = diff
                 )
             )
         }
@@ -107,14 +107,14 @@ class AdminPointCommandService(
 
         val now = LocalDateTime.now(clock)
         val newValue = !member.isStaff
-        val delta = if (newValue) ManualPointType.STAFF.points else -ManualPointType.STAFF.points
+        val diff = if (newValue) ManualPointType.STAFF.points else -ManualPointType.STAFF.points
 
         memberPointHistoryRepository.save(
             MemberPointHistory.ofManual(
                 member = member,
                 manualType = ManualPointType.STAFF,
                 occurredAt = now,
-                points = delta
+                points = diff
             )
         )
         member.isStaff = newValue
@@ -144,13 +144,13 @@ class AdminPointCommandService(
         val newApproved = !target.approval
         target.updateApproval(newApproved)
 
-        val delta = if (newApproved) ManualPointType.KUPICK.points else -ManualPointType.KUPICK.points
+        val diff = if (newApproved) ManualPointType.KUPICK.points else -ManualPointType.KUPICK.points
         memberPointHistoryRepository.save(
             MemberPointHistory.ofManual(
                 member = member,
                 manualType = ManualPointType.KUPICK,
                 occurredAt = now,
-                points = delta
+                points = diff
             )
         )
 

@@ -37,6 +37,7 @@ class Session(
 
     var attendanceFinalized: Boolean = false,
     var attendanceFinalizedAt: LocalDateTime? = null,
+
     @Column(name = "is_holiday")
     var isHoliday : Boolean = false
     ) : BaseEntity()

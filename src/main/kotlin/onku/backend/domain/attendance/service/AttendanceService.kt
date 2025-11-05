@@ -73,14 +73,15 @@ class AttendanceService(
         rows.forEach { r ->
             when (r.getStatus()) {
                 AttendancePointType.PRESENT,
-                AttendancePointType.PRESENT_HOLIDAY -> present += r.getCnt()
+                AttendancePointType.PRESENT_HOLIDAY -> present += r.getCount()
 
-                AttendancePointType.EARLY_LEAVE -> earlyLeave += r.getCnt()
-                AttendancePointType.LATE -> late += r.getCnt()
+                AttendancePointType.EARLY_LEAVE -> earlyLeave += r.getCount()
+                AttendancePointType.LATE -> late += r.getCount()
 
                 AttendancePointType.EXCUSED,
                 AttendancePointType.ABSENT,
-                AttendancePointType.ABSENT_WITH_DOC -> absent += r.getCnt()
+                AttendancePointType.ABSENT_WITH_DOC,
+                AttendancePointType.ABSENT_WITH_CAUSE -> absent += r.getCount()
             }
         }
 
@@ -117,7 +118,11 @@ class AttendanceService(
         val state = when {
             now.isAfter(lateThreshold)   -> AttendancePointType.ABSENT
             !now.isBefore(startDateTime) -> AttendancePointType.LATE
-            else                         -> AttendancePointType.PRESENT
+            else                         -> if (session.isHoliday) {
+                AttendancePointType.PRESENT_HOLIDAY
+            } else {
+                AttendancePointType.PRESENT
+            }
         }
 
         try {

@@ -81,13 +81,14 @@ class MemberPointHistory(
                 )
                 AttendancePointType.EXCUSED,
                 AttendancePointType.ABSENT,
-                AttendancePointType.ABSENT_WITH_DOC -> MemberPointHistory(
-                    member = member,
-                    category = PointCategory.ATTENDANCE,
-                    type = status.name,
-                    points = status.points,
-                    occurredAt = occurredAt,
-                    week = week
+                AttendancePointType.ABSENT_WITH_DOC,
+                AttendancePointType.ABSENT_WITH_CAUSE -> MemberPointHistory(
+                        member = member,
+                        category = PointCategory.ATTENDANCE,
+                        type = status.name,
+                        points = status.points,
+                        occurredAt = occurredAt,
+                        week = week
                 )
             }
         }

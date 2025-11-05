@@ -2,11 +2,11 @@ package onku.backend.domain.attendance.service
 
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
-import onku.backend.domain.absence.enums.AbsenceReportApproval
 import onku.backend.domain.absence.repository.AbsenceReportRepository
 import onku.backend.domain.attendance.AttendancePolicy
 import onku.backend.domain.attendance.enums.AttendancePointType
 import onku.backend.domain.attendance.repository.AttendanceRepository
+import onku.backend.domain.attendance.util.AbsenceReportToAttendancePointMapper
 import onku.backend.domain.member.Member
 import onku.backend.domain.member.repository.MemberRepository
 import onku.backend.domain.point.MemberPointHistory
@@ -53,7 +53,11 @@ class AttendanceFinalizeService(
                 .associateBy { it.member.id!! }
 
             missing.forEach { memberId ->
-                val status = mapApprovalToStatus(papers[memberId]?.approval)
+                val report = papers[memberId]
+                val status: AttendancePointType =
+                    report?.let { AbsenceReportToAttendancePointMapper.map(it.approval, it.approvedType) }
+                        ?: AttendancePointType.ABSENT
+
                 try {
                     val inserted = attendanceRepository.insertOnly(
                         sessionId = sessionId,
@@ -74,19 +78,11 @@ class AttendanceFinalizeService(
                         memberPointHistoryRepository.save(history)
                     }
                 } catch (_: DataIntegrityViolationException) {
-                    // 멱등: 유니크 제약 등으로 이미 들어간 경우 무시
                 }
             }
         }
         markFinalized(session, now)
     }
-
-    private fun mapApprovalToStatus(approval: AbsenceReportApproval?): AttendancePointType =
-        when (approval) {
-            AbsenceReportApproval.APPROVED -> AttendancePointType.EXCUSED
-            AbsenceReportApproval.SUBMIT   -> AttendancePointType.ABSENT_WITH_DOC
-            null                           -> AttendancePointType.ABSENT
-        }
 
     private fun markFinalized(session: Session, now: LocalDateTime) {
         session.attendanceFinalized = true

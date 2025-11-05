@@ -76,4 +76,17 @@ class MemberController(
         val result = memberService.updateApproval(memberId, body.status)
         return ResponseEntity.ok(SuccessResponse.ok(result))
     }
+
+    @Operation(
+        summary = "[QA] 사용자 권한(role) 수정",
+        description = "요청 본문에 수정하고자 하는 memberId, role을 담아 권한을 수정합니다."
+    )
+    @PatchMapping("/role")
+    fun updateRole(
+        @CurrentMember actor: Member,
+        @RequestBody @Valid req: UpdateRoleRequest
+    ): ResponseEntity<SuccessResponse<MemberRoleResponse>> {
+        val body = memberService.updateRole(actor, req)
+        return ResponseEntity.ok(SuccessResponse.ok(body))
+    }
 }

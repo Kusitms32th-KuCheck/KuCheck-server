@@ -10,7 +10,6 @@ import onku.backend.global.exception.CustomException
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import kotlin.math.max
 
 @Service
 class MemberPointHistoryService(
@@ -19,8 +18,7 @@ class MemberPointHistoryService(
 ) {
 
     @Transactional(readOnly = true)
-    fun getHistory(member: Member, page1Based: Int, size: Int): MemberPointHistoryResponse {
-        val safePage = max(0, page1Based - 1)
+    fun getHistory(member: Member, safePage: Int, size: Int): MemberPointHistoryResponse {
         val pageable = PageRequest.of(safePage, size)
 
         val profile = memberProfileRepository.findById(member.id!!)
