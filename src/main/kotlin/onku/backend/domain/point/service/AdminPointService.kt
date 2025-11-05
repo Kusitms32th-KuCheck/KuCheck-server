@@ -1,6 +1,7 @@
 package onku.backend.domain.point.service
 
 import onku.backend.domain.attendance.repository.AttendanceRepository
+import onku.backend.domain.attendance.enums.AttendancePointType
 import onku.backend.domain.kupick.repository.KupickRepository
 import onku.backend.domain.member.MemberErrorCode
 import onku.backend.domain.member.MemberProfile
@@ -9,24 +10,29 @@ import onku.backend.domain.point.dto.AdminPointOverviewDto
 import onku.backend.domain.point.dto.AttendanceRecordDto
 import onku.backend.domain.point.dto.MemberMonthlyAttendanceDto
 import onku.backend.domain.point.dto.MonthlyAttendancePageResponse
+import onku.backend.domain.point.enums.PointCategory
 import onku.backend.domain.point.repository.ManualPointRepository
+import onku.backend.domain.point.repository.MemberPointHistoryRepository
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
 import onku.backend.global.page.PageResponse
+import onku.backend.global.time.TimeRangeUtil
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.*
+import java.time.Clock
+import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.math.max
-import onku.backend.global.time.TimeRangeUtil
 
 @Service
 class AdminPointService(
     private val memberProfileRepository: MemberProfileRepository,
-    private val attendanceRepository: AttendanceRepository,
     private val kupickRepository: KupickRepository,
     private val manualPointRecordRepository: ManualPointRepository,
     private val sessionRepository: SessionRepository,
+    private val memberPointHistoryRepository: MemberPointHistoryRepository,
+    private val attendanceRepository: AttendanceRepository,
     private val clock: Clock
 ) {
 
@@ -50,18 +56,30 @@ class AdminPointService(
         val startOfAug: LocalDateTime = augRange.startOfMonth
         val endExclusive: LocalDateTime = decRange.startOfNextMonth
 
-        // 출석 레코드 → 월별 포인트 합산
-        val monthlyAttendanceTotals: MutableMap<Long, MutableMap<Int, Int>> = mutableMapOf()
-        attendanceRepository.findByMemberIdInAndAttendanceTimeBetween(memberIds, startOfAug, endExclusive)
-            .forEach { attendance ->
-                val month = attendance.attendanceTime.month.value
-                val mapForMember = monthlyAttendanceTotals.getOrPut(attendance.memberId) { initMonthScoreMap() }
-                mapForMember[month] = (mapForMember[month] ?: 0) + attendance.status.points // 동일 월 포인트 합산
+        // 출석 레코드 → 월별 포인트 합산 (MemberPointHistory 기반)
+        val monthlyAttendanceTotals: MutableMap<Long, MutableMap<Int, Int>> =
+            memberIds.associateWith { initMonthScoreMap() }.toMutableMap()
+
+        memberPointHistoryRepository
+            .sumAttendanceByMemberAndMonth(
+                memberIds = memberIds,
+                category = PointCategory.ATTENDANCE,
+                start = startOfAug,
+                end = endExclusive
+            )
+            .forEach { row ->
+                val mId = row.getMemberId()
+                val month = row.getMonth()
+                if (month in 8..12) {
+                    val mapForMember = monthlyAttendanceTotals.getOrPut(mId) { initMonthScoreMap() }
+                    mapForMember[month] = (mapForMember[month] ?: 0) + row.getPoints().toInt()
+                }
             }
 
-        // 큐픽 참여 여부를 월별로 표시 (기본 false → 참여 시 true)
-        val kupickParticipationByMember: MutableMap<Long, MutableMap<Int, Boolean>> = mutableMapOf()
-        memberIds.forEach { id -> kupickParticipationByMember[id] = initMonthParticipationMap() }
+        // 큐픽 참여 여부
+        val kupickParticipationByMember =
+            memberIds.associateWith { initMonthParticipationMap() }.toMutableMap()
+
         kupickRepository.findMemberMonthParticipation(memberIds, startOfAug, endExclusive)
             .forEach { row ->
                 val memberId = (row[0] as Number).toLong()
@@ -70,12 +88,9 @@ class AdminPointService(
                     kupickParticipationByMember[memberId]!![month] = true
                 }
             }
-
-        // 스터디/큐포터즈/메모 조회
         val manualPointsByMember = manualPointRecordRepository.findByMemberIdIn(memberIds)
             .associateBy { it.memberId!! }
 
-        // 페이지 단위 DTO 변환
         val dtoPage = profilePage.map { profile ->
             val memberId = profile.memberId!!
             val monthTotals = monthlyAttendanceTotals[memberId] ?: initMonthScoreMap()
@@ -135,13 +150,22 @@ class AdminPointService(
     ): MonthlyAttendancePageResponse {
         require(month in 8..12) { "month must be 8..12" }
 
-        // 조회 구간 설정
+        // 조회 구간
         val monthRange = TimeRangeUtil.monthRange(year, month, clock.zone)
         val start: LocalDateTime = monthRange.startOfMonth
         val end: LocalDateTime = monthRange.startOfNextMonth
 
-        // 세션 시작일 (중복 제거/오름차순)
-        val sessionDates: List<LocalDate> = sessionRepository.findStartTimesBetween(start, end)
+        // 세션 시작일
+        val startDate: LocalDate = start.toLocalDate()
+        val endDateInclusive: LocalDate = end.minusNanos(1).toLocalDate()
+
+        val startParts = sessionRepository.findStartDateAndTimeBetweenDates(startDate, endDateInclusive)
+
+        val sessionStartDateTimes: List<LocalDateTime> = startParts
+            .map { LocalDateTime.of(it.getStartDate(), it.getStartTime()) }
+            .filter { dt -> !dt.isBefore(start) && dt.isBefore(end) }
+
+        val sessionDates: List<LocalDate> = sessionStartDateTimes
             .map { it.toLocalDate() }
             .distinct()
             .sorted()
@@ -151,34 +175,47 @@ class AdminPointService(
         val pageable = PageRequest.of(page, size)
         val memberPage = memberProfileRepository.findAllByOrderByPartAscNameAsc(pageable)
         val pageMemberIds = memberPage.content.mapNotNull { it.memberId }
-        if (pageMemberIds.isEmpty()) {
-            throw CustomException(MemberErrorCode.PAGE_MEMBERS_NOT_FOUND)
-        }
+        if (pageMemberIds.isEmpty()) throw CustomException(MemberErrorCode.PAGE_MEMBERS_NOT_FOUND)
 
-        // 해당 페이지 멤버의 월간 출석 레코드 조회
+        val historyRecords = memberPointHistoryRepository.findAttendanceByMemberIdsBetween(
+            memberIds = pageMemberIds,
+            category = PointCategory.ATTENDANCE,
+            start = start,
+            end = end
+        )
+
+        val attendanceList = attendanceRepository.findByMemberIdInAndAttendanceTimeBetween(
+            pageMemberIds, start, end
+        )
+        val attendanceIdByMemberDate: Map<Pair<Long, LocalDate>, Long> =
+            attendanceList.associateBy(
+                { it.memberId to it.attendanceTime.toLocalDate() },
+                { it.id!! }
+            )
+
         data class Row(
             val memberId: Long,
             val date: LocalDate,
             val attendanceId: Long?,
-            val status: onku.backend.domain.attendance.enums.AttendancePointType?,
-            val point: Int?
+            val status: AttendancePointType,
+            val point: Int
         )
 
-        val rows: List<Row> = attendanceRepository
-            .findByMemberIdInAndAttendanceTimeBetween(pageMemberIds, start, end)
-            .map { a ->
-                Row(
-                    memberId = a.memberId,
-                    date = a.attendanceTime.toLocalDate(),
-                    attendanceId = a.id,
-                    status = a.status,
-                    point = a.status.points
-                )
-            }
+        val rows: List<Row> = historyRecords.map { r ->
+            val memberId = r.member.id!!
+            val date = r.occurredAt.toLocalDate()
+            val attId = attendanceIdByMemberDate[memberId to date]
+            Row(
+                memberId = memberId,
+                date = date,
+                attendanceId = attId,
+                status = AttendancePointType.valueOf(r.type),
+                point = r.points
+            )
+        }
 
-        val rowsByMember = rows.groupBy { it.memberId } // 멤버별로 레코드 그룹핑
+        val rowsByMember = rows.groupBy { it.memberId }
 
-        // 멤버별 일자 정렬 + 세션일 기준 결측 레코드 채움
         val memberDtos = memberPage.content.map { profile ->
             val memberId = profile.memberId!!
             val baseRecords = rowsByMember[memberId]
@@ -194,20 +231,19 @@ class AdminPointService(
                 ?.toMutableList()
                 ?: mutableListOf()
 
-            // 세션일이 존재하지만 기록이 없는 날짜는 null 처리
             if (sessionDates.isNotEmpty()) {
                 val recordedDates = baseRecords.map { it.date }.toSet()
                 sessionDates.filter { it !in recordedDates }.forEach { date ->
                     baseRecords.add(
                         AttendanceRecordDto(
                             date = date,
-                            attendanceId = null,
+                            attendanceId = attendanceIdByMemberDate[memberId to date],
                             status = null,
                             point = null
                         )
                     )
                 }
-                baseRecords.sortBy { it.date } // 날짜 오름차순 정렬
+                baseRecords.sortBy { it.date }
             }
 
             MemberMonthlyAttendanceDto(
@@ -217,7 +253,6 @@ class AdminPointService(
             )
         }
 
-        // 멤버 페이지 순서를 유지하며 DTO 페이지 구성
         val dtoPage = memberPage.map { p ->
             memberDtos.first { it.memberId == p.memberId }
         }
