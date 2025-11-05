@@ -3,7 +3,8 @@ package onku.backend.domain.absence
 import jakarta.persistence.*
 import onku.backend.domain.absence.dto.request.SubmitAbsenceReportRequest
 import onku.backend.domain.absence.enums.AbsenceReportApproval
-import onku.backend.domain.absence.enums.AbsenceType
+import onku.backend.domain.absence.enums.AbsenceApprovedType
+import onku.backend.domain.absence.enums.AbsenceSubmitType
 import onku.backend.domain.member.Member
 import onku.backend.domain.session.Session
 import onku.backend.global.entity.BaseEntity
@@ -25,7 +26,7 @@ class AbsenceReport(
     @Column(name = "absence_report_id")
     val id: Long? = null,
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id")
     var session : Session,
 
@@ -36,9 +37,13 @@ class AbsenceReport(
     @Column(name = "url")
     var url : String,
 
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    var status : AbsenceType,
+    @Column(name = "submit_type")
+    @Enumerated(EnumType.STRING) // 사용자가 제출한 사유서 type
+    var submitType : AbsenceSubmitType = AbsenceSubmitType.ABSENT,
+
+    @Column(name = "approved_type")
+    @Enumerated(EnumType.STRING) // 운영진이 승인한 사유서 type
+    var approvedType: AbsenceApprovedType = AbsenceApprovedType.ABSENT,
 
     @Column(name = "reason")
     var reason : String,
@@ -64,7 +69,8 @@ class AbsenceReport(
                 member = member,
                 session = session,
                 url = fileKey,
-                status = submitAbsenceReportRequest.absenceType,
+                submitType = submitAbsenceReportRequest.submitType,
+                approvedType = AbsenceApprovedType.ABSENT,
                 reason = submitAbsenceReportRequest.reason,
                 approval = AbsenceReportApproval.SUBMIT,
                 leaveDateTime = submitAbsenceReportRequest.leaveDateTime,
@@ -81,7 +87,7 @@ class AbsenceReport(
         this.session = session
         this.reason = submitAbsenceReportRequest.reason
         this.url = fileKey
-        this.status = submitAbsenceReportRequest.absenceType
+        this.submitType = submitAbsenceReportRequest.submitType
         this.updatedAt = LocalDateTime.now()
         this.leaveDateTime = submitAbsenceReportRequest.leaveDateTime
         this.lateDateTime = submitAbsenceReportRequest.lateDateTime
