@@ -134,4 +134,14 @@ interface SessionRepository : CrudRepository<Session, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update Session s set s.sessionDetail = null where s.id = :sessionId")
     fun detachDetailFromSession(@Param("sessionId") sessionId: Long): Int
+
+    @Query(
+        """
+        select s
+        from Session s
+        join fetch s.sessionDetail sd
+        where sd.id = :detailId
+        """
+    )
+    fun findByDetailIdFetchDetail(@Param("detailId") detailId: Long): Session?
 }

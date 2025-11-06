@@ -147,4 +147,10 @@ class SessionService(
         }
         sessionRepository.deleteById(sessionId)
     }
+
+    @Transactional(readOnly = true)
+    fun getByDetailIdFetchDetail(sessionDetailId : Long) : Session {
+        return sessionRepository.findByDetailIdFetchDetail(sessionDetailId)
+            ?: throw CustomException(SessionErrorCode.SESSION_NOT_FOUND)
+    }
 }
