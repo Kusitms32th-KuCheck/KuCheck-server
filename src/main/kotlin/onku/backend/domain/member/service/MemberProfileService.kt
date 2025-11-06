@@ -99,11 +99,14 @@ class MemberProfileService(
         val profile = memberProfileRepository.findById(member.id!!)
             .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
 
+        val key = profile.profileImage
+        val url = key?.let { s3Service.getGetS3Url(member.id!!, it).preSignedUrl }
+
         return MemberProfileBasicsResponse(
             name = profile.name ?: "Unknown",
             part = profile.part,
             school = profile.school,
-            profileImageUrl = profile.profileImage
+            profileImageUrl = url
         )
     }
 
