@@ -112,7 +112,9 @@ class SessionFacade(
             startTime = detail.startTime,
             endTime = detail.endTime,
             content = detail.content,
-            sessionImages = imageDtos
+            sessionImages = imageDtos,
+            createdAt = detail.createdAt,
+            updatedAt = detail.updatedAt
         )
     }
 
