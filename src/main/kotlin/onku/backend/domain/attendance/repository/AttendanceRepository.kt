@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 
 interface StatusCountProjection {
     fun getStatus(): AttendancePointType
-    fun getCount(): Long
+    fun getCnt(): Long
 }
 
 interface AttendanceRepository : CrudRepository<Attendance, Long> {
