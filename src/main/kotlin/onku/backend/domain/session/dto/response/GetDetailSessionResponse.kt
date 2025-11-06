@@ -6,6 +6,8 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 
 data class GetDetailSessionResponse(
+    @Schema(description = "세션 정보 ID", example = "1")
+    val sessionId : Long,
     @Schema(description = "세션 상세 정보 ID", example = "1")
     val sessionDetailId : Long,
     @Schema(description = "세션 장소", example = "마루180")

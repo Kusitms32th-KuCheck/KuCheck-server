@@ -91,9 +91,9 @@ class SessionFacade(
     }
 
     fun getSessionDetailPage(detailId: Long): GetDetailSessionResponse {
-        val detail = sessionDetailService.getById(detailId)
         val images = sessionImageService.findAllBySessionDetailId(detailId)
-
+        val session = sessionService.getByDetailIdFetchDetail(detailId)
+        val detail = session.sessionDetail!!
         val imageDtos = images.map { image ->
             val preSignedUrl = s3Service.getGetS3Url(
                 memberId = 0,
@@ -107,6 +107,7 @@ class SessionFacade(
         }
 
         return GetDetailSessionResponse(
+            sessionId = session.id!!,
             sessionDetailId = detail.id!!,
             place = detail.place,
             startTime = detail.startTime,
