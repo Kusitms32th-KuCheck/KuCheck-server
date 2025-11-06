@@ -106,4 +106,16 @@ class SessionStaffController(
         sessionFacade.deleteSession(id)
         return ResponseEntity.ok(SuccessResponse.ok(true))
     }
+
+    @PatchMapping("/{id}")
+    @Operation(
+        summary = "세션 수정",
+        description = "세션 정보를 수정합니다. (제목, 주차, 일자, 종류, 공휴일 세션 여부)"
+    )
+    fun patchSession(
+        @PathVariable id : Long,
+        @RequestBody @Valid sessionSaveRequest: SessionSaveRequest
+    ) : ResponseEntity<SuccessResponse<Boolean>> {
+        return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.patchSession(id, sessionSaveRequest)))
+    }
 }

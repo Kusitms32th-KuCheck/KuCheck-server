@@ -18,6 +18,7 @@ import onku.backend.global.s3.enums.UploadOption
 import onku.backend.global.s3.service.S3Service
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 class SessionFacade(
@@ -152,5 +153,12 @@ class SessionFacade(
     }
     fun deleteSession(sessionId: Long) {
         sessionService.deleteCascade(sessionId)
+    }
+
+    @Transactional
+    fun patchSession(id: Long, sessionSaveRequest: SessionSaveRequest): Boolean {
+        val session = sessionService.getById(id)
+        session.update(sessionSaveRequest)
+        return true
     }
 }
