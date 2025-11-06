@@ -84,7 +84,8 @@ class SessionService(
                 startDate = s.startDate,
                 title = s.title,
                 category = s.category,
-                sessionDetailId = s.sessionDetail?.id
+                sessionDetailId = s.sessionDetail?.id,
+                isHoliday = s.isHoliday
             )
         }
     }
