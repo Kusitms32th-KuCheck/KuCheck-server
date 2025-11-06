@@ -1,6 +1,7 @@
 package onku.backend.domain.session
 
 import jakarta.persistence.*
+import onku.backend.domain.session.dto.request.SessionSaveRequest
 import onku.backend.domain.session.enums.SessionCategory
 import onku.backend.global.entity.BaseEntity
 import java.time.LocalDate
@@ -23,21 +24,29 @@ class Session(
     var sessionDetail: SessionDetail? = null,
 
     @Column(name = "title", nullable = false, length = 255)
-    val title: String,
+    var title: String,
 
     @Column(name = "start_date", nullable = false)
-    val startDate: LocalDate,
+    var startDate: LocalDate,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false, length = 32)
-    val category: SessionCategory,
+    var category: SessionCategory,
 
     @Column(name = "week", nullable = false, unique = true)
-    val week: Long,
+    var week: Long,
 
     var attendanceFinalized: Boolean = false,
     var attendanceFinalizedAt: LocalDateTime? = null,
 
     @Column(name = "is_holiday")
     var isHoliday : Boolean = false
-    ) : BaseEntity()
+    ) : BaseEntity(){
+        fun update(sessionSaveRequest: SessionSaveRequest) {
+            this.title = sessionSaveRequest.title
+            this.week = sessionSaveRequest.week
+            this.startDate = sessionSaveRequest.sessionDate
+            this.category = sessionSaveRequest.category
+            this.isHoliday = sessionSaveRequest.isHoliday
+        }
+    }

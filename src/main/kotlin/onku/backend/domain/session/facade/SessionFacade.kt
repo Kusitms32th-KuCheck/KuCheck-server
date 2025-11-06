@@ -18,6 +18,7 @@ import onku.backend.global.s3.enums.UploadOption
 import onku.backend.global.s3.service.S3Service
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 class SessionFacade(
@@ -90,9 +91,9 @@ class SessionFacade(
     }
 
     fun getSessionDetailPage(detailId: Long): GetDetailSessionResponse {
-        val detail = sessionDetailService.getById(detailId)
         val images = sessionImageService.findAllBySessionDetailId(detailId)
-
+        val session = sessionService.getByDetailIdFetchDetail(detailId)
+        val detail = session.sessionDetail!!
         val imageDtos = images.map { image ->
             val preSignedUrl = s3Service.getGetS3Url(
                 memberId = 0,
@@ -106,12 +107,15 @@ class SessionFacade(
         }
 
         return GetDetailSessionResponse(
+            sessionId = session.id!!,
             sessionDetailId = detail.id!!,
             place = detail.place,
             startTime = detail.startTime,
             endTime = detail.endTime,
             content = detail.content,
-            sessionImages = imageDtos
+            sessionImages = imageDtos,
+            createdAt = detail.createdAt,
+            updatedAt = detail.updatedAt
         )
     }
 
@@ -152,5 +156,12 @@ class SessionFacade(
     }
     fun deleteSession(sessionId: Long) {
         sessionService.deleteCascade(sessionId)
+    }
+
+    @Transactional
+    fun patchSession(id: Long, sessionSaveRequest: SessionSaveRequest): Boolean {
+        val session = sessionService.getById(id)
+        session.update(sessionSaveRequest)
+        return true
     }
 }

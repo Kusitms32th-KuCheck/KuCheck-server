@@ -14,5 +14,7 @@ data class GetInitialSessionResponse(
     @Schema(description = "세션 종류", example = "밋업프로젝트")
     val category : SessionCategory,
     @Schema(description = "세션 상세정보", example = "만약 null이면 세션정보 입력여부 false로 하면 됨")
-    val sessionDetailId : Long?
+    val sessionDetailId : Long?,
+    @Schema(description = "공휴일 세션 여부", example = "true")
+    val isHoliday : Boolean
 )
