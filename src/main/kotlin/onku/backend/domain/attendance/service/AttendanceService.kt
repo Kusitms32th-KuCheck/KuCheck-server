@@ -73,18 +73,17 @@ class AttendanceService(
         rows.forEach { r ->
             when (r.getStatus()) {
                 AttendancePointType.PRESENT,
-                AttendancePointType.PRESENT_HOLIDAY -> present += r.getCount()
+                AttendancePointType.PRESENT_HOLIDAY -> present += r.getCnt()
 
-                AttendancePointType.EARLY_LEAVE -> earlyLeave += r.getCount()
-                AttendancePointType.LATE -> late += r.getCount()
+                AttendancePointType.EARLY_LEAVE -> earlyLeave += r.getCnt()
+                AttendancePointType.LATE -> late += r.getCnt()
 
                 AttendancePointType.EXCUSED,
                 AttendancePointType.ABSENT,
                 AttendancePointType.ABSENT_WITH_DOC,
-                AttendancePointType.ABSENT_WITH_CAUSE -> absent += r.getCount()
+                AttendancePointType.ABSENT_WITH_CAUSE -> absent += r.getCnt()
             }
         }
-
         return WeeklyAttendanceSummary(
             present = present,
             earlyLeave = earlyLeave,
@@ -149,7 +148,6 @@ class AttendanceService(
         } catch (e: DataIntegrityViolationException) {
             throw CustomException(AttendanceErrorCode.ATTENDANCE_ALREADY_RECORDED)
         }
-
         val weeklySummary = getThisWeekSummary()
 
         return AttendanceResponse(
