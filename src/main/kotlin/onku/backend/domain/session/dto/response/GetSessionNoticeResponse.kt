@@ -3,6 +3,7 @@ package onku.backend.domain.session.dto.response
 import io.swagger.v3.oas.annotations.media.Schema
 import onku.backend.domain.session.dto.SessionImageDto
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 data class GetSessionNoticeResponse(
@@ -26,4 +27,8 @@ data class GetSessionNoticeResponse(
     val images : List<SessionImageDto>,
     @Schema(description = "공휴일 세션 여부", example = "true")
     val isHoliday : Boolean?,
+    @Schema(description = "세션 초기작성 시간(처음 생성)", example = "2025-07-15T14:00:00")
+    val createdAt : LocalDateTime,
+    @Schema(description = "세션 마지막 업데이트 시간", example = "2025-07-15T14:00:00")
+    val updatedAt : LocalDateTime
 )
