@@ -13,7 +13,4 @@ data class OnboardingRequest (
 
     @Schema(description = "FCM 토큰", example = "eYJhbGciOi...")
     val fcmToken: String? = null,
-
-    @Schema(description = "프로필 이미지 URL", example = "https://s3.../member_profile/1/uuid/profile.png")
-    val profileImage: String? = null
 )
