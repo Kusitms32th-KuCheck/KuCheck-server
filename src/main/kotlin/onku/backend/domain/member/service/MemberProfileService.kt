@@ -59,7 +59,7 @@ class MemberProfileService(
                 major = req.major,
                 part = req.part,
                 phoneNumber = req.phoneNumber,
-                profileImage = req.profileImage
+                profileImage = null
             )
             memberProfileRepository.save(profile)
         } else {
@@ -68,8 +68,7 @@ class MemberProfileService(
                 school = req.school,
                 major = req.major,
                 part = req.part,
-                phoneNumber = req.phoneNumber,
-                profileImage = req.profileImage
+                phoneNumber = req.phoneNumber
             )
         }
     }
@@ -112,14 +111,14 @@ class MemberProfileService(
 
     @Transactional
     fun issueProfileImageUploadUrl(member: Member, fileName: String): GetUpdateAndDeleteUrlDto {
-        val signedUrlDto = s3Service.getPostS3Url(
+        val signed = s3Service.getPostS3Url(
             memberId = member.id!!,
             filename = fileName,
             folderName = FolderName.MEMBER_PROFILE.name,
             option = UploadOption.IMAGE
         )
 
-        val oldKey = submitProfileImage(member, signedUrlDto.key)
+        val oldKey = submitProfileImage(member, signed.key)
 
         val oldDeletePreSignedUrl = if (!oldKey.isNullOrBlank()) {
             s3Service.getDeleteS3Url(oldKey).preSignedUrl
@@ -128,7 +127,7 @@ class MemberProfileService(
         }
 
         return GetUpdateAndDeleteUrlDto(
-            newUrl = signedUrlDto.preSignedUrl,
+            newUrl = signed.preSignedUrl,
             oldUrl = oldDeletePreSignedUrl
         )
     }
@@ -138,7 +137,7 @@ class MemberProfileService(
             .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
 
         val old = profile.profileImage
-        profile.profileImage = newKey
+        profile.updateProfileImage(newKey)
         return old
     }
 }
