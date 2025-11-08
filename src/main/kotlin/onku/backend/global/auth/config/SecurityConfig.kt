@@ -43,7 +43,8 @@ class SecurityConfig(
         private val MANAGEMENT_ENDPOINT = arrayOf( // 경총
             "/api/v1/kupick/manage/**",
             "/api/v1/points/manage/**",
-            "/api/v1/attendance/manage/**"
+            "/api/v1/attendance/manage/**",
+            "/api/v1/absence/manage/**"
         )
 
 //        private val EXECUTIVE = arrayOf("") // 회장단

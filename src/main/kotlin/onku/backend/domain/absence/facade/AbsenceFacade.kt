@@ -1,7 +1,10 @@
 package onku.backend.domain.absence.facade
 
 import onku.backend.domain.absence.dto.request.SubmitAbsenceReportRequest
+import onku.backend.domain.absence.dto.response.GetMemberAbsenceReportResponse
 import onku.backend.domain.absence.dto.response.GetMyAbsenceReportResponse
+import onku.backend.domain.absence.enums.AbsenceReportApproval
+import onku.backend.domain.absence.enums.AbsenceSubmitType
 import onku.backend.domain.absence.service.AbsenceService
 import onku.backend.domain.session.validator.SessionValidator
 import onku.backend.domain.member.Member
@@ -19,7 +22,7 @@ class AbsenceFacade(
     private val absenceService : AbsenceService,
     private val s3Service: S3Service,
     private val sessionService: SessionService,
-    private val sessionValidator: SessionValidator
+    private val sessionValidator: SessionValidator,
 ) {
     fun submitAbsenceReport(member: Member, submitAbsenceReportRequest: SubmitAbsenceReportRequest): GetPreSignedUrlDto {
         val session = sessionService.getById(submitAbsenceReportRequest.sessionId)
@@ -53,6 +56,37 @@ class AbsenceFacade(
             )
         }
         return responses
+    }
+
+    fun getMemberAbsenceReport(sessionId: Long): List<GetMemberAbsenceReportResponse> {
+        val absenceReports = absenceService.getBySessionId(sessionId)
+        return absenceReports.map { report ->
+            val member = report.member
+            val memberProfile = member.memberProfile!!
+            val submitDate = report.updatedAt.toLocalDate()
+            val time = when (report.submitType) {
+                AbsenceSubmitType.LATE -> report.lateDateTime?.toLocalTime()
+                AbsenceSubmitType.EARLY_LEAVE -> report.leaveDateTime?.toLocalTime()
+                else -> null
+            }
+            val preSignedUrl = report.url
+                ?.takeIf { it.isNotBlank() } // null이 날 일은 없지만 혹시나 null이 날 경우를 대비(만약 그런 경우가 있으면 학회원 전체에 영향이 감)
+                ?.let { key -> s3Service.getGetS3Url(0L, key).preSignedUrl }
+
+            GetMemberAbsenceReportResponse(
+                name = memberProfile.name ?: "UNKNOWN",
+                part = memberProfile.part,
+                submitDate = submitDate,
+                submitType = report.submitType,
+                time = time,
+                reason = report.reason,
+                url = preSignedUrl,
+                absenceApprovedType = when (report.approval) {
+                    AbsenceReportApproval.SUBMIT -> null
+                    AbsenceReportApproval.APPROVED -> report.approvedType
+                }
+            )
+        }
     }
 
 }

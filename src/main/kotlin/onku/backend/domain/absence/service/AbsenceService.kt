@@ -48,4 +48,9 @@ class AbsenceService(
             )
         }
     }
+
+    @Transactional(readOnly = true)
+    fun getBySessionId(sessionId : Long) : List<AbsenceReport> {
+        return absenceReportRepository.findAllBySessionId(sessionId)
+    }
 }

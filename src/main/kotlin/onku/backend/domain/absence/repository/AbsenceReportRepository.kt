@@ -39,4 +39,13 @@ interface AbsenceReportRepository : JpaRepository<AbsenceReport, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from AbsenceReport ar where ar.session.id = :sessionId")
     fun deleteAllBySessionId(@Param("sessionId") sessionId: Long): Int
+
+    @Query("""
+        SELECT a
+        FROM AbsenceReport a
+        JOIN FETCH a.member m
+        JOIN FETCH m.memberProfile mp
+        WHERE a.session.id = :sessionId
+    """)
+    fun findAllBySessionId(@Param("sessionId") sessionId: Long): List<AbsenceReport>
 }
