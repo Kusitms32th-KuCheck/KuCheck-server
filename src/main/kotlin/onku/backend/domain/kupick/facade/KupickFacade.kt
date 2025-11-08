@@ -66,7 +66,7 @@ class KupickFacade(
 
             val applicationUrl: String? =
                 p.kupick.applicationImageUrl
-                    .takeIf { it.isNotBlank() }
+                    ?.takeIf { it.isNotBlank() } //여기서 만약 applicationImageUrl이 null값이 들어가면 에러가 남(전체 학회원 큐픽 조회에 영향을 끼침) 그래서 safe call 추가
                     ?.let { key -> s3Service.getGetS3Url(memberId, key).preSignedUrl }
             val viewUrl: String? =
                 p.kupick.viewImageUrl
