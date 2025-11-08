@@ -1,4 +1,4 @@
-package onku.backend.domain.absence.controller
+package onku.backend.domain.absence.controller.user
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag

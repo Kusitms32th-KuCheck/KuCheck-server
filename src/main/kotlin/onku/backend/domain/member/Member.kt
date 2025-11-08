@@ -40,7 +40,10 @@ class Member(
     var isStaff: Boolean = false,
 
     @Column(name = "fcm_token")
-    var fcmToken: String? = null
+    var fcmToken: String? = null,
+
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
+    var memberProfile: MemberProfile? = null
 ) : BaseEntity() {
     fun approve() {
         this.approval = ApprovalStatus.APPROVED
