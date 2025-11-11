@@ -45,6 +45,8 @@ class FCMService(
             .addHeader(HttpHeaders.CONTENT_TYPE, "application/json; UTF-8")
             .build()
 
+        log.info("제목 : $title, 내용 : $body")
+
         client.newCall(request).execute().use { response ->
             log.info("fcm 결과 : " + response.body?.string())
         }
