@@ -1,5 +1,8 @@
 package onku.backend.domain.point.service
 
+import onku.backend.domain.attendance.AttendanceErrorCode
+import onku.backend.domain.attendance.enums.AttendancePointType
+import onku.backend.domain.attendance.repository.AttendanceRepository
 import onku.backend.domain.kupick.Kupick
 import onku.backend.domain.kupick.KupickErrorCode
 import onku.backend.domain.kupick.repository.KupickRepository
@@ -11,6 +14,8 @@ import onku.backend.domain.point.dto.*
 import onku.backend.domain.point.enums.ManualPointType
 import onku.backend.domain.point.repository.ManualPointRepository
 import onku.backend.domain.point.repository.MemberPointHistoryRepository
+import onku.backend.domain.session.SessionErrorCode
+import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,6 +29,8 @@ class AdminPointCommandService(
     private val memberRepository: MemberRepository,
     private val kupickRepository: KupickRepository,
     private val memberPointHistoryRepository: MemberPointHistoryRepository,
+    private val attendanceRepository: AttendanceRepository,
+    private val sessionRepository: SessionRepository,
     private val clock: Clock
 ) {
 
@@ -172,6 +179,69 @@ class AdminPointCommandService(
             studyPoints = 0,
             kupportersPoints = 0,
             memo = null
+        )
+    }
+
+    @Transactional
+    fun updateAttendanceAndHistory(
+        attendanceId: Long,
+        memberId: Long,
+        newStatus: AttendancePointType
+    ): UpdateAttendanceStatusResponse {
+        val attendance = attendanceRepository.findById(attendanceId)
+            .orElseThrow { CustomException(AttendanceErrorCode.ATTENDANCE_NOT_FOUND) }
+
+        if (attendance.memberId != memberId) {
+            throw CustomException(AttendanceErrorCode.INVALID_MEMBER_FOR_ATTENDANCE)
+        }
+
+        val oldStatus = attendance.status
+        if (oldStatus == newStatus) {
+            val session = sessionRepository.findById(attendance.sessionId)
+                .orElseThrow { CustomException(SessionErrorCode.SESSION_NOT_FOUND) }
+            return UpdateAttendanceStatusResponse(
+                attendanceId = attendanceId,
+                memberId = memberId,
+                oldStatus = oldStatus,
+                newStatus = newStatus,
+                diff = 0,
+                week = session.week,
+                occurredAt = LocalDateTime.now(clock)
+            )
+        }
+
+        attendance.status = newStatus
+        attendanceRepository.save(attendance)
+
+        val diff = newStatus.points - oldStatus.points
+
+        val session = sessionRepository.findById(attendance.sessionId)
+            .orElseThrow { CustomException(SessionErrorCode.SESSION_NOT_FOUND) }
+
+        if (diff != 0) {
+            val now = LocalDateTime.now(clock)
+            val member = memberRepository.findById(memberId)
+                .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+
+            memberPointHistoryRepository.save(
+                MemberPointHistory.ofAttendanceUpdate(
+                    member = member,
+                    status = newStatus,
+                    occurredAt = now,
+                    week = session.week,
+                    diffPoint = diff,
+                    time = null
+                )
+            )
+        }
+        return UpdateAttendanceStatusResponse(
+            attendanceId = attendanceId,
+            memberId = memberId,
+            oldStatus = oldStatus,
+            newStatus = newStatus,
+            diff = diff,
+            week = session.week,
+            occurredAt = LocalDateTime.now(clock)
         )
     }
 }
