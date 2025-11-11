@@ -1,11 +1,13 @@
 package onku.backend.domain.absence.service
 
 import onku.backend.domain.absence.AbsenceReport
+import onku.backend.domain.absence.AbsenceReportErrorCode
 import onku.backend.domain.absence.dto.request.SubmitAbsenceReportRequest
 import onku.backend.domain.absence.dto.response.GetMyAbsenceReportResponse
 import onku.backend.domain.absence.repository.AbsenceReportRepository
 import onku.backend.domain.member.Member
 import onku.backend.domain.session.Session
+import onku.backend.global.exception.CustomException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -52,5 +54,12 @@ class AbsenceService(
     @Transactional(readOnly = true)
     fun getBySessionId(sessionId : Long) : List<AbsenceReport> {
         return absenceReportRepository.findAllBySessionId(sessionId)
+    }
+
+    @Transactional(readOnly = true)
+    fun getById(absenceReportId: Long) : AbsenceReport {
+        return absenceReportRepository.findByIdOrNull(absenceReportId) ?: throw CustomException(
+            AbsenceReportErrorCode.ABSENCE_REPORT_NOT_FOUND
+        )
     }
 }

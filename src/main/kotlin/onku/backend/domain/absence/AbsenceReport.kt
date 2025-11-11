@@ -50,7 +50,7 @@ class AbsenceReport(
 
     @Column(name = "approval")
     @Enumerated(EnumType.STRING)
-    val approval : AbsenceReportApproval,
+    var approval : AbsenceReportApproval,
 
     @Column(name = "lateDateTime")
     var lateDateTime: LocalDateTime?,
@@ -91,5 +91,17 @@ class AbsenceReport(
         this.updatedAt = LocalDateTime.now()
         this.leaveDateTime = submitAbsenceReportRequest.leaveDateTime
         this.lateDateTime = submitAbsenceReportRequest.lateDateTime
+    }
+
+    fun updateApprovedType(
+        approvedType: AbsenceApprovedType
+    ) {
+        this.approvedType = approvedType;
+    }
+
+    fun updateApproval(
+        approval: AbsenceReportApproval
+    ) {
+        this.approval = approval
     }
 }
