@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.YearMonth
 
 @Service
 class AdminPointCommandService(
@@ -122,22 +123,23 @@ class AdminPointCommandService(
     }
 
     @Transactional
-    fun updateKupickApproval(memberId: Long): KupickApprovalResult {
+    fun updateKupickApproval(memberId: Long, targetYm: YearMonth): KupickApprovalResult {
         val member = memberRepository.findById(memberId)
             .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
 
         val now = LocalDateTime.now(clock)
-        val startOfMonth = LocalDate.now(clock).withDayOfMonth(1).atStartOfDay()
-        val startOfNextMonth = startOfMonth.toLocalDate().plusMonths(1).atStartOfDay()
 
-        val existing = kupickRepository.findThisMonthByMember(
+        val startOfMonth = targetYm.atDay(1).atStartOfDay()
+        val startOfNextMonth = targetYm.plusMonths(1).atDay(1).atStartOfDay()
+
+        val existing = kupickRepository.findThisMonthByMember( // 기존 기록 조회
             member = member,
             start = startOfMonth,
             end = startOfNextMonth
         )
 
-        val target = existing ?: run {
-            val created = Kupick.createKupick(member, now)
+        val target = existing ?: run { // 없으면 생성
+            val created = Kupick.createKupick(member, startOfMonth)
             kupickRepository.save(created)
         }
 
@@ -149,7 +151,7 @@ class AdminPointCommandService(
             MemberPointHistory.ofManual(
                 member = member,
                 manualType = ManualPointType.KUPICK,
-                occurredAt = now,
+                occurredAt = now,     // MemberPointHistory 레코드에는 수정시각(현재)로 기록
                 points = diff
             )
         )
