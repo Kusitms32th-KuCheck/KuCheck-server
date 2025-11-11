@@ -10,6 +10,7 @@ import onku.backend.global.page.PageResponse
 import onku.backend.global.response.SuccessResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.time.YearMonth
 
 @RestController
 @RequestMapping("/api/v1/points/manage")
@@ -81,12 +82,16 @@ class PointManagerController(
 
     @PatchMapping("/kupick")
     @Operation(
-        summary = "이번 달 큐픽 승인 토글",
-        description = "memberId만 받아 이번 달 큐픽 승인 여부를 반전시킵니다. 제출 레코드가 없으면 생성합니다."
+        summary = "이번 달 큐픽 제출여부 수정 토글",
+        description = "memberId, YearMonth값을 받아 이번 달 큐픽 승인 여부를 반전시킵니다. 제출 레코드가 없으면 생성합니다."
     )
     fun updateKupick(@RequestBody @Valid req: ToggleMemberRequest)
             : ResponseEntity<SuccessResponse<KupickApprovalResult>> {
-        val result = commandService.updateKupickApproval(req.memberId!!)
+        val ym = YearMonth.parse(req.yearMonth)
+        val result = commandService.updateKupickApproval(
+            memberId = req.memberId,
+            targetYm = ym
+        )
         return ResponseEntity.ok(SuccessResponse.ok(result))
     }
 
