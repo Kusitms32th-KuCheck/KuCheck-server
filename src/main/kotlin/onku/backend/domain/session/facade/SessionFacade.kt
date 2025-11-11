@@ -1,6 +1,7 @@
 package onku.backend.domain.session.facade
 
 import onku.backend.domain.member.Member
+import onku.backend.domain.session.SessionErrorCode
 import onku.backend.domain.session.dto.SessionImageDto
 import onku.backend.domain.session.dto.request.DeleteSessionImageRequest
 import onku.backend.domain.session.dto.request.SessionSaveRequest
@@ -11,6 +12,7 @@ import onku.backend.domain.session.service.SessionDetailService
 import onku.backend.domain.session.service.SessionImageService
 import onku.backend.domain.session.service.SessionNoticeService
 import onku.backend.domain.session.service.SessionService
+import onku.backend.global.exception.CustomException
 import onku.backend.global.page.PageResponse
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import onku.backend.global.s3.enums.FolderName
@@ -19,6 +21,7 @@ import onku.backend.global.s3.service.S3Service
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Component
 class SessionFacade(
@@ -161,6 +164,9 @@ class SessionFacade(
     @Transactional
     fun patchSession(id: Long, sessionSaveRequest: SessionSaveRequest): Boolean {
         val session = sessionService.getById(id)
+        if(session.startDate.isBefore(LocalDate.now())) {
+            throw CustomException(SessionErrorCode.SESSION_PAST)
+        }
         session.update(sessionSaveRequest)
         return true
     }
