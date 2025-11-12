@@ -110,4 +110,21 @@ class PointManagerController(
         val body = adminPointsService.getMonthlyPaged(year, month, safePage, size)
         return ResponseEntity.ok(SuccessResponse.ok(body))
     }
+
+    @PatchMapping("/monthly")
+    @Operation(
+        summary = "월별 출석 상태 수정 [운영진]",
+        description = "attendanceId, memberId, status를 받아 출석 상태를 수정하고, 상벌점 변동을 MemberPointHistory에 기록합니다."
+    )
+    fun updateMonthly(
+        @RequestBody @Valid req: UpdateAttendanceStatusRequest
+    ): ResponseEntity<SuccessResponse<UpdateAttendanceStatusResponse>> {
+
+        val result = commandService.updateAttendanceAndHistory(
+            attendanceId = req.attendanceId,
+            memberId = req.memberId,
+            newStatus = req.status
+        )
+        return ResponseEntity.ok(SuccessResponse.ok(result))
+    }
 }

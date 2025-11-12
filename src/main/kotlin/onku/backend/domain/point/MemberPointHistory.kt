@@ -93,6 +93,49 @@ class MemberPointHistory(
             }
         }
 
+        fun ofAttendanceUpdate(
+            member: Member,
+            status: AttendancePointType,
+            occurredAt: LocalDateTime,
+            week: Long?,
+            diffPoint: Int, // AttendancePointType에 지정된 points가 아닌, 기존 status의 point와 새로이 바뀐 status의 point의 차이를 계산해서 Int 형태로 넣는 diff!
+            time: LocalTime? = null
+        ): MemberPointHistory {
+            return when (status) {
+                AttendancePointType.EARLY_LEAVE -> MemberPointHistory(
+                    member = member,
+                    category = PointCategory.ATTENDANCE,
+                    type = status.name,
+                    points = diffPoint,
+                    occurredAt = occurredAt,
+                    week = week,
+                    earlyLeaveTime = time
+                )
+                AttendancePointType.PRESENT,
+                AttendancePointType.PRESENT_HOLIDAY,
+                AttendancePointType.LATE -> MemberPointHistory(
+                    member = member,
+                    category = PointCategory.ATTENDANCE,
+                    type = status.name,
+                    points = diffPoint,
+                    occurredAt = occurredAt,
+                    week = week,
+                    attendanceTime = time
+                )
+                AttendancePointType.EXCUSED,
+                AttendancePointType.ABSENT,
+                AttendancePointType.ABSENT_WITH_DOC,
+                AttendancePointType.ABSENT_WITH_CAUSE -> MemberPointHistory(
+                    member = member,
+                    category = PointCategory.ATTENDANCE,
+                    type = status.name,
+                    points = diffPoint,
+                    occurredAt = occurredAt,
+                    week = week
+                )
+            }
+        }
+
         fun ofManual(
             member: Member,
             manualType: ManualPointType,
