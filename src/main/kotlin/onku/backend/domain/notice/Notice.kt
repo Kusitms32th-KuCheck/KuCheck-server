@@ -32,7 +32,7 @@ class Notice(
 ) {
     @ManyToMany
     @JoinTable(
-        name = "notice_category_map",
+        name = "notice_category",
         joinColumns = [JoinColumn(name = "notice_id")],
         inverseJoinColumns = [JoinColumn(name = "category_id")]
     )
