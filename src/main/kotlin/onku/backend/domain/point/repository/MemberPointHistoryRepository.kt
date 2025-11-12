@@ -72,4 +72,6 @@ interface MemberPointHistoryRepository : JpaRepository<MemberPointHistory, Long>
         @Param("start") start: LocalDateTime,
         @Param("end") end: LocalDateTime
     ): List<MemberPointHistory>
+
+    fun findByWeekAndMember(week : Long, member: Member) : MemberPointHistory?
 }

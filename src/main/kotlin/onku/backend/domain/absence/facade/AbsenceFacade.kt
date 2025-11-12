@@ -1,5 +1,6 @@
 package onku.backend.domain.absence.facade
 
+import onku.backend.domain.absence.dto.request.EstimateAbsenceReportRequest
 import onku.backend.domain.absence.dto.request.SubmitAbsenceReportRequest
 import onku.backend.domain.absence.dto.response.GetMemberAbsenceReportResponse
 import onku.backend.domain.absence.dto.response.GetMyAbsenceReportResponse
@@ -8,14 +9,20 @@ import onku.backend.domain.absence.enums.AbsenceSubmitType
 import onku.backend.domain.absence.service.AbsenceService
 import onku.backend.domain.session.validator.SessionValidator
 import onku.backend.domain.member.Member
+import onku.backend.domain.point.service.MemberPointHistoryService
 import onku.backend.domain.session.SessionErrorCode
 import onku.backend.domain.session.service.SessionService
+import onku.backend.global.alarm.AlarmMessage
+import onku.backend.global.alarm.AlarmTitle
+import onku.backend.global.alarm.FCMService
 import onku.backend.global.exception.CustomException
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import onku.backend.global.s3.enums.FolderName
 import onku.backend.global.s3.enums.UploadOption
 import onku.backend.global.s3.service.S3Service
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Component
 class AbsenceFacade(
@@ -23,6 +30,8 @@ class AbsenceFacade(
     private val s3Service: S3Service,
     private val sessionService: SessionService,
     private val sessionValidator: SessionValidator,
+    private val fcmService: FCMService,
+    private val memberPointHistoryService: MemberPointHistoryService
 ) {
     fun submitAbsenceReport(member: Member, submitAbsenceReportRequest: SubmitAbsenceReportRequest): GetPreSignedUrlDto {
         val session = sessionService.getById(submitAbsenceReportRequest.sessionId)
@@ -76,6 +85,7 @@ class AbsenceFacade(
             GetMemberAbsenceReportResponse(
                 name = memberProfile.name ?: "UNKNOWN",
                 part = memberProfile.part,
+                absenceReportId = report.id!!,
                 submitDate = submitDate,
                 submitType = report.submitType,
                 time = time,
@@ -87,6 +97,19 @@ class AbsenceFacade(
                 }
             )
         }
+    }
+
+    @Transactional
+    fun estimateAbsenceReport(absenceReportId: Long, estimateAbsenceReportRequest: EstimateAbsenceReportRequest): Boolean {
+        val absenceReport = absenceService.getById(absenceReportId)
+        absenceReport.updateApprovedType(estimateAbsenceReportRequest.approvedType)
+        absenceReport.updateApproval(AbsenceReportApproval.APPROVED)
+        memberPointHistoryService.upsertPointFromAbsenceReport(absenceReport)
+        val now = LocalDateTime.now()
+        if(!absenceReport.member.fcmToken.isNullOrBlank()){
+            fcmService.sendMessageTo(absenceReport.member.fcmToken!!, AlarmTitle.ABSENCE_REPORT, AlarmMessage.absenceReport(now.month.value, now.dayOfMonth, estimateAbsenceReportRequest.approvedType), null)
+        }
+        return true
     }
 
 }

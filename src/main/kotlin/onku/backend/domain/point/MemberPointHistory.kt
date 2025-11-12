@@ -32,13 +32,13 @@ class MemberPointHistory(
     val category: PointCategory,
 
     @Column(name = "type", nullable = false)
-    val type: String,
+    var type: String,
 
     @Column(name = "points", nullable = false)
-    val points: Int,
+    var points: Int,
 
     @Column(name = "occurred_at", nullable = false)
-    val occurredAt: LocalDateTime,
+    var occurredAt: LocalDateTime,
 
     @Column(name = "week")
     val week: Long? = null,
@@ -150,5 +150,14 @@ class MemberPointHistory(
                 occurredAt = occurredAt
             )
         }
+    }
+
+    fun updateAttendancePointType(
+        status: AttendancePointType,
+        occurredAt: LocalDateTime,
+    ) {
+        this.type = status.name
+        this.points = status.points
+        this.occurredAt = occurredAt
     }
 }

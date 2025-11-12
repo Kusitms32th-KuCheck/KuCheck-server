@@ -12,6 +12,8 @@ data class GetMemberAbsenceReportResponse(
     val name : String,
     @Schema(description = "파트", example = "BACKEND")
     val part : Part,
+    @Schema(description = "불참사유서 id", example = "1")
+    val absenceReportId : Long,
     @Schema(description = "제출일시", example = "2025-11-08")
     val submitDate : LocalDate,
     @Schema(description = "불참여부", example = "ABSENT / LATE / EARLY_LEAVE")
