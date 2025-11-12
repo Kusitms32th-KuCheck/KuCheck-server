@@ -13,10 +13,8 @@ import onku.backend.global.exception.CustomException
 class NoticeCategoryService(
     private val categoryRepository: NoticeCategoryRepository
 ) {
-
     @Transactional
     fun create(req: NoticeCategoryCreateRequest): NoticeCategoryResponse {
-        validateNameLength(req.name)
         if (categoryRepository.existsByName(req.name)) {
             throw CustomException(NoticeErrorCode.CATEGORY_NAME_DUPLICATE)
         }
@@ -35,8 +33,6 @@ class NoticeCategoryService(
 
     @Transactional
     fun update(categoryId: Long, req: NoticeCategoryUpdateRequest): NoticeCategoryResponse {
-        validateNameLength(req.name)
-
         val category = categoryRepository.findById(categoryId)
             .orElseThrow { CustomException(NoticeErrorCode.CATEGORY_NOT_FOUND) }
 
@@ -75,11 +71,5 @@ class NoticeCategoryService(
         val all = NoticeCategoryColor.entries.toSet()
         val available = (all - used).sortedBy { it.name }
         return AvailableColorsResponse(available)
-    }
-
-    private fun validateNameLength(name: String) {
-        if (name.trim().length >= 7) {
-            throw CustomException(NoticeErrorCode.CATEGORY_NAME_TOO_LONG)
-        }
     }
 }
