@@ -37,7 +37,8 @@ class SecurityConfig(
 
         private val STAFF_ENDPOINT = arrayOf( // 운영진
             "/api/v1/session/staff/**",
-            "/api/v1/members/*/approval"
+            "/api/v1/members/*/approval",
+            "/api/v1/notice/categories/**"
         )
 
         private val MANAGEMENT_ENDPOINT = arrayOf( // 경총
