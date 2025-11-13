@@ -80,7 +80,8 @@ class KupickFacade(
                 submitDate = p.kupick.submitDate,
                 applicationUrl = applicationUrl,
                 viewUrl = viewUrl,
-                approval = p.kupick.approval
+                approval = p.kupick.approval,
+                isApprovalCheck = p.kupick.isApprovalCheck
             )
         }
         return dtoList
