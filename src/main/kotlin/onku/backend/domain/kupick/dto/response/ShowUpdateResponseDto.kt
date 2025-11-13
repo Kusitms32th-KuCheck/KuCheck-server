@@ -19,8 +19,10 @@ data class ShowUpdateResponseDto(
     val applicationUrl : String?,
     @Schema(description = "시청사진Url", example = "https://~")
     val viewUrl : String?,
-    @Schema(description = "승인여부", example = "True")
-    val approval : Boolean
+    @Schema(description = "승인여부", example = "true")
+    val approval : Boolean,
+    @Schema(description = "승인여부 선택 여부", example = "false")
+    val isApprovalCheck : Boolean
     ) {
     companion object {
         fun of(memberProfile : MemberProfile, kupick : Kupick) = ShowUpdateResponseDto (
@@ -30,7 +32,8 @@ data class ShowUpdateResponseDto(
             kupick.submitDate,
             kupick.applicationImageUrl,
             kupick.viewImageUrl,
-            kupick.approval
+            kupick.approval,
+            kupick.isApprovalCheck
         )
     }
 }

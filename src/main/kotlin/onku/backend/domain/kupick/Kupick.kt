@@ -33,7 +33,10 @@ class Kupick(
     var viewDate : LocalDateTime? = null,
 
     @Column(name = "approval")
-    var approval : Boolean = false
+    var approval : Boolean = false,
+
+    @Column(name = "isApprovalCheck")
+    var isApprovalCheck : Boolean = false
 
     ) : BaseEntity() {
     companion object {
@@ -77,5 +80,6 @@ class Kupick(
 
     fun updateApproval(approval: Boolean) {
         this.approval = approval
+        this.isApprovalCheck = true
     }
 }
