@@ -5,5 +5,6 @@ enum class FolderName{
     KUPICK_VIEW,
     ABSENCE,
     SESSION,
-    MEMBER_PROFILE
+    MEMBER_PROFILE,
+    NOTICE
 }
