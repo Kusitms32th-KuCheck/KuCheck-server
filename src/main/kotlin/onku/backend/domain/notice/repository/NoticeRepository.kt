@@ -10,4 +10,10 @@ interface NoticeRepository : JpaRepository<Notice, Long> {
 
     @EntityGraph(attributePaths = ["categories", "attachments"])
     fun findAllByOrderByPublishedAtDescIdDesc(pageable: Pageable): Page<Notice>
+
+    @EntityGraph(attributePaths = ["categories", "attachments"])
+    fun findDistinctByCategories_IdOrderByPublishedAtDescIdDesc(
+        categoryId: Long,
+        pageable: Pageable
+    ): Page<Notice>
 }

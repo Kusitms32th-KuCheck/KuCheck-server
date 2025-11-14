@@ -25,15 +25,16 @@ class NoticeController(
     @GetMapping
     @Operation(
         summary = "공지 리스트 조회 [운영진]",
-        description = "id, 제목, 작성자id, 작성자이름, {카테고리 이름/색}, 작성일(YYYY/MM/DD HH:MM), 상태, 이미지, 파일을 페이징하여 반환"
+        description = "id, 제목, 작성자id, 작성자이름, {카테고리 이름/색}, 작성일(YYYY/MM/DD HH:MM), 상태, 이미지, 파일을 페이징하여 반환. 전체 조회가 필요한 경우 카테고리 id는 비워두시면 됩니다."
     )
     fun list(
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(required = false) categoryId: Long?,
         @CurrentMember member: Member
     ): ResponseEntity<SuccessResponse<PageResponse<NoticeListItemResponse>>> {
         val safePage = if (page < 1) 0 else page - 1
-        val body = noticeService.list(member, safePage, size)
+        val body = noticeService.list(member, safePage, size, categoryId)
         return ResponseEntity.ok(SuccessResponse.ok(body))
     }
 

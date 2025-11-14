@@ -28,7 +28,13 @@ class NoticeService(
     private val s3Service: S3Service
 ) {
 
-    fun list(currentMember: Member, page: Int, size: Int): PageResponse<NoticeListItemResponse> {
+    fun list(
+        currentMember: Member,
+        page: Int,
+        size: Int,
+        categoryId: Long?
+    ): PageResponse<NoticeListItemResponse> {
+
         val memberId = currentMember.id!!
 
         val pageable = PageRequest.of(
@@ -40,7 +46,15 @@ class NoticeService(
             )
         )
 
-        val noticePage = noticeRepository.findAllByOrderByPublishedAtDescIdDesc(pageable)
+        val noticePage = if (categoryId == null) {
+            noticeRepository.findAllByOrderByPublishedAtDescIdDesc(pageable)
+        } else {
+            // 해당 카테고리를 포함하는 공지 검색
+            noticeRepository.findDistinctByCategories_IdOrderByPublishedAtDescIdDesc(
+                categoryId,
+                pageable
+            )
+        }
 
         val items = noticePage.content.map { n ->
             val (imageFiles, fileFiles) = splitPresignedUrls(memberId, n.attachments)
