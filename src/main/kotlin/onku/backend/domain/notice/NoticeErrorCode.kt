@@ -8,8 +8,8 @@ enum class NoticeErrorCode(
     override val message: String,
     override val status: HttpStatus
 ) : ApiErrorCode {
+    NOTICE_NOT_FOUND("NOT100", "존재하지 않는 공지입니다.", HttpStatus.NOT_FOUND),
 
-    // Category
     CATEGORY_NOT_FOUND("NOT001", "존재하지 않는 카테고리입니다.", HttpStatus.NOT_FOUND),
     CATEGORY_NAME_DUPLICATE("NOT002", "이미 존재하는 카테고리 이름입니다.", HttpStatus.CONFLICT),
     CATEGORY_COLOR_DUPLICATE("NOT003", "이미 사용 중인 카테고리 색상입니다.", HttpStatus.CONFLICT),
