@@ -12,9 +12,12 @@ import onku.backend.domain.notice.repository.NoticeAttachmentRepository
 import onku.backend.domain.notice.repository.NoticeRepository
 import onku.backend.domain.notice.util.NoticeDtoMapper
 import onku.backend.global.exception.CustomException
+import onku.backend.global.page.PageResponse
 import onku.backend.global.s3.enums.UploadOption
 import onku.backend.global.s3.service.S3Service
 import java.time.LocalDateTime
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 
 @Service
 @Transactional(readOnly = true)
@@ -25,17 +28,29 @@ class NoticeService(
     private val s3Service: S3Service
 ) {
 
-    fun list(currentMember: Member): NoticeListResponse {
-        val notices = noticeRepository.findAllByOrderByPublishedAtDescIdDesc()
+    fun list(currentMember: Member, page: Int, size: Int): PageResponse<NoticeListItemResponse> {
         val memberId = currentMember.id!!
 
-        val items = notices.map { n ->
+        val pageable = PageRequest.of(
+            page,
+            size,
+            Sort.by(
+                Sort.Order.desc("publishedAt"),
+                Sort.Order.desc("id")
+            )
+        )
+
+        val noticePage = noticeRepository.findAllByOrderByPublishedAtDescIdDesc(pageable)
+
+        val items = noticePage.content.map { n ->
             val (imageFiles, fileFiles) = splitPresignedUrls(memberId, n.attachments)
             NoticeDtoMapper.toListItem(n, imageFiles, fileFiles)
         }
-        return NoticeListResponse(
-            totalCount = notices.size.toLong(),
-            items = items
+
+        return PageResponse(
+            data = items,
+            totalPages = noticePage.totalPages,
+            isLastPage = noticePage.isLast
         )
     }
 
