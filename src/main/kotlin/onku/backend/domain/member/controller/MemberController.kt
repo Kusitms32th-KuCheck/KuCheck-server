@@ -3,8 +3,6 @@ package onku.backend.domain.member.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import onku.backend.domain.member.dto.MemberApprovalResponse
-import onku.backend.domain.member.dto.UpdateApprovalRequest
 import onku.backend.domain.member.Member
 import onku.backend.domain.member.dto.*
 import onku.backend.domain.member.service.MemberProfileService
@@ -77,16 +75,51 @@ class MemberController(
         return ResponseEntity.ok(SuccessResponse.ok(result))
     }
 
+    @PatchMapping("/{memberId}/role")
     @Operation(
-        summary = "[QA] 사용자 권한(role) 수정",
-        description = "요청 본문에 수정하고자 하는 memberId, role을 담아 권한을 수정합니다."
+        summary = "[EXECUTIVE] 사용자 권한 수정",
+        description = "URL 의 memberId 에 해당하는 사용자의 권한을 role 로 수정합니다."
     )
-    @PatchMapping("/role")
     fun updateRole(
-        @CurrentMember actor: Member,
+        @PathVariable memberId: Long,
         @RequestBody @Valid req: UpdateRoleRequest
     ): ResponseEntity<SuccessResponse<MemberRoleResponse>> {
-        val body = memberService.updateRole(actor, req)
+        val body = memberService.updateRole(memberId, req)
         return ResponseEntity.ok(SuccessResponse.ok(body))
+    }
+
+    @PatchMapping("/{memberId}/profile")
+    @Operation(
+        summary = "[STAFF] 학회원 프로필 정보 수정",
+        description = "관리자가 특정 학회원의 [이름, 학교, 학과, 전화번호, 파트]를 수정합니다."
+    )
+    fun updateMemberProfile(
+        @PathVariable memberId: Long,
+        @RequestBody @Valid req: MemberProfileUpdateRequest
+    ): SuccessResponse<MemberProfileBasicsResponse> {
+        val body = memberProfileService.updateProfile(memberId, req)
+        return SuccessResponse.ok(body)
+    }
+
+    @GetMapping("/approvals")
+    @Operation(
+        summary = "[STAFF] 학회원 정보 목록 조회 (APPROVED)",
+        description = "PENDING/APPROVED/REJECTED 수와 함께, APPROVED 상태인 학회원들만 목록으로 반환합니다."
+    )
+    fun getApprovedMembers(
+    ): SuccessResponse<MemberInfoListResponse> {
+        val body = memberProfileService.getApprovedMemberInfos()
+        return SuccessResponse.ok(body)
+    }
+
+    @GetMapping("/requests")
+    @Operation(
+        summary = "[STAFF] 승인 요청 목록 조회 (PENDING/REJECTED)",
+        description = "PENDING/APPROVED/REJECTED 수와 함께, PENDING 및 REJECTED 상태인 학회원들만 목록으로 반환합니다."
+    )
+    fun getApprovalRequests(
+    ): SuccessResponse<MemberApprovalListResponse> {
+        val body = memberProfileService.getApprovalRequestMembers()
+        return SuccessResponse.ok(body)
     }
 }
