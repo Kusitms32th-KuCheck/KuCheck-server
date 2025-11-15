@@ -1,8 +1,8 @@
 package onku.backend.domain.member.service
 
 import onku.backend.domain.member.Member
-import onku.backend.domain.member.MemberProfile
 import onku.backend.domain.member.MemberErrorCode
+import onku.backend.domain.member.MemberProfile
 import onku.backend.domain.member.dto.*
 import onku.backend.domain.member.enums.ApprovalStatus
 import onku.backend.domain.member.repository.MemberProfileRepository
@@ -92,7 +92,6 @@ class MemberProfileService(
         )
     }
 
-
     @Transactional(readOnly = true)
     fun getProfileBasics(member: Member): MemberProfileBasicsResponse {
         val profile = memberProfileRepository.findById(member.id!!)
@@ -139,5 +138,106 @@ class MemberProfileService(
         val old = profile.profileImage
         profile.updateProfileImage(newKey)
         return old
+    }
+
+    fun updateProfile(
+        memberId: Long,
+        req: MemberProfileUpdateRequest
+    ): MemberProfileBasicsResponse {
+        memberRepository.findById(memberId)
+            .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+
+        val profile = memberProfileRepository.findById(memberId)
+            .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+
+        profile.apply(
+            name = req.name,
+            school = req.school,
+            major = req.major,
+            part = req.part,
+            phoneNumber = req.phoneNumber
+        )
+
+        val key = profile.profileImage
+        val url = key?.let { s3Service.getGetS3Url(memberId, it).preSignedUrl }
+
+        return MemberProfileBasicsResponse(
+            name = profile.name ?: "Unknown",
+            part = profile.part,
+            school = profile.school,
+            profileImageUrl = url
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getApprovedMemberInfos(): MemberInfoListResponse {
+        val pendingCount = memberRepository.countByApproval(ApprovalStatus.PENDING)
+        val approvedCount = memberRepository.countByApproval(ApprovalStatus.APPROVED)
+        val rejectedCount = memberRepository.countByApproval(ApprovalStatus.REJECTED)
+
+        val profiles = memberProfileRepository.findByMember_Approval(ApprovalStatus.APPROVED)
+
+        val members = profiles.map { profile ->
+            val member = profile.member
+            val key = profile.profileImage
+            val url = key?.let { s3Service.getGetS3Url(member.id!!, it).preSignedUrl }
+
+            MemberItemResponse(
+                memberId = member.id!!,
+                name = profile.name,
+                profileImageUrl = url,
+                part = profile.part,
+                school = profile.school,
+                major = profile.major,
+                phoneNumber = profile.phoneNumber,
+                socialType = member.socialType,
+                email = member.email,
+                approval = member.approval
+            )
+        }
+
+        return MemberInfoListResponse(
+            pendingCount = pendingCount,
+            approvedCount = approvedCount,
+            rejectedCount = rejectedCount,
+            members = members
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getApprovalRequestMembers(): MemberApprovalListResponse {
+        val pendingCount = memberRepository.countByApproval(ApprovalStatus.PENDING)
+        val approvedCount = memberRepository.countByApproval(ApprovalStatus.APPROVED)
+        val rejectedCount = memberRepository.countByApproval(ApprovalStatus.REJECTED)
+
+        val profiles = memberProfileRepository.findByMember_ApprovalIn(
+            listOf(ApprovalStatus.PENDING, ApprovalStatus.REJECTED)
+        )
+
+        val members = profiles.map { profile ->
+            val member = profile.member
+            val key = profile.profileImage
+            val url = key?.let { s3Service.getGetS3Url(member.id!!, it).preSignedUrl }
+
+            MemberItemResponse(
+                memberId = member.id!!,
+                name = profile.name,
+                profileImageUrl = url,
+                part = profile.part,
+                school = profile.school,
+                major = profile.major,
+                phoneNumber = profile.phoneNumber,
+                socialType = member.socialType,
+                email = member.email,
+                approval = member.approval
+            )
+        }
+
+        return MemberApprovalListResponse(
+            pendingCount = pendingCount,
+            approvedCount = approvedCount,
+            rejectedCount = rejectedCount,
+            members = members
+        )
     }
 }
