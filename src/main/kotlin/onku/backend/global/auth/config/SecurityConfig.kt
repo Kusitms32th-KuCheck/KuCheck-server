@@ -38,7 +38,10 @@ class SecurityConfig(
         private val STAFF_ENDPOINT = arrayOf( // 운영진
             "/api/v1/session/staff/**",
             "/api/v1/members/*/approval",
-            "/api/v1/notice/categories/**"
+            "/api/v1/notice/categories/**",
+            "/api/v1/members/*/profile",
+            "/api/v1/members/approvals",
+            "/api/v1/members/requests",
         )
 
         private val MANAGEMENT_ENDPOINT = arrayOf( // 경총
@@ -48,7 +51,9 @@ class SecurityConfig(
             "/api/v1/absence/manage/**"
         )
 
-//        private val EXECUTIVE = arrayOf("") // 회장단
+        private val EXECUTIVE = arrayOf( // 회장단
+            "/api/v1/members/*/role",
+        )
     }
 
     @Bean
@@ -69,7 +74,7 @@ class SecurityConfig(
                     .requestMatchers(*ONBOARDING_ENDPOINT).hasRole(Role.GUEST.name)
                     .requestMatchers(*STAFF_ENDPOINT).hasRole(Role.STAFF.name)
                     .requestMatchers(*MANAGEMENT_ENDPOINT).hasRole(Role.MANAGEMENT.name)
-//                    .requestMatchers(*EXECUTIVE).hasAnyRole(Role.EXECUTIVE.name)
+                    .requestMatchers(*EXECUTIVE).hasAnyRole(Role.EXECUTIVE.name)
                     .anyRequest().hasRole(Role.USER.name)
             }
             .addFilterBefore(JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter::class.java)
