@@ -35,10 +35,14 @@ class SecurityConfig(
             "/api/v1/members/profile/image/url"
         )
 
+        private val USER_ENDPOINT = arrayOf( // TODO: 컨트롤러 권한별 분리로 보다 더 명시적이게 수정
+            "/api/v1/notice/search"
+        )
+
         private val STAFF_ENDPOINT = arrayOf( // 운영진
             "/api/v1/session/staff/**",
             "/api/v1/members/*/approval",
-            "/api/v1/notice/categories/**",
+            "/api/v1/notice/**",
             "/api/v1/members/*/profile",
             "/api/v1/members/approvals",
             "/api/v1/members/requests",
@@ -72,6 +76,7 @@ class SecurityConfig(
 
                     // 권한 별 엔드포인트
                     .requestMatchers(*ONBOARDING_ENDPOINT).hasRole(Role.GUEST.name)
+                    .requestMatchers(*USER_ENDPOINT).hasRole(Role.USER.name)
                     .requestMatchers(*STAFF_ENDPOINT).hasRole(Role.STAFF.name)
                     .requestMatchers(*MANAGEMENT_ENDPOINT).hasRole(Role.MANAGEMENT.name)
                     .requestMatchers(*EXECUTIVE).hasAnyRole(Role.EXECUTIVE.name)

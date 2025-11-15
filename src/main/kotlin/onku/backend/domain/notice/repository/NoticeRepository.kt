@@ -16,4 +16,11 @@ interface NoticeRepository : JpaRepository<Notice, Long> {
         categoryId: Long,
         pageable: Pageable
     ): Page<Notice>
+
+    @EntityGraph(attributePaths = ["categories", "attachments"])
+    fun findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByPublishedAtDescIdDesc(
+        titleKeyword: String,
+        contentKeyword: String,
+        pageable: Pageable
+    ): Page<Notice>
 }

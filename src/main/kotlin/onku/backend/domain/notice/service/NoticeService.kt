@@ -68,6 +68,42 @@ class NoticeService(
         )
     }
 
+    fun search(
+        keyword: String,
+        page: Int,
+        size: Int
+    ): PageResponse<NoticeListItemResponse> {
+        val memberId = 0L
+        val pageable = PageRequest.of(
+            page,
+            size,
+            Sort.by(
+                Sort.Order.desc("publishedAt"),
+                Sort.Order.desc("id")
+            )
+        )
+        val trimmedKeyword = keyword.trim()
+        val noticePage = if (trimmedKeyword.isBlank()) {
+            noticeRepository.findAllByOrderByPublishedAtDescIdDesc(pageable)
+        } else { // 제목 OR 내용에 keyword 포함되는 공지 검색
+            noticeRepository
+                .findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByPublishedAtDescIdDesc(
+                    trimmedKeyword,
+                    trimmedKeyword,
+                    pageable
+                )
+        }
+        val items = noticePage.content.map { n ->
+            val (imageFiles, fileFiles) = splitPresignedUrls(memberId, n.attachments)
+            NoticeDtoMapper.toListItem(n, imageFiles, fileFiles)
+        }
+        return PageResponse(
+            data = items,
+            totalPages = noticePage.totalPages,
+            isLastPage = noticePage.isLast
+        )
+    }
+
     fun get(noticeId: Long, currentMember: Member): NoticeDetailResponse {
         val n = noticeRepository.findById(noticeId)
             .orElseThrow { CustomException(NoticeErrorCode.NOTICE_NOT_FOUND) }
