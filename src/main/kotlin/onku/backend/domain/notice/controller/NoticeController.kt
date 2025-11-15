@@ -90,7 +90,7 @@ class NoticeController(
 
     @GetMapping("/search")
     @Operation(
-        summary = "공지 검색 [운영진]",
+        summary = "공지 검색 [학회원]",
         description = "검색어로 공지 제목/내용에서 검색하여 페이징 반환합니다."
     )
     fun search(
