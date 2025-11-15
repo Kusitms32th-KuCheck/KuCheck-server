@@ -25,9 +25,6 @@ class MemberService(
         memberRepository.findByEmail(email)
             ?: throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
 
-    fun getBySocialIdOrNull(socialId: Long, socialType: SocialType): Member? =
-        memberRepository.findBySocialIdAndSocialType(socialId, socialType)
-
     @Transactional
     fun upsertSocialMember(email: String?, socialId: Long, type: SocialType): Member {
         val existing = memberRepository.findBySocialIdAndSocialType(socialId, type)
