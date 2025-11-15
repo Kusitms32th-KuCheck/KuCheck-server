@@ -50,7 +50,7 @@ class NoticeService(
             noticeRepository.findAllByOrderByPublishedAtDescIdDesc(pageable)
         } else {
             // 해당 카테고리를 포함하는 공지 검색
-            noticeRepository.findDistinctByCategories_IdOrderByPublishedAtDescIdDesc(
+            noticeRepository.findDistinctByCategoriesIdOrderByPublishedAtDescIdDesc(
                 categoryId,
                 pageable
             )
