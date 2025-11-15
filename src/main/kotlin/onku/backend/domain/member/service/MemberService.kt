@@ -75,6 +75,7 @@ class MemberService(
         memberRepository.deleteById(memberId)
     }
 
+    @Transactional
     fun updateApproval(memberId: Long, targetStatus: ApprovalStatus): MemberApprovalResponse {
         if (targetStatus == ApprovalStatus.PENDING) {
             throw CustomException(MemberErrorCode.INVALID_MEMBER_STATE)
@@ -90,7 +91,7 @@ class MemberService(
         when (targetStatus) {
             ApprovalStatus.APPROVED -> member.approve()
             ApprovalStatus.REJECTED -> member.reject()
-            ApprovalStatus.PENDING -> { }
+            ApprovalStatus.PENDING -> {}
         }
 
         val saved = memberRepository.save(member)
@@ -103,14 +104,15 @@ class MemberService(
     }
 
     @Transactional
-    fun updateRole(actor: Member, req: UpdateRoleRequest): MemberRoleResponse {
-        val targetMemberId = req.memberId ?: throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
+    fun updateRole(
+        memberId: Long,
+        req: UpdateRoleRequest
+    ): MemberRoleResponse {
         val newRole = req.role ?: throw CustomException(MemberErrorCode.INVALID_REQUEST)
 
-        val target = memberRepository.findByIdOrNull(targetMemberId)
+        val target = memberRepository.findByIdOrNull(memberId)
             ?: throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
 
-        // TODO: actor.role에 따른 변경 허용 범위 검증 로직 복구/추가
         target.role = newRole
         memberRepository.save(target)
 
