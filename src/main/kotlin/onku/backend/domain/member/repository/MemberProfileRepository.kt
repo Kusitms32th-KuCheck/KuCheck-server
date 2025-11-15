@@ -1,7 +1,7 @@
 package onku.backend.domain.member.repository
 
-
 import onku.backend.domain.member.MemberProfile
+import onku.backend.domain.member.enums.ApprovalStatus
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -19,4 +19,12 @@ interface MemberProfileRepository : JpaRepository<MemberProfile, Long> {
 
     @EntityGraph(attributePaths = ["member"])
     fun findAllByOrderByPartAscNameAsc(pageable: Pageable): Page<MemberProfile>
+
+    // APPROVED
+    @EntityGraph(attributePaths = ["member"])
+    fun findByMember_Approval(approval: ApprovalStatus): List<MemberProfile>
+
+    // PENDING, REJECTED
+    @EntityGraph(attributePaths = ["member"])
+    fun findByMember_ApprovalIn(approvals: Collection<ApprovalStatus>): List<MemberProfile>
 }
