@@ -22,9 +22,9 @@ interface MemberProfileRepository : JpaRepository<MemberProfile, Long> {
 
     // APPROVED
     @EntityGraph(attributePaths = ["member"])
-    fun findByMember_Approval(approval: ApprovalStatus): List<MemberProfile>
+    fun findByMemberApproval(approval: ApprovalStatus): List<MemberProfile>
 
     // PENDING, REJECTED
     @EntityGraph(attributePaths = ["member"])
-    fun findByMember_ApprovalIn(approvals: Collection<ApprovalStatus>): List<MemberProfile>
+    fun findByMemberApprovalIn(approvals: Collection<ApprovalStatus>): List<MemberProfile>
 }

@@ -175,7 +175,7 @@ class MemberProfileService(
         val approvedCount = memberRepository.countByApproval(ApprovalStatus.APPROVED)
         val rejectedCount = memberRepository.countByApproval(ApprovalStatus.REJECTED)
 
-        val profiles = memberProfileRepository.findByMember_Approval(ApprovalStatus.APPROVED)
+        val profiles = memberProfileRepository.findByMemberApproval(ApprovalStatus.APPROVED)
 
         val members = profiles.map { profile ->
             val member = profile.member
@@ -210,7 +210,7 @@ class MemberProfileService(
         val approvedCount = memberRepository.countByApproval(ApprovalStatus.APPROVED)
         val rejectedCount = memberRepository.countByApproval(ApprovalStatus.REJECTED)
 
-        val profiles = memberProfileRepository.findByMember_ApprovalIn(
+        val profiles = memberProfileRepository.findByMemberApprovalIn(
             listOf(ApprovalStatus.PENDING, ApprovalStatus.REJECTED)
         )
 
