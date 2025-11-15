@@ -39,5 +39,23 @@ class Notice(
     var categories: MutableSet<NoticeCategory> = linkedSetOf()
 
     @OneToMany(mappedBy = "notice", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var images: MutableList<NoticeImage> = mutableListOf()
+    var attachments: MutableList<NoticeAttachment> = mutableListOf()
+
+    // 단일 첨부파일 하나를 공지에 추가
+    fun addFile(file: NoticeAttachment) {
+        attachments.add(file)
+        file.notice = this
+    }
+
+    // 단일 첨부파일 하나만 공지에서 제거
+    fun removeFile(file: NoticeAttachment) {
+        attachments.remove(file)
+        file.notice = null
+    }
+
+    // 공지에 연결된 모든 첨부파일을 한 번에 제거
+    fun clearFiles() {
+        val copy = attachments.toList()
+        copy.forEach { removeFile(it) }
+    }
 }
