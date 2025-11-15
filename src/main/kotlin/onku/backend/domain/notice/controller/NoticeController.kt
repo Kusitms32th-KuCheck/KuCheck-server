@@ -87,4 +87,19 @@ class NoticeController(
         noticeService.delete(noticeId)
         return ResponseEntity.ok(SuccessResponse.ok(Unit))
     }
+
+    @GetMapping("/search")
+    @Operation(
+        summary = "공지 검색 [운영진]",
+        description = "검색어로 공지 제목/내용에서 검색하여 페이징 반환합니다."
+    )
+    fun search(
+        @RequestParam keyword: String,
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+    ): ResponseEntity<SuccessResponse<PageResponse<NoticeListItemResponse>>> {
+        val safePage = if (page < 1) 0 else page - 1
+        val body = noticeService.search(keyword, safePage, size)
+        return ResponseEntity.ok(SuccessResponse.ok(body))
+    }
 }
