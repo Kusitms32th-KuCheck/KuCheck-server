@@ -144,4 +144,9 @@ interface SessionRepository : CrudRepository<Session, Long> {
         """
     )
     fun findByDetailIdFetchDetail(@Param("detailId") detailId: Long): Session?
+
+    fun findByStartDateBetween(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): List<Session>
 }
