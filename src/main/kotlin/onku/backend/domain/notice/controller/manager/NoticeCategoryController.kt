@@ -1,4 +1,4 @@
-package onku.backend.domain.notice.controller
+package onku.backend.domain.notice.controller.manager
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
