@@ -13,10 +13,13 @@ import onku.backend.domain.point.dto.MonthlyAttendancePageResponse
 import onku.backend.domain.point.enums.PointCategory
 import onku.backend.domain.point.repository.ManualPointRepository
 import onku.backend.domain.point.repository.MemberPointHistoryRepository
+import onku.backend.domain.session.Session
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
 import onku.backend.global.page.PageResponse
 import onku.backend.global.time.TimeRangeUtil
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -148,48 +151,58 @@ class AdminPointService(
         page: Int,
         size: Int
     ): MonthlyAttendancePageResponse {
-        require(month in 8..12) { "month must be 8..12" }
-
-        // 조회 구간
         val monthRange = TimeRangeUtil.monthRange(year, month, clock.zone)
         val start: LocalDateTime = monthRange.startOfMonth
         val end: LocalDateTime = monthRange.startOfNextMonth
 
-        // 세션 시작일
         val startDate: LocalDate = start.toLocalDate()
         val endDateInclusive: LocalDate = end.minusNanos(1).toLocalDate()
 
-        val startParts = sessionRepository.findStartDateAndTimeBetweenDates(startDate, endDateInclusive)
+        val sessionsInMonth: List<Session> =
+            sessionRepository.findByStartDateBetween(startDate, endDateInclusive)
 
-        val sessionStartDateTimes: List<LocalDateTime> = startParts
-            .map { LocalDateTime.of(it.getStartDate(), it.getStartTime()) }
-            .filter { dt -> !dt.isBefore(start) && dt.isBefore(end) }
+        val sessionDateById: Map<Long, LocalDate> = sessionsInMonth
+            .associate { session -> session.id!! to session.startDate }
 
-        val sessionDates: List<LocalDate> = sessionStartDateTimes
-            .map { it.toLocalDate() }
+        val sessionDates: List<LocalDate> = sessionsInMonth
+            .map { it.startDate }
             .distinct()
             .sorted()
         val sessionDays: List<Int> = sessionDates.map { it.dayOfMonth }
 
-        // 멤버 조회
+        if (sessionDates.isEmpty()) {
+            val pageable = PageRequest.of(page, size)
+
+            val emptyPage: Page<MemberMonthlyAttendanceDto> =
+                PageImpl(emptyList(), pageable, 0)
+
+            return MonthlyAttendancePageResponse(
+                year = year,
+                month = month,
+                sessionDates = emptyList(),
+                members = PageResponse.from(emptyPage)
+            )
+        }
+
         val pageable = PageRequest.of(page, size)
         val memberPage = memberProfileRepository.findAllByOrderByPartAscNameAsc(pageable)
         val pageMemberIds = memberPage.content.mapNotNull { it.memberId }
-        if (pageMemberIds.isEmpty()) throw CustomException(MemberErrorCode.PAGE_MEMBERS_NOT_FOUND)
-
-        val historyRecords = memberPointHistoryRepository.findAttendanceByMemberIdsBetween(
-            memberIds = pageMemberIds,
-            category = PointCategory.ATTENDANCE,
-            start = start,
-            end = end
-        )
+        if (pageMemberIds.isEmpty()) {
+            throw CustomException(MemberErrorCode.PAGE_MEMBERS_NOT_FOUND)
+        }
 
         val attendanceList = attendanceRepository.findByMemberIdInAndAttendanceTimeBetween(
-            pageMemberIds, start, end
+            pageMemberIds,
+            start,
+            end
         )
         val attendanceIdByMemberDate: Map<Pair<Long, LocalDate>, Long> =
             attendanceList.associateBy(
-                { it.memberId to it.attendanceTime.toLocalDate() },
+                { attendance ->
+                    val sessionDate: LocalDate =
+                        sessionDateById[attendance.sessionId] ?: attendance.attendanceTime.toLocalDate()
+                    attendance.memberId to sessionDate
+                },
                 { it.id!! }
             )
 
@@ -198,51 +211,56 @@ class AdminPointService(
             val date: LocalDate,
             val attendanceId: Long?,
             val status: AttendancePointType,
-            val point: Int
+            val point: Int,
         )
 
-        val rows: List<Row> = historyRecords.map { r ->
-            val memberId = r.member.id!!
-            val date = r.occurredAt.toLocalDate()
-            val attId = attendanceIdByMemberDate[memberId to date]
+        val rows: List<Row> = attendanceList.map { attendance ->
+            val date: LocalDate =
+                sessionDateById[attendance.sessionId] ?: attendance.attendanceTime.toLocalDate()
+
             Row(
-                memberId = memberId,
+                memberId = attendance.memberId,
                 date = date,
-                attendanceId = attId,
-                status = AttendancePointType.valueOf(r.type),
-                point = r.points
+                attendanceId = attendance.id!!,
+                status = attendance.status,
+                point = attendance.status.points
             )
         }
 
-        val rowsByMember = rows.groupBy { it.memberId }
+        val rowsByMember: Map<Long, List<Row>> = rows.groupBy { it.memberId }
 
-        val memberDtos = memberPage.content.map { profile ->
+        val memberDtos: List<MemberMonthlyAttendanceDto> = memberPage.content.map { profile ->
             val memberId = profile.memberId!!
-            val baseRecords = rowsByMember[memberId]
-                ?.sortedBy { it.date }
-                ?.map {
-                    AttendanceRecordDto(
-                        date = it.date,
-                        attendanceId = it.attendanceId,
-                        status = it.status,
-                        point = it.point
-                    )
-                }
-                ?.toMutableList()
-                ?: mutableListOf()
+
+            val baseRecords: MutableList<AttendanceRecordDto> =
+                rowsByMember[memberId]
+                    ?.sortedBy { it.date }
+                    ?.map { row ->
+                        AttendanceRecordDto(
+                            date = row.date,
+                            attendanceId = row.attendanceId,
+                            status = row.status,
+                            point = row.point
+                        )
+                    }
+                    ?.toMutableList()
+                    ?: mutableListOf()
 
             if (sessionDates.isNotEmpty()) {
-                val recordedDates = baseRecords.map { it.date }.toSet()
-                sessionDates.filter { it !in recordedDates }.forEach { date ->
-                    baseRecords.add(
-                        AttendanceRecordDto(
-                            date = date,
-                            attendanceId = attendanceIdByMemberDate[memberId to date],
-                            status = null,
-                            point = null
+                val recordedDates: Set<LocalDate> = baseRecords.map { it.date }.toSet()
+
+                sessionDates
+                    .filter { it !in recordedDates }
+                    .forEach { date ->
+                        baseRecords.add(
+                            AttendanceRecordDto(
+                                date = date,
+                                attendanceId = attendanceIdByMemberDate[memberId to date],
+                                status = null,
+                                point = null
+                            )
                         )
-                    )
-                }
+                    }
                 baseRecords.sortBy { it.date }
             }
 
@@ -253,8 +271,8 @@ class AdminPointService(
             )
         }
 
-        val dtoPage = memberPage.map { p ->
-            memberDtos.first { it.memberId == p.memberId }
+        val dtoPage = memberPage.map { profile ->
+            memberDtos.first { it.memberId == profile.memberId }
         }
 
         return MonthlyAttendancePageResponse(

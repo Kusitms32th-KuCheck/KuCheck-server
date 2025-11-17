@@ -3,12 +3,15 @@ package onku.backend.domain.point.controller.manager
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
 import onku.backend.domain.point.dto.*
 import onku.backend.domain.point.service.AdminPointCommandService
 import onku.backend.domain.point.service.AdminPointService
 import onku.backend.global.page.PageResponse
 import onku.backend.global.response.SuccessResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.time.YearMonth
 
@@ -18,6 +21,7 @@ import java.time.YearMonth
     name = "[MANAGEMENT] 운영진 상벌점",
     description = "운영진 상벌점 대시보드 조회 API"
 )
+@Validated
 class PointManagerController(
     private val adminPointsService: AdminPointService,
     private val commandService: AdminPointCommandService
@@ -101,7 +105,7 @@ class PointManagerController(
         description = "year, month, page, size를 받아 멤버별 [date, attendanceId, status, point] 목록을 페이징으로 반환"
     )
     fun getMonthly(
-        @RequestParam month: Int,
+        @RequestParam @Min(8) @Max(12) month: Int,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
     ): ResponseEntity<SuccessResponse<MonthlyAttendancePageResponse>> {
@@ -114,7 +118,7 @@ class PointManagerController(
     @PatchMapping("/monthly")
     @Operation(
         summary = "월별 출석 상태 수정 [운영진]",
-        description = "attendanceId, memberId, status를 받아 출석 상태를 수정하고, 상벌점 변동을 MemberPointHistory에 기록합니다."
+        description = "attendanceId, memberId, status를 받아 출석 상태를 수정하고, 상벌점 변동을 기록합니다."
     )
     fun updateMonthly(
         @RequestBody @Valid req: UpdateAttendanceStatusRequest
