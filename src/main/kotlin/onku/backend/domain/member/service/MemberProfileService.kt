@@ -9,10 +9,13 @@ import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.member.repository.MemberRepository
 import onku.backend.domain.point.repository.MemberPointHistoryRepository
 import onku.backend.global.exception.CustomException
+import onku.backend.global.page.PageResponse
 import onku.backend.global.s3.dto.GetUpdateAndDeleteUrlDto
 import onku.backend.global.s3.enums.FolderName
 import onku.backend.global.s3.enums.UploadOption
 import onku.backend.global.s3.service.S3Service
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -170,14 +173,37 @@ class MemberProfileService(
     }
 
     @Transactional(readOnly = true)
-    fun getApprovedMemberInfos(): MemberInfoListResponse {
+    fun getApprovedMembersPagedWithCounts(
+        page: Int,
+        size: Int,
+        isStaff: Boolean?
+    ): MembersPagedResponse {
+
         val pendingCount = memberRepository.countByApproval(ApprovalStatus.PENDING)
         val approvedCount = memberRepository.countByApproval(ApprovalStatus.APPROVED)
         val rejectedCount = memberRepository.countByApproval(ApprovalStatus.REJECTED)
 
-        val profiles = memberProfileRepository.findByMemberApproval(ApprovalStatus.APPROVED)
+        val pageable = PageRequest.of(
+            page,
+            size,
+            Sort.by(
+                Sort.Order.asc("part"),
+                Sort.Order.asc("name")
+            )
+        )
 
-        val members = profiles.map { profile ->
+        val profilePage = when (isStaff) {
+            null -> memberProfileRepository.findByMemberApproval(
+                ApprovalStatus.APPROVED,
+                pageable
+            )
+            else -> memberProfileRepository.findByMemberApprovalAndMemberIsStaff(
+                ApprovalStatus.APPROVED,
+                isStaff,
+                pageable
+            )
+        }
+        val dtoPage = profilePage.map { profile ->
             val member = profile.member
             val key = profile.profileImage
             val url = key?.let { s3Service.getGetS3Url(member.id!!, it).preSignedUrl }
@@ -192,29 +218,32 @@ class MemberProfileService(
                 phoneNumber = profile.phoneNumber,
                 socialType = member.socialType,
                 email = member.email,
+                role = member.role,
+                isStaff = member.isStaff,
                 approval = member.approval
             )
         }
-
-        return MemberInfoListResponse(
+        val pageResponse = PageResponse.from(dtoPage)
+        return MembersPagedResponse(
             pendingCount = pendingCount,
             approvedCount = approvedCount,
             rejectedCount = rejectedCount,
-            members = members
+            members = pageResponse
         )
     }
 
     @Transactional(readOnly = true)
-    fun getApprovalRequestMembers(): MemberApprovalListResponse {
+    fun getApprovalRequestMembers(page: Int, size: Int): MembersPagedResponse {
         val pendingCount = memberRepository.countByApproval(ApprovalStatus.PENDING)
         val approvedCount = memberRepository.countByApproval(ApprovalStatus.APPROVED)
         val rejectedCount = memberRepository.countByApproval(ApprovalStatus.REJECTED)
 
-        val profiles = memberProfileRepository.findByMemberApprovalIn(
-            listOf(ApprovalStatus.PENDING, ApprovalStatus.REJECTED)
-        )
+        val pageable = PageRequest.of(page, size)
 
-        val members = profiles.map { profile ->
+        val approvalStatuses = listOf(ApprovalStatus.PENDING, ApprovalStatus.REJECTED)
+        val profilePage = memberProfileRepository.findByMemberApprovalIn(approvalStatuses, pageable)
+
+        val memberPage = profilePage.map { profile ->
             val member = profile.member
             val key = profile.profileImage
             val url = key?.let { s3Service.getGetS3Url(member.id!!, it).preSignedUrl }
@@ -229,15 +258,18 @@ class MemberProfileService(
                 phoneNumber = profile.phoneNumber,
                 socialType = member.socialType,
                 email = member.email,
+                role = member.role,
+                isStaff = member.isStaff,
                 approval = member.approval
             )
         }
+        val membersPageResponse: PageResponse<MemberItemResponse> = PageResponse.from(memberPage)
 
-        return MemberApprovalListResponse(
+        return MembersPagedResponse(
             pendingCount = pendingCount,
             approvedCount = approvedCount,
             rejectedCount = rejectedCount,
-            members = members
+            members = membersPageResponse
         )
     }
 }
