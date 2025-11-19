@@ -20,11 +20,25 @@ interface MemberProfileRepository : JpaRepository<MemberProfile, Long> {
     @EntityGraph(attributePaths = ["member"])
     fun findAllByOrderByPartAscNameAsc(pageable: Pageable): Page<MemberProfile>
 
-    // APPROVED
-    @EntityGraph(attributePaths = ["member"])
-    fun findByMemberApproval(approval: ApprovalStatus): List<MemberProfile>
-
     // PENDING, REJECTED
     @EntityGraph(attributePaths = ["member"])
-    fun findByMemberApprovalIn(approvals: Collection<ApprovalStatus>): List<MemberProfile>
+    fun findByMemberApprovalIn(
+        approvals: Collection<ApprovalStatus>,
+        pageable: Pageable
+    ): Page<MemberProfile>
+
+    // APPROVED
+    @EntityGraph(attributePaths = ["member"])
+    fun findByMemberApproval(
+        approval: ApprovalStatus,
+        pageable: Pageable
+    ): Page<MemberProfile>
+
+    // STAFF
+    @EntityGraph(attributePaths = ["member"])
+    fun findByMemberApprovalAndMemberIsStaff(
+        approval: ApprovalStatus,
+        isStaff: Boolean,
+        pageable: Pageable
+    ): Page<MemberProfile>
 }

@@ -30,29 +30,26 @@ class SecurityConfig(
             "/api/v1/auth/reissue",
         )
 
-        private val ONBOARDING_ENDPOINT = arrayOf(
-            "/api/v1/members/onboarding/**",
+        private val ONBOARDING_ENDPOINT = arrayOf( // (GUEST)
+            "/api/v1/members/onboarding",
             "/api/v1/members/profile/image/url"
         )
 
-        private val STAFF_ENDPOINT = arrayOf( // 운영진
+        private val STAFF_ENDPOINT = arrayOf( // 운영진 (STAFF)
             "/api/v1/session/staff/**",
-            "/api/v1/members/*/approval",
-            "/api/v1/members/*/profile",
-            "/api/v1/members/approvals",
-            "/api/v1/members/requests",
+            "/api/v1/members/staff/**",
             "/api/v1/notice/manage/**",
         )
 
-        private val MANAGEMENT_ENDPOINT = arrayOf( // 경총
+        private val MANAGEMENT_ENDPOINT = arrayOf( // 경총 (MANAGEMENT)
             "/api/v1/kupick/manage/**",
             "/api/v1/points/manage/**",
             "/api/v1/attendance/manage/**",
             "/api/v1/absence/manage/**"
         )
 
-        private val EXECUTIVE = arrayOf( // 회장단
-            "/api/v1/members/*/role",
+        private val EXECUTIVE = arrayOf( // 회장단 (EXECUTIVE)
+            "/api/v1/members/executive/**",
         )
     }
 

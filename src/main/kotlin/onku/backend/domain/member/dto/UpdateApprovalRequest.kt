@@ -5,5 +5,8 @@ import onku.backend.domain.member.enums.ApprovalStatus
 
 data class UpdateApprovalRequest(
     @field:NotNull
-    val status: ApprovalStatus
+    val memberId: Long?,
+
+    @field:NotNull
+    val status: ApprovalStatus?
 )

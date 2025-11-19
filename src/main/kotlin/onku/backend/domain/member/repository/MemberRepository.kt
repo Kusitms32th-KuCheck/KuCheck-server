@@ -16,4 +16,6 @@ interface MemberRepository : JpaRepository<Member, Long> {
     """)
     fun findApprovedMemberIds(): List<Long>
     fun countByApproval(approval: ApprovalStatus): Long
+    fun findByIsStaffTrue(): List<Member>
+    fun findByIdIn(ids: Collection<Long>): List<Member>
 }
