@@ -134,6 +134,7 @@ jobs:
         run: |
           cd ./src
           rm -rf main/resources/application.yml
+          rm -rf main/resources/firebase/fcm.json
           mkdir -p main/resources
           mkdir -p test/resources
           mkdir -p main/resources/firebase
