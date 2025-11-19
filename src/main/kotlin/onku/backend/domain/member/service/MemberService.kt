@@ -67,31 +67,47 @@ class MemberService(
     }
 
     @Transactional
-    fun updateApproval(memberId: Long, targetStatus: ApprovalStatus): MemberApprovalResponse {
-        if (targetStatus == ApprovalStatus.PENDING) {
-            throw CustomException(MemberErrorCode.INVALID_MEMBER_STATE)
+    fun updateApprovals(items: List<UpdateApprovalRequest>): List<MemberApprovalResponse> {
+        if (items.isEmpty()) return emptyList()
+
+        val ids = items.mapNotNull { it.memberId }.toSet()
+        val members = memberRepository.findByIdIn(ids)
+        if (members.size != ids.size) {
+            throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
         }
 
-        val member: Member = memberRepository.findById(memberId)
-            .orElseThrow { CustomException(MemberErrorCode.MEMBER_NOT_FOUND) }
+        val memberMap = members.associateBy { it.id!! }
+        val responses = mutableListOf<MemberApprovalResponse>()
 
-        if (member.approval != ApprovalStatus.PENDING) {
-            throw CustomException(MemberErrorCode.INVALID_MEMBER_STATE)
+        items.forEach { item ->
+            val memberId = item.memberId ?: throw CustomException(MemberErrorCode.INVALID_REQUEST)
+            val targetStatus = item.status ?: throw CustomException(MemberErrorCode.INVALID_REQUEST)
+
+            if (targetStatus == ApprovalStatus.PENDING) {
+                throw CustomException(MemberErrorCode.INVALID_MEMBER_STATE)
+            }
+
+            val member = memberMap[memberId]
+                ?: throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
+
+            if (member.approval != ApprovalStatus.PENDING) {
+                throw CustomException(MemberErrorCode.INVALID_MEMBER_STATE)
+            }
+            when (targetStatus) {
+                ApprovalStatus.APPROVED -> member.approve()
+                ApprovalStatus.REJECTED -> member.reject()
+                ApprovalStatus.PENDING -> { }
+            }
+            responses.add(
+                MemberApprovalResponse(
+                    memberId = memberId,
+                    role = member.role,
+                    approval = member.approval
+                )
+            )
         }
-
-        when (targetStatus) {
-            ApprovalStatus.APPROVED -> member.approve()
-            ApprovalStatus.REJECTED -> member.reject()
-            ApprovalStatus.PENDING -> {}
-        }
-
-        val saved = memberRepository.save(member)
-
-        return MemberApprovalResponse(
-            memberId = saved.id!!,
-            role = saved.role,
-            approval = saved.approval
-        )
+        memberRepository.saveAll(memberMap.values)
+        return responses
     }
 
     @Transactional
