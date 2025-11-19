@@ -43,14 +43,15 @@ class NoticeManagerController(
     @PostMapping("files")
     @Operation(
         summary = "공지 이미지/파일 업로드 URL 발급 [운영진]",
-        description = "filename을 받아 presigned PUT url 발급"
+        description = "filename, fileSize 를 받아 presigned PUT url 발급"
     )
     fun prepareUpload(
         @RequestParam filename: String,
         @RequestParam fileType: UploadOption,
+        @RequestParam fileSize: Long,
         @CurrentMember member: Member
     ): ResponseEntity<SuccessResponse<PresignedUploadResponse>> {
-        val body = noticeAttachmentService.prepareUpload(member, filename, fileType)
+        val body = noticeAttachmentService.prepareUpload(member, filename, fileType, fileSize)
         return ResponseEntity.ok(SuccessResponse.ok(body))
     }
 
