@@ -19,15 +19,14 @@ class MemberStaffController(
 ) {
 
     @Operation(
-        summary = "회원 승인 상태 변경",
+        summary = "회원 승인 상태 일괄 변경",
         description = "PENDING 상태의 회원만 승인/거절할 수 있습니다. (PENDING → APPROVED/REJECTED)"
     )
-    @PatchMapping("/{memberId}/approval")
+    @PatchMapping("/approvals")
     fun updateApproval(
-        @PathVariable memberId: Long,
-        @RequestBody @Valid body: UpdateApprovalRequest
-    ): ResponseEntity<SuccessResponse<MemberApprovalResponse>> {
-        val result = memberService.updateApproval(memberId, body.status)
+        @RequestBody @Valid body: List<UpdateApprovalRequest>
+    ): ResponseEntity<SuccessResponse<List<MemberApprovalResponse>>> {
+        val result = memberService.updateApprovals(body)
         return ResponseEntity.ok(SuccessResponse.ok(result))
     }
 
