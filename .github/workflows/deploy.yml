@@ -46,7 +46,7 @@ jobs:
         env:
           APPLICATION_PROPERTIES: ${{ secrets.ONKU_APP_DEV_YML }}
           TEST_APPLICATION_PROPERTIES: ${{ secrets.ONKU_APP_TEST_YML }}
-          FCM_JSON: ${ secrets.ONKU_FCM_JSON }}
+          FCM_JSON: ${{ secrets.ONKU_FCM_JSON }}
 
         run: |
           cd ./src
