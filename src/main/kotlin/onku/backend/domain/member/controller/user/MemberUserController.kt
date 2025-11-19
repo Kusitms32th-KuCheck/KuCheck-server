@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import onku.backend.domain.member.Member
 import onku.backend.domain.member.dto.*
+import onku.backend.domain.member.service.MemberAlarmHistoryService
 import onku.backend.domain.member.service.MemberProfileService
 import onku.backend.domain.member.service.MemberService
 import onku.backend.global.annotation.CurrentMember
@@ -19,7 +20,8 @@ import org.springframework.web.bind.annotation.*
 @Tag(name = "[USER] 회원 API", description = "온보딩 및 프로필 관련 API")
 class MemberUserController(
     private val memberProfileService: MemberProfileService,
-    private val memberService: MemberService
+    private val memberService: MemberService,
+    private val memberAlarmHistoryService: MemberAlarmHistoryService,
 ) {
     @PostMapping("/onboarding")
     @ResponseStatus(HttpStatus.ACCEPTED)
@@ -72,5 +74,17 @@ class MemberUserController(
     ): ResponseEntity<SuccessResponse<MemberRoleResponse>> {
         val body = memberService.updateRole(memberId, req)
         return ResponseEntity.ok(SuccessResponse.ok(body))
+    }
+
+    @GetMapping("/alarms")
+    @Operation(
+        summary = "내 알림 히스토리 조회",
+        description = "현재 로그인한 회원의 알림 메시지 이력을 message, type, createdAt(MM/dd HH:mm) 형식으로 반환합니다."
+    )
+    fun getMyAlarms(
+        @CurrentMember member: Member
+    ): SuccessResponse<List<MemberAlarmHistoryItemResponse>> {
+        val body = memberAlarmHistoryService.getMyAlarms(member)
+        return SuccessResponse.ok(body)
     }
 }
