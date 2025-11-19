@@ -2,9 +2,7 @@ package onku.backend.domain.member.service
 
 import onku.backend.domain.member.Member
 import onku.backend.domain.member.MemberErrorCode
-import onku.backend.domain.member.dto.MemberApprovalResponse
-import onku.backend.domain.member.dto.MemberRoleResponse
-import onku.backend.domain.member.dto.UpdateRoleRequest
+import onku.backend.domain.member.dto.*
 import onku.backend.domain.member.enums.ApprovalStatus
 import onku.backend.domain.member.enums.Role
 import onku.backend.domain.member.enums.SocialType
@@ -113,5 +111,80 @@ class MemberService(
             memberId = target.id!!,
             role = target.role
         )
+    }
+
+    @Transactional
+    fun updateStaffMembers(req: StaffUpdateRequest): StaffUpdateResponse {
+        val targetIds = req.staffMemberIds.toSet()
+
+        // 현재 운영진
+        val currentStaffMembers = memberRepository.findByIsStaffTrue()
+        val currentStaffIds = currentStaffMembers.mapNotNull { it.id }.toSet()
+
+        val addedStaffIds = (targetIds - currentStaffIds)
+        val removedStaffIds = (currentStaffIds - targetIds)
+
+        // 운영진 추가
+        if (addedStaffIds.isNotEmpty()) {
+            val toAdd = memberRepository.findByIdIn(addedStaffIds)
+            if (toAdd.size != addedStaffIds.size) {
+                throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
+            }
+            toAdd.forEach { m ->
+                m.isStaff = true
+                m.role = Role.STAFF          // isStaff = false → true : role.STAFF
+            }
+        }
+
+        // 운영진 삭제
+        if (removedStaffIds.isNotEmpty()) {
+            val toRemove = currentStaffMembers.filter { it.id in removedStaffIds }
+            toRemove.forEach { m ->
+                m.isStaff = false
+                m.role = Role.USER          // isStaff = true → false : role.USER
+            }
+        }
+
+        return StaffUpdateResponse(
+            addedStaffs = addedStaffIds.sorted(),
+            removedStaffs = removedStaffIds.sorted()
+        )
+    }
+
+    @Transactional
+    fun updateRoles(req: BulkRoleUpdateRequest): List<MemberRoleResponse> {
+        if (req.items.isEmpty()) return emptyList()
+
+        val ids = req.items.mapNotNull { it.memberId }.toSet()
+        val members = memberRepository.findByIdIn(ids)
+        if (members.size != ids.size) {
+            throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
+        }
+
+        val memberMap = members.associateBy { it.id!! }
+        val responses = mutableListOf<MemberRoleResponse>()
+
+        req.items.forEach { item ->
+            val memberId = item.memberId ?: throw CustomException(MemberErrorCode.INVALID_REQUEST)
+            val newRole = item.role ?: throw CustomException(MemberErrorCode.INVALID_REQUEST)
+
+            if (newRole == Role.USER || newRole == Role.GUEST) {
+                throw CustomException(MemberErrorCode.INVALID_REQUEST)
+            }
+
+            val member = memberMap[memberId]
+                ?: throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
+
+            member.role = newRole
+
+            responses.add(
+                MemberRoleResponse(
+                    memberId = memberId,
+                    role = member.role
+                )
+            )
+        }
+        memberRepository.saveAll(memberMap.values)
+        return responses
     }
 }
