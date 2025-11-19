@@ -2,7 +2,21 @@ package onku.backend.domain.notice.enums
 
 import io.swagger.v3.oas.annotations.media.Schema
 
-@Schema(description = "공지 카테고리 색상")
+@Schema(
+    description = """
+공지 카테고리 색상:
+- RED (빨강)
+- ORANGE (주황)
+- YELLOW (노랑)
+- GREEN (초록)
+- LIGHT_GREEN (연두)
+- TEAL (청록)
+- BLUE (파랑)
+- PURPLE (보라)
+- PINK (분홍)
+- BROWN (갈색)
+"""
+)
 enum class NoticeCategoryColor {
     @Schema(description = "빨강")
     RED,
