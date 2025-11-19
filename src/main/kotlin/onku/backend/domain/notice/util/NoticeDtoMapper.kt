@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 private val fmtList = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
-private val fmtDetail = DateTimeFormatter.ofPattern("MM:dd HH:mm")
+private val fmtDetail = DateTimeFormatter.ofPattern("MM/dd HH:mm")
 
 object NoticeDtoMapper {
     fun toCategoryBadge(c: NoticeCategory) =
