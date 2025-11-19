@@ -21,4 +21,7 @@ class NoticeAttachment(
     @Enumerated(EnumType.STRING)
     @Column(name = "attachment_type", nullable = false)
     val attachmentType: UploadOption,
+
+    @Column(name = "attachment_size")
+    val attachmentSize: Long? = null, // 파일 크기
 )
