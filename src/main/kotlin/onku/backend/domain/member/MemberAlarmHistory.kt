@@ -1,6 +1,6 @@
 package onku.backend.domain.member
 
-import onku.backend.domain.member.enums.MemberAlarmType
+import onku.backend.global.alarm.enums.AlarmType
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -22,7 +22,7 @@ class MemberAlarmHistory(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
-    val type: MemberAlarmType,
+    val type: AlarmType,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()

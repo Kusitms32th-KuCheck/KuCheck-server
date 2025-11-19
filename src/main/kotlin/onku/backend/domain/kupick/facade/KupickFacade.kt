@@ -5,8 +5,8 @@ import onku.backend.domain.kupick.dto.response.ShowUpdateResponseDto
 import onku.backend.domain.kupick.dto.response.ViewMyKupickResponseDto
 import onku.backend.domain.kupick.service.KupickService
 import onku.backend.domain.member.Member
+import onku.backend.global.alarm.enums.AlarmType
 import onku.backend.global.alarm.AlarmMessage
-import onku.backend.global.alarm.AlarmTitle
 import onku.backend.global.alarm.FCMService
 import onku.backend.global.s3.dto.GetUpdateAndDeleteUrlDto
 import onku.backend.global.s3.enums.FolderName
@@ -95,7 +95,7 @@ class KupickFacade(
         fcmToken?.let {
             fcmService.sendMessageTo(
                 targetToken = it,
-                title = AlarmTitle.KUPICK,
+                title = AlarmType.KUPICK.title,
                 body = AlarmMessage.kupick(submitMonth!!, kupickApprovalRequest.approval),
                 link = null
             )
