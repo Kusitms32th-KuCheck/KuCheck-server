@@ -1,4 +1,4 @@
-package onku.backend.domain.member.controller
+package onku.backend.domain.member.controller.user
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -16,12 +16,11 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/members")
-@Tag(name = "회원 API", description = "온보딩 및 프로필 관련 API")
-class MemberController(
+@Tag(name = "[USER] 회원 API", description = "온보딩 및 프로필 관련 API")
+class MemberUserController(
     private val memberProfileService: MemberProfileService,
     private val memberService: MemberService
 ) {
-
     @PostMapping("/onboarding")
     @ResponseStatus(HttpStatus.ACCEPTED)
     @Operation(
@@ -62,23 +61,10 @@ class MemberController(
         return ResponseEntity.ok(SuccessResponse.ok(dto))
     }
 
-    @Operation(
-        summary = "[STAFF] 회원 승인 상태 변경",
-        description = "PENDING 상태의 회원만 승인/거절할 수 있습니다. (PENDING → APPROVED/REJECTED)"
-    )
-    @PatchMapping("/{memberId}/approval")
-    fun updateApproval(
-        @PathVariable memberId: Long,
-        @RequestBody @Valid body: UpdateApprovalRequest
-    ): ResponseEntity<SuccessResponse<MemberApprovalResponse>> {
-        val result = memberService.updateApproval(memberId, body.status)
-        return ResponseEntity.ok(SuccessResponse.ok(result))
-    }
-
     @PatchMapping("/{memberId}/role")
     @Operation(
-        summary = "[EXECUTIVE] 사용자 권한 수정",
-        description = "URL 의 memberId 에 해당하는 사용자의 권한을 role 로 수정합니다."
+        summary = "[QA] 사용자 권한 수정",
+        description = "memberId 에 해당하는 사용자의 권한을 role 로 수정합니다. QA 혹은 프론트엔드 연동 기간동안 권한 제한 없이 자유롭게 사용해주시면 됩니다!"
     )
     fun updateRole(
         @PathVariable memberId: Long,
@@ -86,40 +72,5 @@ class MemberController(
     ): ResponseEntity<SuccessResponse<MemberRoleResponse>> {
         val body = memberService.updateRole(memberId, req)
         return ResponseEntity.ok(SuccessResponse.ok(body))
-    }
-
-    @PatchMapping("/{memberId}/profile")
-    @Operation(
-        summary = "[STAFF] 학회원 프로필 정보 수정",
-        description = "관리자가 특정 학회원의 [이름, 학교, 학과, 전화번호, 파트]를 수정합니다."
-    )
-    fun updateMemberProfile(
-        @PathVariable memberId: Long,
-        @RequestBody @Valid req: MemberProfileUpdateRequest
-    ): SuccessResponse<MemberProfileBasicsResponse> {
-        val body = memberProfileService.updateProfile(memberId, req)
-        return SuccessResponse.ok(body)
-    }
-
-    @GetMapping("/approvals")
-    @Operation(
-        summary = "[STAFF] 학회원 정보 목록 조회 (APPROVED)",
-        description = "PENDING/APPROVED/REJECTED 수와 함께, APPROVED 상태인 학회원들만 목록으로 반환합니다."
-    )
-    fun getApprovedMembers(
-    ): SuccessResponse<MemberInfoListResponse> {
-        val body = memberProfileService.getApprovedMemberInfos()
-        return SuccessResponse.ok(body)
-    }
-
-    @GetMapping("/requests")
-    @Operation(
-        summary = "[STAFF] 승인 요청 목록 조회 (PENDING/REJECTED)",
-        description = "PENDING/APPROVED/REJECTED 수와 함께, PENDING 및 REJECTED 상태인 학회원들만 목록으로 반환합니다."
-    )
-    fun getApprovalRequests(
-    ): SuccessResponse<MemberApprovalListResponse> {
-        val body = memberProfileService.getApprovalRequestMembers()
-        return SuccessResponse.ok(body)
     }
 }
