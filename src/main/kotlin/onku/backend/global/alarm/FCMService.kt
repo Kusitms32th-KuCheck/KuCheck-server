@@ -7,6 +7,10 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import onku.backend.domain.member.Member
+import onku.backend.domain.member.service.MemberAlarmHistoryService
+import onku.backend.global.alarm.enums.AlarmEmojiType
+import onku.backend.global.alarm.enums.AlarmTitleType
 import onku.backend.global.exception.CustomException
 import onku.backend.global.exception.ErrorCode
 import org.slf4j.Logger
@@ -20,6 +24,7 @@ import java.io.IOException
 @Service
 class FCMService(
     private val objectMapper: ObjectMapper,
+    private val memberAlarmHistoryService: MemberAlarmHistoryService,
     @Value("\${fcm.api-url}")
     private val API_URL : String,
     @Value("\${fcm.firebase-config-path}")
@@ -32,8 +37,12 @@ class FCMService(
         private val client: OkHttpClient = OkHttpClient()
     }
     @Throws(IOException::class)
-    fun sendMessageTo(targetToken: String, title: String, body: String, link: String?) {
-        val message = makeMessage(targetToken, title, body, link)
+    fun sendMessageTo(member: Member, alarmTitleType : AlarmTitleType, alarmEmojiType: AlarmEmojiType, body: String, link: String?) {
+        if(member.fcmToken.isNullOrBlank()) {
+            return
+        }
+        val title = alarmTitleType.title
+        val message = makeMessage(member.fcmToken!!, title, body, link)
 
         val requestBody = message
             .toRequestBody("application/json; charset=utf-8".toMediaType())
@@ -46,6 +55,8 @@ class FCMService(
             .build()
 
         log.info("제목 : $title, 내용 : $body")
+
+        memberAlarmHistoryService.saveAlarm(member, alarmEmojiType, body)
 
         client.newCall(request).execute().use { response ->
             log.info("fcm 결과 : " + response.body?.string())

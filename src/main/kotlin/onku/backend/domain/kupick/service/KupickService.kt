@@ -2,7 +2,7 @@ package onku.backend.domain.kupick.service
 
 import onku.backend.domain.kupick.Kupick
 import onku.backend.domain.kupick.KupickErrorCode
-import onku.backend.domain.kupick.dto.KupickFcmInfo
+import onku.backend.domain.kupick.dto.KupickMemberInfo
 import onku.backend.domain.kupick.repository.KupickRepository
 import onku.backend.domain.kupick.repository.projection.KupickUrls
 import onku.backend.domain.kupick.repository.projection.KupickWithProfile
@@ -83,7 +83,7 @@ class KupickService(
     }
 
     @Transactional(readOnly = true)
-    fun findFcmInfo(kupickId: Long) : KupickFcmInfo? {
+    fun findFcmInfo(kupickId: Long) : KupickMemberInfo? {
         return kupickRepository.findFcmInfoByKupickId(kupickId)
     }
 }
