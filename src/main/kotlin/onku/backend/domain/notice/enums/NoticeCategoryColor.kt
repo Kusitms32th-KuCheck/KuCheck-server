@@ -1,5 +1,50 @@
 package onku.backend.domain.notice.enums
 
+import io.swagger.v3.oas.annotations.media.Schema
+
+@Schema(
+    description = """
+공지 카테고리 색상:
+- RED (빨강)
+- ORANGE (주황)
+- YELLOW (노랑)
+- GREEN (초록)
+- LIGHT_GREEN (연두)
+- TEAL (청록)
+- BLUE (파랑)
+- PURPLE (보라)
+- PINK (분홍)
+- BROWN (갈색)
+"""
+)
 enum class NoticeCategoryColor {
-    RED, ORANGE, YELLOW, GREEN, TEAL, BLUE, INDIGO, PURPLE, PINK, BROWN, GRAY
+    @Schema(description = "빨강")
+    RED,
+
+    @Schema(description = "주황")
+    ORANGE,
+
+    @Schema(description = "노랑")
+    YELLOW,
+
+    @Schema(description = "초록")
+    GREEN,
+
+    @Schema(description = "연두")
+    LIGHT_GREEN,
+
+    @Schema(description = "청록")
+    TEAL,
+
+    @Schema(description = "파랑")
+    BLUE,
+
+    @Schema(description = "보라")
+    PURPLE,
+
+    @Schema(description = "분홍")
+    PINK,
+
+    @Schema(description = "갈색")
+    BROWN;
 }
