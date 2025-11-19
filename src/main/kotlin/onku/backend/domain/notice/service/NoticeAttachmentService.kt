@@ -22,7 +22,8 @@ class NoticeAttachmentService(
     fun prepareUpload(
         currentMember: Member,
         filename: String,
-        fileType: UploadOption
+        fileType: UploadOption,
+        fileSize: Long,
     ): PresignedUploadResponse {
 
         val put: GetS3UrlDto = s3Service.getPostS3Url(
@@ -36,7 +37,8 @@ class NoticeAttachmentService(
             NoticeAttachment(
                 notice = null,
                 s3Key = put.key,
-                attachmentType = fileType
+                attachmentType = fileType,
+                attachmentSize = fileSize
             )
         )
 
