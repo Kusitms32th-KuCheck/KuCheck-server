@@ -98,14 +98,15 @@ class SessionFacade(
         val session = sessionService.getByDetailIdFetchDetail(detailId)
         val detail = session.sessionDetail!!
         val imageDtos = images.map { image ->
-            val preSignedUrl = s3Service.getGetS3Url(
+            val preSignedDto = s3Service.getGetS3Url(
                 memberId = 0,
                 key = image.url
-            ).preSignedUrl
+            )
 
             SessionImageDto(
                 sessionImageId = image.id!!,
-                sessionImagePreSignedUrl = preSignedUrl
+                sessionImagePreSignedUrl = preSignedDto.preSignedUrl,
+                sessionOriginalFileName = preSignedDto.originalName
             )
         }
 
@@ -135,10 +136,11 @@ class SessionFacade(
 
         // Presigned URL 생성
         val imageDtos = images.map { img ->
-            val presign = s3Service.getGetS3Url(0L, img.url)
+            val preSignDto = s3Service.getGetS3Url(0L, img.url)
             SessionImageDto(
                 sessionImageId = img.id!!,
-                sessionImagePreSignedUrl = presign.preSignedUrl
+                sessionImagePreSignedUrl = preSignDto.preSignedUrl,
+                sessionOriginalFileName = preSignDto.originalName
             )
         }
 

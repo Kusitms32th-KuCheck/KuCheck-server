@@ -184,18 +184,22 @@ class NoticeService(
         val (imageFiles, otherFiles) = files.partition { it.attachmentType == UploadOption.IMAGE }
 
         val imageDtos = imageFiles.map { file ->
+            val preSignGetDto = presignGet(memberId, file.s3Key)
             NoticeFileWithUrl(
                 id = file.id!!,
-                url = presignGet(memberId, file.s3Key).preSignedUrl,
-                size = file.attachmentSize
+                url = preSignGetDto.preSignedUrl,
+                size = file.attachmentSize,
+                originalFileName = preSignGetDto.originalName
             )
         }
 
         val fileDtos = otherFiles.map { file ->
+            val preSignGetDto = presignGet(memberId, file.s3Key)
             NoticeFileWithUrl(
                 id = file.id!!,
                 url = presignGet(memberId, file.s3Key).preSignedUrl,
-                size = file.attachmentSize
+                size = file.attachmentSize,
+                originalFileName = preSignGetDto.originalName
             )
         }
 
