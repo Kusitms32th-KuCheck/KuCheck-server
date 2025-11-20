@@ -5,9 +5,10 @@ import onku.backend.domain.kupick.dto.response.ShowUpdateResponseDto
 import onku.backend.domain.kupick.dto.response.ViewMyKupickResponseDto
 import onku.backend.domain.kupick.service.KupickService
 import onku.backend.domain.member.Member
-import onku.backend.global.alarm.enums.AlarmType
+import onku.backend.global.alarm.enums.AlarmTitleType
 import onku.backend.global.alarm.AlarmMessage
 import onku.backend.global.alarm.FCMService
+import onku.backend.global.alarm.enums.AlarmEmojiType
 import onku.backend.global.s3.dto.GetUpdateAndDeleteUrlDto
 import onku.backend.global.s3.enums.FolderName
 import onku.backend.global.s3.enums.UploadOption
@@ -90,16 +91,18 @@ class KupickFacade(
     fun decideApproval(kupickApprovalRequest: KupickApprovalRequest): Boolean {
         kupickService.decideApproval(kupickApprovalRequest.kupickId, kupickApprovalRequest.approval)
         val info = kupickService.findFcmInfo(kupickApprovalRequest.kupickId)
-        val fcmToken = info?.fcmToken
+        val member = info?.member
         val submitMonth = info?.submitDate?.monthValue
-        fcmToken?.let {
-            fcmService.sendMessageTo(
-                targetToken = it,
-                title = AlarmType.KUPICK.title,
-                body = AlarmMessage.kupick(submitMonth!!, kupickApprovalRequest.approval),
-                link = null
-            )
-        }
+        fcmService.sendMessageTo(
+            member = member!!,
+            alarmTitleType = AlarmTitleType.KUPICK,
+            alarmEmojiType = when (kupickApprovalRequest.approval) {
+                true -> AlarmEmojiType.STAR
+                false -> AlarmEmojiType.WARNING
+            },
+            body = AlarmMessage.kupick(submitMonth!!, kupickApprovalRequest.approval),
+            link = null
+        )
         return true
     }
 }

@@ -1,8 +1,10 @@
 package onku.backend.domain.member.service
 
 import onku.backend.domain.member.Member
+import onku.backend.domain.member.MemberAlarmHistory
 import onku.backend.domain.member.dto.MemberAlarmHistoryItemResponse
 import onku.backend.domain.member.repository.MemberAlarmHistoryRepository
+import onku.backend.global.alarm.enums.AlarmEmojiType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.format.DateTimeFormatter
@@ -25,5 +27,16 @@ class MemberAlarmHistoryService(
                 createdAt = it.createdAt.format(formatter)
             )
         }
+    }
+
+    @Transactional
+    fun saveAlarm(member: Member, alarmEmojiType: AlarmEmojiType, message : String) {
+        memberAlarmHistoryRepository.save(
+            MemberAlarmHistory(
+                member = member,
+                message = message,
+                type = alarmEmojiType
+            )
+        )
     }
 }

@@ -9,12 +9,13 @@ import onku.backend.domain.absence.enums.AbsenceSubmitType
 import onku.backend.domain.absence.service.AbsenceService
 import onku.backend.domain.session.validator.SessionValidator
 import onku.backend.domain.member.Member
-import onku.backend.global.alarm.enums.AlarmType
+import onku.backend.global.alarm.enums.AlarmTitleType
 import onku.backend.domain.point.service.MemberPointHistoryService
 import onku.backend.domain.session.SessionErrorCode
 import onku.backend.domain.session.service.SessionService
 import onku.backend.global.alarm.AlarmMessage
 import onku.backend.global.alarm.FCMService
+import onku.backend.global.alarm.enums.AlarmEmojiType
 import onku.backend.global.exception.CustomException
 import onku.backend.global.s3.dto.GetPreSignedUrlDto
 import onku.backend.global.s3.enums.FolderName
@@ -106,9 +107,7 @@ class AbsenceFacade(
         absenceReport.updateApproval(AbsenceReportApproval.APPROVED)
         memberPointHistoryService.upsertPointFromAbsenceReport(absenceReport)
         val now = LocalDateTime.now()
-        if(!absenceReport.member.fcmToken.isNullOrBlank()){
-            fcmService.sendMessageTo(absenceReport.member.fcmToken!!, AlarmType.ABSENCE_REPORT.title, AlarmMessage.absenceReport(now.month.value, now.dayOfMonth, estimateAbsenceReportRequest.approvedType), null)
-        }
+        fcmService.sendMessageTo(absenceReport.member, AlarmTitleType.ABSENCE_REPORT, AlarmEmojiType.WARNING, AlarmMessage.absenceReport(now.month.value, now.dayOfMonth, estimateAbsenceReportRequest.approvedType), null)
         return true
     }
 

@@ -1,6 +1,6 @@
 package onku.backend.global.alarm.enums
 
-enum class AlarmType(
+enum class AlarmTitleType(
     val title: String,
 ) {
     KUPICK("큐픽 관련 알림입니다."),
