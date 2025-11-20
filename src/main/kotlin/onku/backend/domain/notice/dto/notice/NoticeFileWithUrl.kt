@@ -12,5 +12,8 @@ data class NoticeFileWithUrl(
     val url: String,
 
     @Schema(description = "첨부파일 크기", example = "123456")
-    val size: Long?
+    val size: Long?,
+
+    @Schema(description = "파일원본 이름", example = "string.png")
+    val originalFileName : String,
 )
