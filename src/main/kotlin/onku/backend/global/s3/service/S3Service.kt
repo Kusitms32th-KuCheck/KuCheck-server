@@ -27,7 +27,7 @@ class S3Service(
     @Transactional(readOnly = true)
     fun getPostS3Url(memberId: Long, filename: String?, folderName : String, option : UploadOption): GetS3UrlDto {
         if(filename.isNullOrBlank()) {
-            return GetS3UrlDto(preSignedUrl = "", key = "")
+            return GetS3UrlDto(preSignedUrl = "", key = "", originalName = "")
         }
 
         val key = "$folderName/$memberId/${UUID.randomUUID()}/$filename"
@@ -52,13 +52,13 @@ class S3Service(
         val presigned = s3Presigner.presignPutObject(presignReq)
         val url: URL = presigned.url()
 
-        return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key)
+        return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key, originalName = getFileOriginalNameFromKey(key))
     }
 
     @Transactional(readOnly = true)
     fun getGetS3Url(memberId: Long, key: String?): GetS3UrlDto {
         if(key.isNullOrBlank()) {
-            return GetS3UrlDto("", "")
+            return GetS3UrlDto("", "", "")
         }
         val contentType = guessFileType(key)
 
@@ -77,7 +77,7 @@ class S3Service(
         val presigned = s3Presigner.presignGetObject(presignReq)
         val url: URL = presigned.url()
 
-        return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key)
+        return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key, originalName = getFileOriginalNameFromKey(key))
     }
 
     @Transactional(readOnly = true)
@@ -95,7 +95,7 @@ class S3Service(
         val presigned = s3Presigner.presignDeleteObject(presignReq)
         val url: URL = presigned.url()
 
-        return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key)
+        return GetS3UrlDto(preSignedUrl = url.toExternalForm(), key = key, originalName = getFileOriginalNameFromKey(key))
     }
 
     fun deleteObjectsNow(keys: List<String>) {
@@ -143,6 +143,10 @@ class S3Service(
             lower.endsWith(".webp") -> "image/webp"
             else -> throw CustomException(ErrorCode.INVALID_FILE_EXTENSION)
         }
+    }
+
+    private fun getFileOriginalNameFromKey(key : String) : String {
+       return key.substringAfterLast("/")
     }
 
     companion object {
