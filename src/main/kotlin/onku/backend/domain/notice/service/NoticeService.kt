@@ -55,17 +55,11 @@ class NoticeService(
                 pageable
             )
         }
-
-        val items = noticePage.content.map { n ->
+        val dtoPage = noticePage.map { n ->
             val (imageFiles, fileFiles) = splitPresignedUrls(memberId, n.attachments)
             NoticeDtoMapper.toListItem(n, imageFiles, fileFiles)
         }
-
-        return PageResponse(
-            data = items,
-            totalPages = noticePage.totalPages,
-            isLastPage = noticePage.isLast
-        )
+        return PageResponse.from(dtoPage)
     }
 
     fun search(
@@ -93,15 +87,11 @@ class NoticeService(
                     pageable
                 )
         }
-        val items = noticePage.content.map { n ->
+        val dtoPage = noticePage.map { n ->
             val (imageFiles, fileFiles) = splitPresignedUrls(memberId, n.attachments)
             NoticeDtoMapper.toListItem(n, imageFiles, fileFiles)
         }
-        return PageResponse(
-            data = items,
-            totalPages = noticePage.totalPages,
-            isLastPage = noticePage.isLast
-        )
+        return PageResponse.from(dtoPage)
     }
 
     fun get(noticeId: Long, currentMember: Member): NoticeDetailResponse {
