@@ -88,6 +88,7 @@ class MemberProfileService(
         val url = key?.let { s3Service.getGetS3Url(member.id!!, it).preSignedUrl }
 
         return MemberProfileResponse(
+            email = member.email,
             name = profile.name,
             part = profile.part,
             totalPoints = total,
