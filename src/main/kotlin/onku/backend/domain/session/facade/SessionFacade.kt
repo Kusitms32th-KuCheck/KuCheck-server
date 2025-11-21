@@ -21,7 +21,10 @@ import onku.backend.global.s3.service.S3Service
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.time.Clock
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Component
 class SessionFacade(
@@ -29,7 +32,8 @@ class SessionFacade(
     private val sessionDetailService: SessionDetailService,
     private val sessionImageService : SessionImageService,
     private val s3Service: S3Service,
-    private val sessionNoticeService: SessionNoticeService
+    private val sessionNoticeService: SessionNoticeService,
+    private val clock: Clock = Clock.system(ZoneId.of("Asia/Seoul")),
 ) {
     fun showSessionAboutAbsence(): List<SessionAboutAbsenceResponse> {
         return sessionService.getUpcomingSessionsForAbsence()
@@ -171,5 +175,31 @@ class SessionFacade(
         }
         session.update(sessionSaveRequest)
         return true
+    }
+
+    @Transactional
+    fun resetSessionTime(sessionId: Long): SessionTimeResetResponse {
+        val session = sessionService.getById(sessionId)
+
+        session.attendanceFinalized = false
+        session.attendanceFinalizedAt = null
+
+        val detail = session.sessionDetail
+            ?: throw CustomException(SessionErrorCode.SESSION_DETAIL_NOT_FOUND)
+
+        val baseDateTime = LocalDateTime.now(clock).plusMinutes(20)
+        val newStartTime = baseDateTime.toLocalTime()
+        val newEndTime = baseDateTime.plusHours(2).toLocalTime()
+
+        detail.startTime = newStartTime
+        detail.endTime = newEndTime
+
+        return SessionTimeResetResponse(
+            sessionId = session.id!!,
+            startTime = newStartTime,
+            endTime = newEndTime,
+            attendanceFinalized = session.attendanceFinalized,
+            attendanceFinalizedAt = session.attendanceFinalizedAt
+        )
     }
 }
