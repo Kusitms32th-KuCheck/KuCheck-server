@@ -7,7 +7,6 @@ import onku.backend.domain.session.SessionImage
 import onku.backend.domain.session.repository.SessionImageRepository
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.global.exception.CustomException
-import onku.backend.global.s3.service.S3Service
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional
 class SessionNoticeService(
     private val sessionRepository: SessionRepository,
     private val sessionImageRepository: SessionImageRepository,
-    private val s3Service: S3Service
 ) {
     @Transactional(readOnly = true)
     fun getSessionWithImages(sessionId: Long): Triple<Session, SessionDetail, List<SessionImage>> {
