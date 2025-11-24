@@ -40,9 +40,7 @@ class SessionImageServiceTest {
         return detail
     }
 
-    // ==========================
     // uploadImages
-    // ==========================
     @Test
     fun `uploadImages - SessionDetail과 url로 SessionImage를 생성하고 저장한다`() {
         val detail = createSessionDetail(1L)
@@ -80,9 +78,7 @@ class SessionImageServiceTest {
         assertEquals(detail, result[0].sessionDetail)
     }
 
-    // ==========================
     // deleteImage
-    // ==========================
     @Test
     fun `deleteImage - id 기반으로 삭제 요청을 보낸다`() {
         val imageId = 10L
@@ -94,9 +90,7 @@ class SessionImageServiceTest {
         verify(exactly = 1) { sessionImageRepository.deleteById(imageId) }
     }
 
-    // ==========================
     // getById
-    // ==========================
     @Test
     fun `getById - 이미지가 존재하면 반환한다`() {
         val imageId = 5L
@@ -126,9 +120,7 @@ class SessionImageServiceTest {
         assertEquals(SessionErrorCode.SESSION_IMAGE_NOT_FOUND, ex.errorCode)
     }
 
-    // ==========================
     // findAllBySessionDetailId
-    // ==========================
     @Test
     fun `findAllBySessionDetailId - detailId로 모든 이미지를 조회한다`() {
         val detailId = 3L

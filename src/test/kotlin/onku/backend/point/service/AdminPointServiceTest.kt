@@ -95,9 +95,7 @@ class AdminPointServiceTest {
         return p
     }
 
-    // ==========================
     // getAdminOverview
-    // ==========================
 
     @Test
     fun `getAdminOverview - 한 명에 대해 월별 출석, 쿠픽 참여, 수동 포인트를 잘 매핑한다`() {
@@ -202,9 +200,7 @@ class AdminPointServiceTest {
         assertTrue(response.data.isEmpty())
     }
 
-    // ==========================
     // getMonthlyPaged
-    // ==========================
 
     @Test
     fun `getMonthlyPaged - 해당 월 세션이 하나도 없으면 sessionDates와 members 비어있다`() {

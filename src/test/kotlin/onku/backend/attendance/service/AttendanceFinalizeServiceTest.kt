@@ -41,7 +41,6 @@ class AttendanceFinalizeServiceTest {
     @MockK
     lateinit var em: EntityManager
 
-    // Clock은 실제 fixed 인스턴스로 사용
     lateinit var clock: Clock
 
     lateinit var attendanceFinalizeService: AttendanceFinalizeService
@@ -67,7 +66,6 @@ class AttendanceFinalizeServiceTest {
         every { SessionTimeUtil.startDateTime(any()) } returns LocalDateTime.of(2025, 1, 1, 10, 0)
     }
 
-    // 공통으로 쓸 session mock
     private fun createSession(
         id: Long = 1L,
         week: Long = 1L,

@@ -58,9 +58,7 @@ class MemberPointHistoryServiceTest {
         return p
     }
 
-    // ==========================
     // getHistory
-    // ==========================
 
     @Test
     fun `getHistory - 누적 포인트와 기록 페이지를 잘 매핑한다`() {
@@ -72,7 +70,6 @@ class MemberPointHistoryServiceTest {
         val profile = createProfile(member, "김테스터")
         every { memberProfileRepository.findById(1L) } returns java.util.Optional.of(profile)
 
-        // 합계 projection mock
         val sums = mockk<MemberPointHistoryRepository.MemberPointSums> {
             every { getPlusPoints() } returns 100L
             every { getMinusPoints() } returns 20L
@@ -133,9 +130,7 @@ class MemberPointHistoryServiceTest {
         verify(exactly = 0) { recordRepository.sumPointsForMember(any()) }
     }
 
-    // ==========================
     // upsertPointFromAbsenceReport
-    // ==========================
 
     @Test
     fun `upsertPointFromAbsenceReport - 기존 기록 없으면 새로 생성해서 저장`() {

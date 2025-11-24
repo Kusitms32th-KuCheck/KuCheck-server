@@ -83,9 +83,7 @@ class SessionServiceTest {
         return s
     }
 
-    // ==========================
-    // 1) getUpcomingSessionsForAbsence
-    // ==========================
+    // getUpcomingSessionsForAbsence
     @Test
     fun `getUpcomingSessionsForAbsence - 세션 목록과 active 여부를 반환한다`() {
         val now = LocalDateTime.now(clock)           // 2025-01-01T10:00
@@ -119,9 +117,7 @@ class SessionServiceTest {
         verify { sessionValidator.isImminentSession(s2, now) }
     }
 
-    // ==========================
-    // 2) getById
-    // ==========================
+    // getById
     @Test
     fun `getById - 세션이 있으면 반환한다`() {
         val session = createSession(id = 10L)
@@ -142,9 +138,7 @@ class SessionServiceTest {
         assertEquals(SessionErrorCode.SESSION_NOT_FOUND, ex.errorCode)
     }
 
-    // ==========================
-    // 3) saveAll
-    // ==========================
+    // saveAll
     @Test
     fun `saveAll - 요청 리스트를 Session 엔티티로 저장한다`() {
         val requests = listOf(
@@ -189,9 +183,7 @@ class SessionServiceTest {
         assertTrue(saved[1].isHoliday)
     }
 
-    // ==========================
-    // 4) getInitialSession
-    // ==========================
+    // getInitialSession
     @Test
     fun `getInitialSession - 페이지로 세션을 조회하고 DTO로 매핑한다`() {
         val s1 = createSession(
@@ -238,10 +230,7 @@ class SessionServiceTest {
         assertTrue(dto2.isHoliday)
     }
 
-    // ==========================
-    // 5) getThisWeekSession
-    // (날짜 range는 TimeRangeUtil에 맡기고, 여기선 repo 호출 + 매핑만 확인)
-    // ==========================
+    // getThisWeekSession
     @Test
     fun `getThisWeekSession - 이번주 세션 정보를 매핑해서 반환한다`() {
         val projection = mockk<ThisWeekSessionInfo>()
@@ -271,9 +260,7 @@ class SessionServiceTest {
         verify { sessionRepository.findThisWeekSunToSat(any(), any()) }
     }
 
-    // ==========================
-    // 6) getAllSessionsOrderByStartDate
-    // ==========================
+    // getAllSessionsOrderByStartDate
     @Test
     fun `getAllSessionsOrderByStartDate - 모든 세션을 카드 정보로 반환한다`() {
         val s1 = createSession(
@@ -309,9 +296,7 @@ class SessionServiceTest {
         assertEquals(LocalDate.of(2025, 1, 10), card2.startDate)
     }
 
-    // ==========================
-    // 7) deleteCascade
-    // ==========================
+    // deleteCascade
 
     @Test
     fun `deleteCascade - 세션이 없으면 예외`() {
@@ -381,9 +366,7 @@ class SessionServiceTest {
         verify { sessionRepository.deleteById(sessionId) }
     }
 
-    // ==========================
-    // 8) getByDetailIdFetchDetail
-    // ==========================
+    // getByDetailIdFetchDetail
 
     @Test
     fun `getByDetailIdFetchDetail - 세션이 있으면 반환`() {

@@ -62,7 +62,7 @@ class KupickServiceTest {
 
         val result = kupickService.submitApplication(member, newUrl)
 
-        assertNull(result) // 기존 URL 없음 → null
+        assertNull(result)
 
         verify(exactly = 1) {
             kupickRepository.findFirstByMemberAndApplicationDateBetween(member, any(), any())

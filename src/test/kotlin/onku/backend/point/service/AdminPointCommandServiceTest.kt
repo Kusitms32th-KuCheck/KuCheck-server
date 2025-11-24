@@ -73,9 +73,7 @@ class AdminPointCommandServiceTest {
         return m
     }
 
-    // ==========================
     // updateStudyPoints
-    // ==========================
 
     @Test
     fun `updateStudyPoints - 기존 레코드 있고 diff가 있으면 history 저장 + 값 갱신`() {
@@ -143,9 +141,7 @@ class AdminPointCommandServiceTest {
         verify(exactly = 1) { memberPointHistoryRepository.save(any()) } // diff = 15
     }
 
-    // ==========================
     // updateKupportersPoints & updateMemo
-    // ==========================
 
     @Test
     fun `updateKupportersPoints - kupporters 포인트 변경 시 history와 레코드 갱신`() {
@@ -189,9 +185,7 @@ class AdminPointCommandServiceTest {
         verify(exactly = 0) { memberPointHistoryRepository.save(any()) }
     }
 
-    // ==========================
-    // updateIsTf & updateIsStaff
-    // ==========================
+    // updateIsTf
 
     @Test
     fun `updateIsTf - false에서 true로 토글되면 TF 포인트 추가되고 true 반환`() {
@@ -217,6 +211,7 @@ class AdminPointCommandServiceTest {
         assertEquals(MemberErrorCode.MEMBER_NOT_FOUND, ex.errorCode)
     }
 
+    // updateIsStaff
     @Test
     fun `updateIsStaff - false에서 true로 토글되면 STAFF 포인트 추가`() {
         val member = createMember(1L)
@@ -231,9 +226,7 @@ class AdminPointCommandServiceTest {
         verify(exactly = 1) { memberPointHistoryRepository.save(any()) }
     }
 
-    // ==========================
     // updateKupickApproval
-    // ==========================
 
     @Test
     fun `updateKupickApproval - 기존 Kupick이 있으면 approval 토글 및 history 기록`() {
@@ -288,9 +281,7 @@ class AdminPointCommandServiceTest {
         assertEquals(KupickErrorCode.KUPICK_SAVE_FAILED, ex.errorCode)
     }
 
-    // ==========================
     // updateAttendanceAndHistory
-    // ==========================
 
     @Test
     fun `updateAttendanceAndHistory - attendance가 없으면 예외`() {

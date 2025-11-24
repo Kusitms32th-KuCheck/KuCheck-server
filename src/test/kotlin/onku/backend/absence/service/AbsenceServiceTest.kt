@@ -42,9 +42,7 @@ class AbsenceServiceTest {
     private val session = mockk<Session>(relaxed = true)
     private val fileKey = "test-file-key"
 
-    // ==========================
-    // 1) 새로운 결석신고 생성 테스트
-    // ==========================
+    // 새로운 결석신고 생성 테스트
     @Test
     fun `submitAbsenceReport - id가 없으면 새로 생성해서 save 한다`() {
         // given
@@ -58,7 +56,7 @@ class AbsenceServiceTest {
             null
         )
 
-        mockkObject(AbsenceReport) // companion object mock
+        mockkObject(AbsenceReport)
         val createdReport = mockk<AbsenceReport>()
         every {
             AbsenceReport.createAbsenceReport(
@@ -81,9 +79,9 @@ class AbsenceServiceTest {
         verify(exactly = 1) { absenceReportRepository.save(createdReport) }
     }
 
-    // ==========================
-    // 2) 기존 결석신고 수정 테스트
-    // ==========================
+
+    // 기존 결석신고 수정 테스트
+
     @Test
     fun `submitAbsenceReport - id가 있으면 기존 엔티티 update 후 save 한다`() {
         // given
@@ -112,9 +110,8 @@ class AbsenceServiceTest {
         verify(exactly = 1) { absenceReportRepository.save(existingReport) }
     }
 
-    // ===================================
-    // 3) getMyAbsenceReports 매핑 테스트
-    // ===================================
+
+    // getMyAbsenceReports 매핑 테스트
     @Test
     fun `getMyAbsenceReports - projection 리스트를 응답 DTO로 잘 매핑한다`() {
         val projection = mockk<GetMyAbsenceReportView>()
@@ -140,9 +137,8 @@ class AbsenceServiceTest {
         assertEquals("테스트 세션", dto.sessionTitle)
     }
 
-    // ==========================
-    // 4) getById 성공 케이스
-    // ==========================
+
+    // getById 성공 케이스
     @Test
     fun `getById - 존재하면 엔티티를 리턴한다`() {
         val report = mockk<AbsenceReport>()
@@ -153,9 +149,8 @@ class AbsenceServiceTest {
         assertSame(report, result)
     }
 
-    // ==========================
-    // 5) getById 실패 케이스
-    // ==========================
+
+    // getById 실패 케이스
     @Test
     fun `getById - 없으면 CustomException을 던진다`() {
         every { absenceReportRepository.findById(999L) } returns java.util.Optional.empty()

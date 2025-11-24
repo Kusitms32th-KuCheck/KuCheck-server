@@ -51,7 +51,6 @@ class AttendanceServiceTest {
 
     @BeforeEach
     fun setUp() {
-        // now = 2025-01-01T10:00:00 in Asia/Seoul
         clock = Clock.fixed(
             Instant.parse("2025-01-01T01:00:00Z"),
             ZoneId.of("Asia/Seoul")
@@ -95,9 +94,7 @@ class AttendanceServiceTest {
         every { memberProfileRepository.findById(memberId) } returns Optional.of(profile)
     }
 
-    // ==========================
-    // 1) issueAttendanceTokenFor
-    // ==========================
+    // issueAttendanceTokenFor
     @Test
     fun `issueAttendanceTokenFor - 토큰 발급 및 캐시에 저장`() {
         val member = createMember(1L)
@@ -126,9 +123,7 @@ class AttendanceServiceTest {
         }
     }
 
-    // ==========================
-    // 2) scanAndRecordBy - 정상 출석 기록
-    // ==========================
+    // scanAndRecordBy - 정상 출석 기록
     @Test
     fun `scanAndRecordBy - 정상 출석 기록 및 포인트 적립`() {
         val admin = createMember(id = 99L)
@@ -138,12 +133,10 @@ class AttendanceServiceTest {
         val now = LocalDateTime.now(clock)
         val session = createSession(id = 10L, week = 2L, isHoliday = false)
 
-        // 세션 열려있음 (findOpenSession 내부: findOpenWindow(startBound, now))
         every {
             sessionRepository.findOpenWindow(any(), now)
         } returns listOf(session)
 
-        // 👉 TokenData 실제 인스턴스 생성
         val peekResult = TokenData(
             memberId = member.id!!,
             issuedAt = now.minusSeconds(10),
@@ -205,13 +198,10 @@ class AttendanceServiceTest {
             )
         }
 
-        // save는 any()로 한 번 호출됐는지만 검증
         verify(exactly = 1) { memberPointHistoryRepository.save(any()) }
     }
 
-    // ==========================
-    // 3) scanAndRecordBy - 세션 안 열렸을 때 예외
-    // ==========================
+    // scanAndRecordBy - 세션 안 열렸을 때 예외
     @Test
     fun `scanAndRecordBy - 열려있는 세션이 없으면 예외`() {
         val admin = createMember(99L)
@@ -226,9 +216,9 @@ class AttendanceServiceTest {
         assertEquals(AttendanceErrorCode.SESSION_NOT_OPEN, ex.errorCode)
     }
 
-    // ==========================
-    // 4) checkAvailabilityFor
-    // ==========================
+
+    // checkAvailabilityFor
+
     @Test
     fun `checkAvailabilityFor - 세션 없으면 available false`() {
         val member = createMember(1L)

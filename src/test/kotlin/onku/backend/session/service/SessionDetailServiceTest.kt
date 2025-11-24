@@ -47,9 +47,7 @@ class SessionDetailServiceTest {
         return s
     }
 
-    // ==========================
-    // 1) sessionDetailId 존재 → 기존 상세 수정
-    // ==========================
+    // sessionDetailId 존재 → 기존 상세 수정
     @Test
     fun `upsertSessionDetail - 기존 상세가 있으면 수정한다`() {
         val session = createSession(id = 100L)
@@ -100,9 +98,7 @@ class SessionDetailServiceTest {
         // assertNotNull(eventSlot.captured.runAt)
     }
 
-    // ==========================
-    // 2) sessionDetailId 없음 → 새 상세 생성
-    // ==========================
+    // sessionDetailId 없음 → 새 상세 생성
     @Test
     fun `upsertSessionDetail - sessionDetailId가 없으면 새로 생성한다`() {
         val session = createSession(id = 200L)
@@ -150,7 +146,7 @@ class SessionDetailServiceTest {
         verify { session.sessionDetail = savedDetail }
         verify { sessionRepository.save(session) }
 
-        // FinalizeEvent 발행 확인 (sessionId만 체크, runAt은 null 아님만 확인)
+        // FinalizeEvent 발행 확인
         val eventSlot = slot<FinalizeEvent>()
         verify { applicationEventPublisher.publishEvent(capture(eventSlot)) }
 
@@ -158,9 +154,7 @@ class SessionDetailServiceTest {
         assertNotNull(eventSlot.captured.runAt)
     }
 
-    // ==========================
-    // 3) sessionDetailId 있는데 DB에 없음 → 예외
-    // ==========================
+    // sessionDetailId 있는데 DB에 없음 → 예외
     @Test
     fun `upsertSessionDetail - 기존 상세 없으면 예외`() {
         val session = createSession(id = 300L)
@@ -185,9 +179,7 @@ class SessionDetailServiceTest {
         verify(exactly = 0) { applicationEventPublisher.publishEvent(any()) }
     }
 
-    // ==========================
-    // 4) getById - 정상
-    // ==========================
+    // getById - 정상
     @Test
     fun `getById - 정상 조회`() {
         val detail = SessionDetail(
@@ -206,9 +198,7 @@ class SessionDetailServiceTest {
         assertEquals("강의실", found.place)
     }
 
-    // ==========================
-    // 5) getById - 못 찾으면 예외
-    // ==========================
+    // getById - 못 찾으면 예외
     @Test
     fun `getById - 상세 없으면 예외`() {
         every { sessionDetailRepository.findById(100L) } returns Optional.empty()

@@ -54,9 +54,7 @@ class SessionNoticeServiceTest {
         return d
     }
 
-    // ==========================
-    // 1) 정상 케이스
-    // ==========================
+    // 정상 케이스
     @Test
     fun `getSessionWithImages - 세션과 디테일, 이미지가 있으면 Triple을 반환한다`() {
         val sessionId = 1L
@@ -87,9 +85,7 @@ class SessionNoticeServiceTest {
         verify(exactly = 1) { sessionImageRepository.findByDetailId(detailId) }
     }
 
-    // ==========================
-    // 2) 세션이 없을 때
-    // ==========================
+    // 세션이 없을 때
     @Test
     fun `getSessionWithImages - 세션이 없으면 SESSION_NOT_FOUND 예외`() {
         val sessionId = 99L
@@ -105,9 +101,7 @@ class SessionNoticeServiceTest {
         verify(exactly = 0) { sessionImageRepository.findByDetailId(any()) }
     }
 
-    // ==========================
-    // 3) 디테일이 없을 때
-    // ==========================
+    // 디테일이 없을 때
     @Test
     fun `getSessionWithImages - sessionDetail이 없으면 SESSION_DETAIL_NOT_FOUND 예외`() {
         val sessionId = 1L
