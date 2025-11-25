@@ -16,7 +16,6 @@ import onku.backend.global.exception.CustomException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito.verify
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
