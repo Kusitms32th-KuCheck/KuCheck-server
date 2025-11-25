@@ -85,7 +85,7 @@ class MemberAlarmHistoryServiceTest {
         // given
         val member = createMember(1L)
         val type = AlarmEmojiType.STAR
-        val message = "쿠픽 승인 되었습니다."
+        val message = "큪픽 승인 되었습니다."
 
         val slot = slot<MemberAlarmHistory>()
         every { memberAlarmHistoryRepository.save(capture(slot)) } answers {

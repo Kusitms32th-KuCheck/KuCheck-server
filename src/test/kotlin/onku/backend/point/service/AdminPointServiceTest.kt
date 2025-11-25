@@ -98,7 +98,7 @@ class AdminPointServiceTest {
     // getAdminOverview
 
     @Test
-    fun `getAdminOverview - 한 명에 대해 월별 출석, 쿠픽 참여, 수동 포인트를 잘 매핑한다`() {
+    fun `getAdminOverview - 한 명에 대해 월별 출석, 큐픽 참여, 수동 포인트를 잘 매핑한다`() {
         val year = 2025
         val page = 0
         val size = 10
