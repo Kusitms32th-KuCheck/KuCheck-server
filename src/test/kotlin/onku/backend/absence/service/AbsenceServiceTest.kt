@@ -1,11 +1,8 @@
 package onku.backend.absence.service
 
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.verify
 import onku.backend.domain.absence.AbsenceReport
 import onku.backend.domain.absence.AbsenceReportErrorCode
 import onku.backend.domain.absence.dto.request.SubmitAbsenceReportRequest
@@ -77,6 +74,7 @@ class AbsenceServiceTest {
             AbsenceReport.createAbsenceReport(member, session, request, fileKey)
         }
         verify(exactly = 1) { absenceReportRepository.save(createdReport) }
+        unmockkObject(AbsenceReport)
     }
 
 

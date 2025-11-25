@@ -12,6 +12,7 @@ import onku.backend.domain.point.repository.MemberPointHistoryRepository
 import onku.backend.domain.session.Session
 import onku.backend.domain.session.repository.SessionRepository
 import onku.backend.domain.session.util.SessionTimeUtil
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Clock
@@ -64,6 +65,11 @@ class AttendanceFinalizeServiceTest {
 
         mockkStatic(SessionTimeUtil::class)
         every { SessionTimeUtil.startDateTime(any()) } returns LocalDateTime.of(2025, 1, 1, 10, 0)
+    }
+
+    @AfterEach
+    fun afterTest() {
+        unmockkStatic(SessionTimeUtil::class)
     }
 
     private fun createSession(
