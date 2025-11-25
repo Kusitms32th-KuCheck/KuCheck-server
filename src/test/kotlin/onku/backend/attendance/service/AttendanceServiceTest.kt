@@ -157,7 +157,8 @@ class AttendanceServiceTest {
 
         // SessionTimeUtil.startDateTime(session) mock
         mockkObject(SessionTimeUtil)
-        every { SessionTimeUtil.startDateTime(session) } returns now
+        every { SessionTimeUtil.startDateTime(session) } returns now.plusMinutes(5)
+
 
         // insertOnly: 어떤 값이 오든 1 리턴
         every {
@@ -186,14 +187,14 @@ class AttendanceServiceTest {
         // then
         assertEquals(member.id!!, response.memberId)
         assertEquals(session.id!!, response.sessionId)
-        assertEquals(AttendancePointType.LATE, response.state)
+        assertEquals(AttendancePointType.PRESENT, response.state)
         assertEquals(now, response.scannedAt)
 
         verify(exactly = 1) {
             attendanceRepository.insertOnly(
                 any(),               // sessionId
                 any(),               // memberId
-                AttendancePointType.LATE.name,
+                AttendancePointType.PRESENT.name,
                 any(), any(), any()
             )
         }
