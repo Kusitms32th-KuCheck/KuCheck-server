@@ -63,19 +63,6 @@ class MemberUserController(
         return ResponseEntity.ok(SuccessResponse.ok(dto))
     }
 
-    @PatchMapping("/{memberId}/role")
-    @Operation(
-        summary = "[QA] 사용자 권한 수정",
-        description = "memberId 에 해당하는 사용자의 권한을 role 로 수정합니다. QA 혹은 프론트엔드 연동 기간동안 권한 제한 없이 자유롭게 사용해주시면 됩니다!"
-    )
-    fun updateRole(
-        @PathVariable memberId: Long,
-        @RequestBody @Valid req: UpdateRoleRequest
-    ): ResponseEntity<SuccessResponse<MemberRoleResponse>> {
-        val body = memberService.updateRole(memberId, req)
-        return ResponseEntity.ok(SuccessResponse.ok(body))
-    }
-
     @GetMapping("/alarms")
     @Operation(
         summary = "내 알림 히스토리 조회",
