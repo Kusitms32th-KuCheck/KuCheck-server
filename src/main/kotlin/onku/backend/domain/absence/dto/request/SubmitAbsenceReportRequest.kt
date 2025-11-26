@@ -10,7 +10,7 @@ data class SubmitAbsenceReportRequest(
     @field:NotNull val sessionId : Long,
     val submitType : AbsenceSubmitType,
     val reason : String,
-    val fileName : String,
+    val fileName : String?,
     val lateDateTime : LocalDateTime?,
     val leaveDateTime : LocalDateTime?
 )
