@@ -130,6 +130,7 @@ class S3Service(
             lower.endsWith(".gif") -> "image/gif"
             lower.endsWith(".webp") -> "image/webp"
             lower.endsWith(".pdf") -> "application/pdf"
+            lower.endsWith(".heic") -> "image/heic"
             else -> throw CustomException(ErrorCode.INVALID_FILE_EXTENSION)
         }
     }
