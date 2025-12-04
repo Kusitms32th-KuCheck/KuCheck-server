@@ -1,5 +1,6 @@
 # 큐-첵 (Ku-check): 큐시즘의 모든 일을 한큐에 체크하다, 큐첵
-> 🔗 **서비스 링크**: https://ku-check.vercel.app
+> 🔗 **서비스 링크**: [`https://ku-check.vercel.app`](https://ku-check.vercel.app)
+<img width="7680" height="4320" alt="큐첵 소개" src="https://github.com/user-attachments/assets/e6375d54-366a-429d-a771-dfd6ef557d3d" />
 
 ## 🎨 서비스 설명
 - 큐첵은 큐시즘 운영에 흩어져 있던 출결, 상벌점, 공지, 불참사유서 제출을 하나로 통합해 학회 운영을 더 정확하고 간편하게 만드는 전용 관리 서비스입니다.
@@ -15,6 +16,7 @@
 [큐첵 개발 서버 API 명세서](https://dev.ku-check.o-r.kr/swagger-ui/index.html)
 
 ## 🗃️ ERD
+<img width="2110" height="1272" alt="Ku-Check (1) (1)" src="https://github.com/user-attachments/assets/85afd83a-16c8-4c63-943b-98eaff150a29" />
 
 ## 🛠️ 기술 스택
 | 기술 스택 | 사용 이유 |
