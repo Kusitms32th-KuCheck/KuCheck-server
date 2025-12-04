@@ -1,6 +1,7 @@
 plugins {
 	kotlin("jvm") version "1.9.25"
 	kotlin("plugin.spring") version "1.9.25"
+	kotlin("plugin.serialization") version "2.1.0"
 	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
 	kotlin("plugin.jpa") version "1.9.25"
@@ -45,6 +46,15 @@ dependencies {
 	implementation("software.amazon.awssdk:s3:2.25.34")
 	implementation("software.amazon.awssdk:auth:2.25.34")
 	implementation("software.amazon.awssdk:regions:2.25.34")
+	implementation("software.amazon.awssdk:url-connection-client:2.25.30")
+	//serializable
+	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+	//okhttp3
+	implementation("com.squareup.okhttp3:okhttp:4.12.0")
+	//google auth
+	implementation("com.google.auth:google-auth-library-oauth2-http:1.33.1")
+	//test
+	testImplementation("io.mockk:mockk:1.13.5")
 }
 
 kotlin {

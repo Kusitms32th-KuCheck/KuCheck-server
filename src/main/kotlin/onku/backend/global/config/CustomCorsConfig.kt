@@ -18,10 +18,10 @@ class CustomCorsConfig {
                 "http://localhost:8080",
                 "https://dev.ku-check.o-r.kr"
             )
-        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        configuration.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         configuration.allowedHeaders = listOf("*")
         configuration.allowCredentials = true
-        configuration.exposedHeaders = listOf("Authorization", "Set-Cookie")
+        configuration.exposedHeaders = listOf("Authorization", "Set-Cookie", "X-Refresh-Token")
         configuration.maxAge = 3600
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)

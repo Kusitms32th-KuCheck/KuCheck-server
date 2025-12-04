@@ -46,14 +46,17 @@ jobs:
         env:
           APPLICATION_PROPERTIES: ${{ secrets.ONKU_APP_DEV_YML }}
           TEST_APPLICATION_PROPERTIES: ${{ secrets.ONKU_APP_TEST_YML }}
+          FCM_JSON: ${{ secrets.ONKU_FCM_JSON }}
 
         run: |
           cd ./src
           rm -rf main/resources/application.yml
           mkdir -p main/resources
           mkdir -p test/resources
+          mkdir -p main/resources/firebase
           echo "$APPLICATION_PROPERTIES" > main/resources/application.yml
           echo "$TEST_APPLICATION_PROPERTIES" > test/resources/application.yml
+          echo "$FCM_JSON" > main/resources/firebase/fcm.json
 
       - name: gradlew 권한 부여
         run: chmod +x gradlew
@@ -126,14 +129,17 @@ jobs:
         env:
           APPLICATION_PROPERTIES: ${{ secrets.ONKU_APP_PROD_YML }}
           TEST_APPLICATION_PROPERTIES: ${{ secrets.ONKU_APP_TEST_YML }}
+          FCM_JSON: ${{ secrets.ONKU_FCM_JSON }}
 
         run: |
           cd ./src
           rm -rf main/resources/application.yml
           mkdir -p main/resources
           mkdir -p test/resources
+          mkdir -p main/resources/firebase
           echo "$APPLICATION_PROPERTIES" > main/resources/application.yml
           echo "$TEST_APPLICATION_PROPERTIES" > test/resources/application.yml
+          echo "$FCM_JSON" > main/resources/firebase/fcm.json
 
       - name: gradlew 권한 부여
         run: chmod +x gradlew

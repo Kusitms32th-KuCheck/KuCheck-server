@@ -5,6 +5,7 @@ import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
+import onku.backend.domain.member.enums.Role
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Duration
@@ -30,20 +31,19 @@ class JwtUtil(
 
     fun getEmail(token: String): String = parseClaims(token).get("email", String::class.java)
     fun getRoles(token: String): List<String> = parseClaims(token).get("roles", List::class.java)?.map { it.toString() } ?: emptyList()
-    fun getScopes(token: String): List<String> = parseClaims(token).get("scopes", List::class.java)?.map { it.toString() } ?: emptyList()
 
     fun isExpired(token: String): Boolean =
         try { parseClaims(token).expiration?.before(Date()) ?: true }
         catch (_: ExpiredJwtException) { true }
 
-    fun createAccessToken(email: String, roles: List<String> = listOf("USER")): String =
+    fun createAccessToken(email: String, roles: List<String> = Role.USER.authorities()): String =
         createJwt(email, roles, scopes = emptyList(), expiredMs = accessTtl.toMillis())
 
-    fun createRefreshToken(email: String, roles: List<String> = listOf("USER")): String =
+    fun createRefreshToken(email: String, roles: List<String> = Role.USER.authorities()): String =
         createJwt(email, roles, scopes = emptyList(), expiredMs = refreshTtl.toMillis())
 
     fun createOnboardingToken(email: String, minutes: Long = 30): String =
-        createJwt(email, roles = listOf("GUEST"), scopes = listOf("ONBOARDING_ONLY"), expiredMs = Duration.ofMinutes(minutes).toMillis())
+        createJwt(email, roles = Role.GUEST.authorities(), scopes = emptyList(), expiredMs = Duration.ofMinutes(minutes).toMillis())
 
     private fun createJwt(email: String, roles: List<String>, scopes: List<String>, expiredMs: Long): String {
         val now = Date()

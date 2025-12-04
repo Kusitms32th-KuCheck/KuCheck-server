@@ -14,5 +14,7 @@ enum class ErrorCode(
     INVALID_PARAMETER("COMMON422", "잘못된 파라미터입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
     PARAMETER_VALIDATION_ERROR("COMMON422", "파라미터 검증 에러입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
     PARAMETER_GRAMMAR_ERROR("COMMON422", "파라미터 문법 에러입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
-    INVALID_FILE_EXTENSION("FILE001", "올바르지 않은 파일 확장자 입니다.", HttpStatus.BAD_REQUEST)
+    INVALID_FILE_EXTENSION("S3001", "올바르지 않은 파일 확장자 입니다.", HttpStatus.BAD_REQUEST),
+    FCM_ACCESS_TOKEN_FAIL("alarm001", "FCM 액세스 토큰 발급 중에 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    SQL_INTEGRITY_VIOLATION("sql001", "무결성 제약조건을 위반하였습니다.", HttpStatus.BAD_REQUEST);
 }

@@ -4,7 +4,6 @@ import onku.backend.global.auth.AuthErrorCode
 import onku.backend.global.auth.dto.KakaoOAuthTokenResponse
 import onku.backend.global.auth.dto.KakaoProfile
 import onku.backend.global.exception.CustomException
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.util.LinkedMultiValueMap
@@ -12,13 +11,14 @@ import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestClient
 
 @Service
-class KakaoService(
-    @Value("\${oauth.kakao.client-id}") private val clientId: String,
-    @Value("\${oauth.kakao.redirect-uri}") private val redirectUri: String
-) {
+class KakaoService {
     private val client = RestClient.create()
 
-    fun getAccessToken(code: String): KakaoOAuthTokenResponse {
+    fun getAccessToken(
+        code: String,
+        redirectUri: String,
+        clientId: String
+    ): KakaoOAuthTokenResponse {
         val params: MultiValueMap<String, String> = LinkedMultiValueMap<String, String>().apply {
             add("grant_type", "authorization_code")
             add("client_id", clientId)
@@ -49,6 +49,25 @@ class KakaoService(
                 .toEntity(KakaoProfile::class.java)
 
             res.body ?: throw CustomException(AuthErrorCode.KAKAO_PROFILE_EMPTY_RESPONSE)
+        } catch (e: Exception) {
+            throw CustomException(AuthErrorCode.KAKAO_API_COMMUNICATION_ERROR)
+        }
+    }
+
+    fun adminUnlink(userId: Long, adminKey: String) {
+        val form: MultiValueMap<String, String> = LinkedMultiValueMap<String, String>().apply {
+            add("target_id_type", "user_id")
+            add("target_id", userId.toString())
+        }
+
+        try {
+            client.post()
+                .uri("https://kapi.kakao.com/v1/user/unlink")
+                .header("Authorization", "KakaoAK $adminKey")
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .body(form)
+                .retrieve()
+                .toBodilessEntity()
         } catch (e: Exception) {
             throw CustomException(AuthErrorCode.KAKAO_API_COMMUNICATION_ERROR)
         }

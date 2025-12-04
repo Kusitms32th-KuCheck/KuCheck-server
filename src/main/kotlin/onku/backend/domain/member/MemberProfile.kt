@@ -28,9 +28,11 @@ class MemberProfile(
     var part: Part,
 
     @Column(name = "phone_number", length = 30)
-    var phoneNumber: String? = null
-) {
+    var phoneNumber: String? = null,
 
+    @Column(name = "profile_image", length = 2048)
+    var profileImage: String? = null
+) {
     fun apply(
         name: String,
         school: String?,
@@ -43,5 +45,9 @@ class MemberProfile(
         this.major = major
         this.part = part
         this.phoneNumber = phoneNumber
+    }
+
+    fun updateProfileImage(url: String?) {
+        this.profileImage = url
     }
 }
