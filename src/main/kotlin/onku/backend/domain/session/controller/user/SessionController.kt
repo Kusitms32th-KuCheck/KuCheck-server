@@ -52,22 +52,4 @@ class SessionController(
     ) : ResponseEntity<SuccessResponse<GetSessionNoticeResponse>> {
         return ResponseEntity.ok(SuccessResponse.ok(sessionFacade.getSessionNotice(sessionId)))
     }
-
-    @PatchMapping("/{sessionId}/time")
-    @Operation(
-        summary = "출석체크가 가능하도록 세션 시간 수정 [TEMP]",
-        description = """
-            1. Try it out 버튼 클릭
-            2. (금주 세션 id를 모른다면 GET /api/v1/session/this-week 에서 sessionId 확인!)
-            3. 수정하고자 하는 세션 id 입력
-            4. Execute 버튼 눌러서 요청 보내기
-            5. 완료! 현재 시각 기준 20분 이후까지 출석이 가능하도록 세션 시간 및 기타 세션 정보들이 설정됨
-        """
-    )
-    fun resetSessionTime(
-        @PathVariable sessionId: Long
-    ): ResponseEntity<SuccessResponse<SessionTimeResetResponse>> {
-        val body = sessionFacade.resetSessionTime(sessionId)
-        return ResponseEntity.ok(SuccessResponse.ok(body))
-    }
 }
