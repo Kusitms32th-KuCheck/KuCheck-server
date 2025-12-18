@@ -4,6 +4,8 @@ import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
 import onku.backend.global.context.SpringContext
 import onku.backend.global.crypto.PrivacyEncryptor
+import onku.backend.global.crypto.exception.DecryptionException
+import onku.backend.global.crypto.exception.EncryptionException
 
 
 @Converter
@@ -17,7 +19,7 @@ class EncryptedStringConverter : AttributeConverter<String, String> {
         try {
             return encryptor().encrypt(raw)
         } catch (e: Exception) {
-            throw IllegalStateException(e)
+            throw EncryptionException(e)
         }
     }
 
@@ -26,7 +28,7 @@ class EncryptedStringConverter : AttributeConverter<String, String> {
         try {
             return encryptor().decrypt(encrypted)
         } catch (e: Exception) {
-            throw IllegalStateException(e)
+            throw DecryptionException(e)
         }
     }
 }
