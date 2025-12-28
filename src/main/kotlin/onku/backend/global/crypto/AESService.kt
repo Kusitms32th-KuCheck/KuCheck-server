@@ -53,7 +53,7 @@ class AESService(
         if (encrypted == null) return null
         return try {
             val decoded = Base64.getDecoder().decode(encrypted)
-            require(decoded.size > GCM_IV_LENGTH) { "Invalid encrypted text" }
+            require(decoded.size > GCM_IV_LENGTH + (GCM_TAG_LENGTH_BITS / 8)) { "Invalid encrypted text" }
 
             val iv = decoded.copyOfRange(0, GCM_IV_LENGTH)
             val cipherText = decoded.copyOfRange(GCM_IV_LENGTH, decoded.size)
