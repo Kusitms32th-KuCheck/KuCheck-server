@@ -15,7 +15,7 @@ class EncryptedStringConverter : AttributeConverter<String, String> {
     }
 
     override fun convertToDatabaseColumn(raw: String?): String? {
-        if (raw == null) return null
+        if (raw.isNullOrBlank()) return null
         try {
             return encryptor().encrypt(raw)
         } catch (e: Exception) {
