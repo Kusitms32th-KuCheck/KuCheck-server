@@ -4,5 +4,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-@EnableConfigurationProperties(KakaoProps::class)
-class KakaoConfig
+@EnableConfigurationProperties(
+    value = [
+        KakaoProps::class,
+        AppleProps::class
+    ]
+)
+class PropsConfig
