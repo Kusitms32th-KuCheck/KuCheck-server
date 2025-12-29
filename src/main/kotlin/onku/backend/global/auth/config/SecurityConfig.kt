@@ -28,6 +28,7 @@ class SecurityConfig(
         )
         private val ALLOWED_POST = arrayOf(
             "/api/v1/auth/kakao",
+            "/api/v1/auth/apple",
             "/api/v1/auth/reissue",
         )
 

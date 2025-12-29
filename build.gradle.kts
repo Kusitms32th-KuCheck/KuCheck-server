@@ -55,6 +55,8 @@ dependencies {
 	implementation("com.google.auth:google-auth-library-oauth2-http:1.33.1")
 	//test
 	testImplementation("io.mockk:mockk:1.13.5")
+	//apple auth
+	implementation("com.nimbusds:nimbus-jose-jwt:9.40")
 }
 
 kotlin {
