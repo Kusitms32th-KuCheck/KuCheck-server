@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query
 
 interface MemberRepository : JpaRepository<Member, Long> {
     fun findByEmail(email: String): Member?
-    fun findBySocialIdAndSocialType(socialId: Long, socialType: SocialType): Member?
+    fun findBySocialIdAndSocialType(socialId: String, socialType: SocialType): Member?
     @Query("""
       select m.id from Member m
       where m.hasInfo = true
