@@ -8,6 +8,7 @@ import onku.backend.domain.member.enums.Role
 import onku.backend.domain.member.enums.SocialType
 import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.member.repository.MemberRepository
+import onku.backend.global.auth.AuthErrorCode
 import onku.backend.global.exception.CustomException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -24,24 +25,28 @@ class MemberService(
             ?: throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
 
     @Transactional
-    fun upsertSocialMember(email: String?, socialId: Long, type: SocialType): Member {
-        val existing = memberRepository.findBySocialIdAndSocialType(socialId, type)
-        if (existing != null) {
-            if (!email.isNullOrBlank() && existing.email != email) {
-                existing.updateEmail(email)
-            }
-            return existing
+    fun upsertSocialMember(email: String?, socialId: String, type: SocialType): Member {
+        // social로 먼저 조회: Apple 재로그인 시 email 누락 때문
+        val bySocial = memberRepository.findBySocialIdAndSocialType(socialId, type)
+        if (bySocial != null) {
+            bySocial.updateEmail(email)
+            return bySocial
         }
 
-        val created = Member(
-            email = email,
-            role = Role.USER,
+        // email이 있으면 email로 조회: email 중복 삽입 방지
+        val byEmail = email?.let { memberRepository.findByEmail(it) }
+        if (byEmail != null) {
+            return byEmail
+        }
+
+        // 신규 생성: email 없으면 생성 불가 처리
+        val safeEmail = email ?: throw CustomException(AuthErrorCode.OAUTH_EMAIL_SCOPE_REQUIRED)
+        val newMember = Member(
+            email = safeEmail,
             socialType = type,
-            socialId = socialId,
-            hasInfo = false,
-            approval = ApprovalStatus.PENDING
+            socialId = socialId
         )
-        return memberRepository.save(created)
+        return memberRepository.save(newMember)
     }
 
     @Transactional
