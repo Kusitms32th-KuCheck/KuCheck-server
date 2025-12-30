@@ -2,8 +2,10 @@ package onku.backend.global.exception
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
+import onku.backend.global.crypto.exception.CryptoException
 import onku.backend.global.response.ErrorResponse
 import onku.backend.global.response.result.ExceptionResult
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -15,6 +17,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class ExceptionAdvice {
+
+    private val log = LoggerFactory.getLogger(javaClass)
+
 
     /**
      * 등록되지 않은 에러
@@ -130,6 +135,67 @@ class ExceptionAdvice {
         val code = ErrorCode.SQL_INTEGRITY_VIOLATION
         val body = ErrorResponse.of<Any>(code.errorCode, code.message)
         return ResponseEntity(body, code.status)
+    }
+
+    /**
+     * 암호화 관련 에러
+     */
+    @ExceptionHandler(CryptoException::class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    fun handleCryptoException(e: CryptoException, req: HttpServletRequest): ErrorResponse<ExceptionResult.ServerErrorData> {
+
+        // ✅ 민감정보(raw/encrypted) 절대 로그에 찍지 말기
+        // ✅ 대신 요청정보/경로/메서드/원인 예외 타입 정도만
+        log.error(
+            "[CRYPTO_ERROR] {} {} uri={} remote={} ua={} cause={}",
+            req.method,
+            req.requestURI,
+            req.requestURL,
+            req.remoteAddr,
+            req.getHeader("User-Agent"),
+            e.cause?.javaClass?.name ?: "none",
+            e
+        )
+
+        val serverErrorData = ExceptionResult.ServerErrorData(
+            errorClass = null,
+            errorMessage = "internal server error" // 암호화 관련 에러인건 프론트에 숨기기
+        )
+
+        return ErrorResponse.ok(
+            ErrorCode.SERVER_UNTRACKED_ERROR.errorCode,
+            ErrorCode.SERVER_UNTRACKED_ERROR.message,
+            serverErrorData
+        )
+    }
+
+    @ExceptionHandler(org.springframework.orm.jpa.JpaSystemException::class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    fun handleJpaSystemException(
+        e: org.springframework.orm.jpa.JpaSystemException,
+        req: HttpServletRequest
+    ): ErrorResponse<ExceptionResult.ServerErrorData> {
+
+        val isConverter = e.message?.contains("AttributeConverter", ignoreCase = true) == true
+
+        if (isConverter) {
+            log.error("[CRYPTO_ERROR][JPA_CONVERTER] {} {} class={} msg={}",
+                req.method, req.requestURI, e.javaClass.name, e.message, e
+            )
+        } else {
+            log.error("[JPA_ERROR] {} {}", req.method, req.requestURI, e)
+        }
+
+        val serverErrorData = ExceptionResult.ServerErrorData(
+            errorClass = "INTERNAL_SERVER_ERROR",
+            errorMessage = "internal server error"
+        )
+
+        return ErrorResponse.ok(
+            ErrorCode.SERVER_UNTRACKED_ERROR.errorCode,
+            ErrorCode.SERVER_UNTRACKED_ERROR.message,
+            serverErrorData
+        )
     }
 
 }

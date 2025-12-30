@@ -55,6 +55,9 @@ dependencies {
 	implementation("com.google.auth:google-auth-library-oauth2-http:1.33.1")
 	//test
 	testImplementation("io.mockk:mockk:1.13.5")
+	//aws secretmanager
+	implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0"))
+	implementation("io.awspring.cloud:spring-cloud-aws-starter-secrets-manager")
 	//apple auth
 	implementation("com.nimbusds:nimbus-jose-jwt:9.40")
 }
