@@ -2,6 +2,7 @@ package onku.backend.domain.member
 
 import jakarta.persistence.*
 import onku.backend.domain.member.enums.Part
+import onku.backend.global.crypto.converter.EncryptedStringConverter
 
 @Entity
 class MemberProfile(
@@ -14,7 +15,8 @@ class MemberProfile(
     @JoinColumn(name = "member_id")
     val member: Member,
 
-    @Column(length = 100)
+    @Column(length = 512)
+    @Convert(converter = EncryptedStringConverter::class)
     var name: String? = null,
 
     @Column(length = 100)
@@ -27,10 +29,12 @@ class MemberProfile(
     @Enumerated(EnumType.STRING)
     var part: Part,
 
-    @Column(name = "phone_number", length = 30)
+    @Column(name = "phone_number", length = 512)
+    @Convert(converter = EncryptedStringConverter::class)
     var phoneNumber: String? = null,
 
     @Column(name = "profile_image", length = 2048)
+    @Convert(converter = EncryptedStringConverter::class)
     var profileImage: String? = null
 ) {
     fun apply(
