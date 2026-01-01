@@ -35,7 +35,7 @@ class CryptoJpaErrorTest(
             "abc@def.com",
             Role.USER.name,
             SocialType.KAKAO.name,
-            1234567890,
+            "KAKAO",
             false,
             ApprovalStatus.APPROVED.name,
             false,
