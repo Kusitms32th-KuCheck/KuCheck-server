@@ -43,7 +43,7 @@ class MemberServiceTest {
         email: String? = "test@aaa.com",
         role: Role = Role.USER,
         socialType: SocialType = SocialType.KAKAO,
-        socialId: Long = 123L,
+        socialId: String = "KAKAO",
         hasInfo: Boolean = false,
         approval: ApprovalStatus = ApprovalStatus.PENDING,
         isStaff: Boolean = false
@@ -94,16 +94,16 @@ class MemberServiceTest {
         val existing = createMember(
             id = 1L,
             email = "old@test.com",
-            socialId = 123L,
+            socialId = "KAKAO",
             socialType = SocialType.KAKAO
         )
 
-        every { memberRepository.findBySocialIdAndSocialType(123L, SocialType.KAKAO) } returns existing
+        every { memberRepository.findBySocialIdAndSocialType("KAKAO", SocialType.KAKAO) } returns existing
         every { existing.updateEmail("new@test.com") } just Runs
 
         val result = service.upsertSocialMember(
             email = "new@test.com",
-            socialId = 123L,
+            socialId = "KAKAO",
             type = SocialType.KAKAO
         )
 
@@ -114,14 +114,14 @@ class MemberServiceTest {
 
     @Test
     fun `upsertSocialMember - 기존 소셜 계정이 없으면 새로 생성`() {
-        every { memberRepository.findBySocialIdAndSocialType(123L, SocialType.KAKAO) } returns null
-
+        every { memberRepository.findBySocialIdAndSocialType("KAKAO", SocialType.KAKAO) } returns null
+        every { memberRepository.findByEmail("user@test.com") } returns null
         val slotMember = slot<Member>()
         every { memberRepository.save(capture(slotMember)) } answers { slotMember.captured }
 
         val result = service.upsertSocialMember(
             email = "user@test.com",
-            socialId = 123L,
+            socialId = "KAKAO",
             type = SocialType.KAKAO
         )
 
@@ -129,7 +129,7 @@ class MemberServiceTest {
         assertEquals("user@test.com", slotMember.captured.email)
         assertEquals(Role.USER, slotMember.captured.role)
         assertEquals(SocialType.KAKAO, slotMember.captured.socialType)
-        assertEquals(123L, slotMember.captured.socialId)
+        assertEquals("KAKAO", slotMember.captured.socialId)
         assertFalse(slotMember.captured.hasInfo)
         assertEquals(ApprovalStatus.PENDING, slotMember.captured.approval)
 
