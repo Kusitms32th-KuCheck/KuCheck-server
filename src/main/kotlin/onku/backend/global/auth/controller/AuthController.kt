@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import onku.backend.domain.member.Member
 import onku.backend.global.annotation.CurrentMember
+import onku.backend.global.auth.dto.AppleLoginRequest
 import onku.backend.global.auth.dto.AuthLoginResult
 import onku.backend.global.auth.dto.KakaoLoginRequest
 import onku.backend.global.auth.service.AuthService
@@ -21,6 +22,11 @@ class AuthController(
     @Operation(summary = "카카오 로그인", description = "인가코드를 body로 받아 사용자를 식별합니다.")
     fun kakaoLogin(@RequestBody req: KakaoLoginRequest): ResponseEntity<SuccessResponse<AuthLoginResult>> =
         authService.kakaoLogin(req)
+
+    @PostMapping("/apple")
+    @Operation(summary = "애플 로그인", description = "인가코드를 body로 받아 사용자를 식별합니다.")
+    fun appleLogin(@RequestBody req: AppleLoginRequest): ResponseEntity<SuccessResponse<AuthLoginResult>> =
+        authService.appleLogin(req)
 
     @PostMapping("/reissue")
     @Operation(summary = "AT 재발급", description = "RT를 헤더로 받아 AT를 재발급합니다.")
