@@ -242,7 +242,7 @@ class MemberProfileService(
         val pageable = PageRequest.of(page, size)
 
         val approvalStatuses = listOf(ApprovalStatus.PENDING, ApprovalStatus.REJECTED)
-        val profilePage = memberProfileRepository.findByMemberApprovalIn(approvalStatuses, pageable)
+        val profilePage = memberProfileRepository.findByMember_ApprovalIn(approvalStatuses, pageable)
 
         val memberPage = profilePage.map { profile ->
             val member = profile.member

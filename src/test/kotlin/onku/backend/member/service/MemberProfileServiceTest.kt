@@ -413,7 +413,7 @@ class MemberProfileServiceTest {
         )
 
         every {
-            memberProfileRepository.findByMemberApprovalIn(
+            memberProfileRepository.findByMember_ApprovalIn(
                 listOf(ApprovalStatus.PENDING, ApprovalStatus.REJECTED),
                 any()
             )

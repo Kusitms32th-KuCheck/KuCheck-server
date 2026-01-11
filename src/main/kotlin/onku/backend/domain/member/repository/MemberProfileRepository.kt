@@ -22,7 +22,7 @@ interface MemberProfileRepository : JpaRepository<MemberProfile, Long> {
 
     // PENDING, REJECTED
     @EntityGraph(attributePaths = ["member"])
-    fun findByMemberApprovalIn(
+    fun findByMember_ApprovalIn(
         approvals: Collection<ApprovalStatus>,
         pageable: Pageable
     ): Page<MemberProfile>
