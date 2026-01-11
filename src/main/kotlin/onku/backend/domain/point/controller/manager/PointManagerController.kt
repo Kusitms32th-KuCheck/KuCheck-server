@@ -37,7 +37,7 @@ class PointManagerController(
         @RequestParam(defaultValue = "10") size: Int
     ): ResponseEntity<SuccessResponse<PageResponse<AdminPointOverviewDto>>> {
         val safePage = if (page < 1) 0 else page - 1
-        val year = 2025
+        val year = 2026
         val body = adminPointsService.getAdminOverview(year, safePage, size)
         return ResponseEntity.ok(SuccessResponse.ok(body))
     }

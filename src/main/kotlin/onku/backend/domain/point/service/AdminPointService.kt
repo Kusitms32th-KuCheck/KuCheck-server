@@ -53,8 +53,8 @@ class AdminPointService(
         val memberIds = profilePage.content.mapNotNull(MemberProfile::memberId)
         if (memberIds.isEmpty()) return PageResponse.from(profilePage.map { emptyOverviewRow(it) })
 
-        // 조회 구간 설정: 8월 ~ 12월
-        val augRange = TimeRangeUtil.monthRange(year, 8, clock.zone)
+        // 조회 구간 설정: 1월 ~ 12월
+        val augRange = TimeRangeUtil.monthRange(year, 1, clock.zone)
         val decRange = TimeRangeUtil.monthRange(year, 12, clock.zone)
         val startOfAug: LocalDateTime = augRange.startOfMonth
         val endExclusive: LocalDateTime = decRange.startOfNextMonth
@@ -73,7 +73,7 @@ class AdminPointService(
             .forEach { row ->
                 val mId = row.getMemberId()
                 val month = row.getMonth()
-                if (month in 8..12) {
+                if (month in 1..12) {
                     val mapForMember = monthlyAttendanceTotals.getOrPut(mId) { initMonthScoreMap() }
                     mapForMember[month] = (mapForMember[month] ?: 0) + row.getPoints().toInt()
                 }
@@ -87,7 +87,7 @@ class AdminPointService(
             .forEach { row ->
                 val memberId = (row[0] as Number).toLong()
                 val month = (row[1] as Number).toInt()
-                if (month in 8..12) {
+                if (month in 1..12) {
                     kupickParticipationByMember[memberId]!![month] = true
                 }
             }
@@ -121,10 +121,10 @@ class AdminPointService(
     }
 
     private fun initMonthScoreMap(): MutableMap<Int, Int> =
-        (8..12).associateWith { 0 }.toMutableMap()
+        (1..12).associateWith { 0 }.toMutableMap()
 
     private fun initMonthParticipationMap(): MutableMap<Int, Boolean> =
-        (8..12).associateWith { false }.toMutableMap()
+        (1..12).associateWith { false }.toMutableMap()
 
     private fun emptyOverviewRow(profile: onku.backend.domain.member.MemberProfile): AdminPointOverviewDto {
         return AdminPointOverviewDto(
