@@ -105,7 +105,7 @@ class PointManagerController(
         description = "year, month, page, size를 받아 멤버별 [date, attendanceId, status, point] 목록을 페이징으로 반환"
     )
     fun getMonthly(
-        @RequestParam @Min(8) @Max(12) month: Int,
+        @RequestParam @Min(1) @Max(12) month: Int,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
     ): ResponseEntity<SuccessResponse<MonthlyAttendancePageResponse>> {
