@@ -166,15 +166,15 @@ class AdminPointServiceTest {
         assertTrue(dto.isTf)
         assertFalse(dto.isStaff)
 
-        // 8~12월 키가 모두 있어야 함
-        assertEquals(setOf(8, 9, 10, 11, 12), dto.attendanceMonthlyTotals.keys)
+        // 1~12월 키가 모두 있어야 함
+        assertEquals(setOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), dto.attendanceMonthlyTotals.keys)
         // 9월만 30점
         assertEquals(30, dto.attendanceMonthlyTotals[9])
         assertEquals(0, dto.attendanceMonthlyTotals[8])
         assertEquals(0, dto.attendanceMonthlyTotals[10])
 
         // 큐픽 참여: 10월만 true
-        assertEquals(setOf(8, 9, 10, 11, 12), dto.kupickParticipation.keys)
+        assertEquals(setOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), dto.kupickParticipation.keys)
         assertEquals(true, dto.kupickParticipation[10])
         assertEquals(false, dto.kupickParticipation[8])
 
