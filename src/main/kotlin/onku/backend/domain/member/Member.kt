@@ -15,6 +15,9 @@ class Member(
     @Column(nullable = false, unique = true, length = 255)
     var email: String? = null,
 
+    @Column(name = "password", nullable = true, length = 255)
+    var password: String? = null,
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     var role: Role = Role.USER,
