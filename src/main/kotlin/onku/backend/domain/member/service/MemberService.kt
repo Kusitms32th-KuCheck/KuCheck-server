@@ -9,20 +9,62 @@ import onku.backend.domain.member.enums.SocialType
 import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.member.repository.MemberRepository
 import onku.backend.global.auth.AuthErrorCode
+import onku.backend.global.auth.jwt.JwtUtil
 import onku.backend.global.exception.CustomException
+import onku.backend.global.response.SuccessResponse
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.ResponseEntity
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
+import java.time.Duration
+import java.util.UUID
 
 @Service
 @Transactional(readOnly = true)
 class MemberService(
     private val memberRepository: MemberRepository,
     private val memberProfileRepository: MemberProfileRepository,
+    private val passwordEncoder: PasswordEncoder,
+    private val jwtUtil: JwtUtil,
+    @Value("\${jwt.onboarding-ttl}") private val onboardingTtl: Duration,
 ) {
     fun getByEmail(email: String): Member =
         memberRepository.findByEmail(email)
             ?: throw CustomException(MemberErrorCode.MEMBER_NOT_FOUND)
+
+    @Transactional
+    fun register(req: MemberRegisterRequest): ResponseEntity<SuccessResponse<MemberResponse>> {
+        val email = req.email.trim()
+
+        if (memberRepository.findByEmail(email) != null) {
+            throw CustomException(MemberErrorCode.DUPLICATE_EMAIL)
+        }
+
+        val encodedPw = passwordEncoder.encode(req.password)
+
+        val member = Member(
+            email = email,
+            password = encodedPw,
+            socialType = SocialType.EMAIL,
+            socialId = UUID.randomUUID().toString(),
+        )
+
+        memberRepository.save(member)
+
+        val onboarding = jwtUtil.createOnboardingToken(email, onboardingTtl.toMinutes())
+        val headers = HttpHeaders().apply {
+            add(HttpHeaders.AUTHORIZATION, "Bearer $onboarding")
+        }
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .headers(headers)
+            .body(SuccessResponse.ok(MemberResponse.of(member)))
+    }
 
     @Transactional
     fun upsertSocialMember(email: String?, socialId: String, type: SocialType): Member {

@@ -19,5 +19,6 @@ enum class AuthErrorCode(
     APPLE_API_COMMUNICATION_ERROR("AUTH502", "애플 API 통신 중 오류가 발생했습니다.", HttpStatus.BAD_GATEWAY),
     APPLE_TOKEN_EMPTY_RESPONSE("AUTH502", "애플 토큰 응답이 비어 있습니다.", HttpStatus.BAD_GATEWAY),
     APPLE_ID_TOKEN_INVALID("AUTH401", "유효하지 않은 애플 ID 토큰입니다.", HttpStatus.UNAUTHORIZED),
-    APPLE_JWKS_FETCH_FAILED("AUTH502", "애플 공개 키(JWKS)를 불러오는 데 실패했습니다.", HttpStatus.BAD_GATEWAY)
+    APPLE_JWKS_FETCH_FAILED("AUTH502", "애플 공개 키(JWKS)를 불러오는 데 실패했습니다.", HttpStatus.BAD_GATEWAY),
+    INVALID_EMAIL_OR_PASSWORD("AUTH401", "이메일 또는 비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED)
 }

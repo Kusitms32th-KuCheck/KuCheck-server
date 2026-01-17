@@ -12,4 +12,5 @@ enum class MemberErrorCode(
     INVALID_MEMBER_STATE("MEMBER409", "현재 상태에서는 요청한 상태 변경을 수행할 수 없습니다.", HttpStatus.CONFLICT),
     PAGE_MEMBERS_NOT_FOUND("MEMBER404_PAGE", "조회할 수 있는 회원이 없습니다.", HttpStatus.NOT_FOUND),
     INVALID_REQUEST("MEMBER400", "요청 값이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
+    DUPLICATE_EMAIL("MEMBER409_DUP_EMAIL", "이미 사용 중인 이메일입니다.", HttpStatus.CONFLICT),
 }

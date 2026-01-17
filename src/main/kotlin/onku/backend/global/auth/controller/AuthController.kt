@@ -2,10 +2,12 @@ package onku.backend.global.auth.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import onku.backend.domain.member.Member
 import onku.backend.global.annotation.CurrentMember
 import onku.backend.global.auth.dto.AppleLoginRequest
 import onku.backend.global.auth.dto.AuthLoginResult
+import onku.backend.global.auth.dto.EmailLoginRequest
 import onku.backend.global.auth.dto.KakaoLoginRequest
 import onku.backend.global.auth.service.AuthService
 import onku.backend.global.response.SuccessResponse
@@ -18,6 +20,13 @@ import org.springframework.web.bind.annotation.*
 class AuthController(
     private val authService: AuthService,
 ) {
+    @PostMapping("/login")
+    @Operation(summary = "이메일 로그인", description = "이메일과 비밀번호로 로그인 후 JWT 토큰을 헤더에 담아 반환합니다.")
+    fun emailLogin(
+        @RequestBody @Valid req: EmailLoginRequest
+    ): ResponseEntity<SuccessResponse<AuthLoginResult>> =
+        authService.emailLogin(req)
+
     @PostMapping("/kakao")
     @Operation(summary = "카카오 로그인", description = "인가코드를 body로 받아 사용자를 식별합니다.")
     fun kakaoLogin(@RequestBody req: KakaoLoginRequest): ResponseEntity<SuccessResponse<AuthLoginResult>> =

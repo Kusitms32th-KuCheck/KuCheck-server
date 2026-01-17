@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
@@ -30,6 +32,8 @@ class SecurityConfig(
             "/api/v1/auth/kakao",
             "/api/v1/auth/apple",
             "/api/v1/auth/reissue",
+            "/api/v1/members/register",
+            "/api/v1/auth/login"
         )
 
         private val ONBOARDING_ENDPOINT = arrayOf( // (GUEST)
@@ -54,6 +58,9 @@ class SecurityConfig(
             "/api/v1/members/executive/**",
         )
     }
+
+    @Bean
+    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
     fun filterChain(http: HttpSecurity, corsConfiguration: CustomCorsConfig): SecurityFilterChain {

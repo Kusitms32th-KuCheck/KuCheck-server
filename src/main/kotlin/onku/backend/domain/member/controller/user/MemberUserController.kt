@@ -23,6 +23,13 @@ class MemberUserController(
     private val memberService: MemberService,
     private val memberAlarmHistoryService: MemberAlarmHistoryService,
 ) {
+    @PostMapping("/register")
+    @Operation(summary = "회원가입", description = "이메일과 비밀번호로 회원가입 후 온보딩 토큰을 헤더에 담아 반환합니다.")
+    fun registerMember(
+        @RequestBody @Valid req: MemberRegisterRequest
+    ): ResponseEntity<SuccessResponse<MemberResponse>> =
+        memberService.register(req)
+
     @PostMapping("/onboarding")
     @ResponseStatus(HttpStatus.ACCEPTED)
     @Operation(
