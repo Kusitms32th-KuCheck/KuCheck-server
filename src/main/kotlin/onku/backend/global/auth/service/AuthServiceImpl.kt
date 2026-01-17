@@ -8,6 +8,7 @@ import onku.backend.domain.member.service.MemberService
 import onku.backend.global.auth.AuthErrorCode
 import onku.backend.global.auth.dto.AppleLoginRequest
 import onku.backend.global.auth.dto.AuthLoginResult
+import onku.backend.global.auth.dto.EmailLoginRequest
 import onku.backend.global.auth.dto.KakaoLoginRequest
 import onku.backend.global.auth.jwt.JwtUtil
 import onku.backend.global.config.AppleProps
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -30,12 +32,26 @@ class AuthServiceImpl(
     private val kakaoService: KakaoService,
     private val appleService: AppleService,
     private val jwtUtil: JwtUtil,
+    private val passwordEncoder: PasswordEncoder,
     private val refreshTokenCacheUtil: RefreshTokenCache,
     @Value("\${jwt.refresh-ttl}") private val refreshTtl: Duration,
     @Value("\${jwt.onboarding-ttl}") private val onboardingTtl: Duration,
     private val kakaoProps: KakaoProps,
     private val appleProps: AppleProps
 ) : AuthService {
+
+    @Transactional
+    override fun emailLogin(dto: EmailLoginRequest): ResponseEntity<SuccessResponse<AuthLoginResult>> {
+        val member = memberService.getByEmail(dto.email)
+
+        val storedPassword = member.password
+            ?: throw CustomException(AuthErrorCode.INVALID_EMAIL_OR_PASSWORD)
+
+        val matches = passwordEncoder.matches(dto.password, storedPassword)
+        if (!matches) throw CustomException(AuthErrorCode.INVALID_EMAIL_OR_PASSWORD)
+
+        return buildLoginResponse(member)
+    }
 
     @Transactional
     override fun kakaoLogin(dto: KakaoLoginRequest): ResponseEntity<SuccessResponse<AuthLoginResult>> {
