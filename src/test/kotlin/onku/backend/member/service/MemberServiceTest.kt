@@ -5,7 +5,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import onku.backend.domain.member.Member
 import onku.backend.domain.member.MemberErrorCode
-import onku.backend.domain.member.MemberProfile
 import onku.backend.domain.member.dto.StaffUpdateRequest
 import onku.backend.domain.member.dto.UpdateRoleRequest
 import onku.backend.domain.member.enums.ApprovalStatus
@@ -14,27 +13,36 @@ import onku.backend.domain.member.enums.SocialType
 import onku.backend.domain.member.repository.MemberProfileRepository
 import onku.backend.domain.member.repository.MemberRepository
 import onku.backend.domain.member.service.MemberService
+import onku.backend.global.auth.jwt.JwtUtil
 import onku.backend.global.exception.CustomException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.security.crypto.password.PasswordEncoder
 import java.util.*
 import kotlin.test.Test
+import java.time.Duration
 
 @ExtendWith(MockKExtension::class)
 class MemberServiceTest {
 
     @MockK lateinit var memberRepository: MemberRepository
     @MockK lateinit var memberProfileRepository: MemberProfileRepository
+    @MockK lateinit var passwordEncoder: PasswordEncoder
+    @MockK lateinit var jwtUtil: JwtUtil
 
     lateinit var service: MemberService
+    private val onboardingTtl: Duration = Duration.ofDays(7)
 
     @BeforeEach
     fun setUp() {
         service = MemberService(
             memberRepository = memberRepository,
-            memberProfileRepository = memberProfileRepository
+            memberProfileRepository = memberProfileRepository,
+            passwordEncoder = passwordEncoder,
+            jwtUtil = jwtUtil,
+            onboardingTtl = onboardingTtl
         )
     }
 
